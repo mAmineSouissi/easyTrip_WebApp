@@ -4,24 +4,17 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-use App\Entity\Survey;
 
 #[ORM\Entity]
-class SurveyResponse
+class Survey_response
 {
 
     #[ORM\Id]
     #[ORM\Column(type: "integer")]
     private int $id;
 
-        #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "surveyresponses")]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private User $user_id;
-
-        #[ORM\ManyToOne(targetEntity: Survey::class, inversedBy: "surveyresponses")]
-    #[ORM\JoinColumn(name: 'survey_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Survey $survey_id;
-
+    
+    
     #[ORM\Column(type: "text")]
     private string $response_data;
 

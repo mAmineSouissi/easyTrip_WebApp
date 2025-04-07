@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Form\RegistrationType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,7 +19,7 @@ class AuthController extends AbstractController
     public function register(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
-        UserRepository $userRepository
+        ManagerRegistry $doctrine
         
     ): Response {
         $user = new User();
@@ -27,20 +28,15 @@ class AuthController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $em= $doctrine->getManager();
             $hashedPassword = $passwordHasher->hashPassword(
                 $user,
                 $form->get('password')->getData()
             );
             $user->setPassword($hashedPassword);
-            $user->setRole($form->get('role')->getData());
-            $user->setProfilePhoto($form->get('profilePhoto')->getData());
-            $user->setName($form->get('name')->getData());
-            $user->setSurname($form->get('surname')->getData());
-            $user->setEmail($form->get('email')->getData());
-            $user->setPhone($form->get('phone')->getData());
-            $user->setAddresse($form->get('addresse')->getData());
 
-            $userRepository->addUser($user);
+            $em->persist($user);
+            $em->flush();
 
             return $this->redirectToRoute('app_home');
         }

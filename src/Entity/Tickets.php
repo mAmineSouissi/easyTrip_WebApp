@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-use App\Entity\User;
 
 #[ORM\Entity]
 class Tickets
@@ -14,10 +13,7 @@ class Tickets
     #[ORM\Column(type: "integer")]
     private int $id_ticket;
 
-        #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "ticketss")]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private User $user_id;
-
+    
     #[ORM\Column(type: "integer")]
     private int $flight_number;
 

@@ -81,7 +81,4 @@ class Survey
 
     #[ORM\OneToMany(mappedBy: "survey_id", targetEntity: Question::class)]
     private Collection $questions;
-
-    #[ORM\OneToMany(mappedBy: "survey_id", targetEntity: SurveyResponse::class)]
-    private Collection $surveyresponses;
 }
