@@ -1,0 +1,44 @@
+<div class="sidebar bg-dark text-white" id="sidebar">
+    <!-- Logo -->
+    <div class="sidebar-logo text-center py-4">
+        <a href="{{ path('admin_dashboard') }}" class="text-white">
+            <img src="{{ asset('img/examples/logo.svg') }}" alt="Admin Logo" class="img-fluid" style="max-width: 150px;">
+        </a>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar-content">
+        <ul class="nav flex-column">
+            <!-- Dashboard Link -->
+            <li class="nav-item">
+                <a class="nav-link text-white" href="{{ path('admin_dashboard') }}">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </li>
+            
+            <!-- CRUD Menu with Collapse -->
+            <li class="nav-item">
+                <a class="nav-link text-white" data-bs-toggle="collapse" href="#crudMenu" role="button" aria-expanded="false" aria-controls="crudMenu">
+                    <i class="fas fa-cogs"></i> CRUD
+                </a>
+                <div class="collapse" id="crudMenu">
+                    <ul class="nav flex-column ms-3">
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ path('admin_users') }}">
+                                <span class="sub-item">User Management</span>
+                            </a>
+                        </li>
+                        <!-- Add more submenu items if needed -->
+                    </ul>
+                </div>
+            </li>
+
+            <!-- Additional links -->
+            <li class="nav-item">
+                <a class="nav-link text-white" href="{{ path('admin_settings') }}">
+                    <i class="fas fa-cogs"></i> Settings
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
