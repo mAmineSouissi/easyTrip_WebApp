@@ -34,5 +34,27 @@ class ReservationController extends AbstractController
     ]);
   }
 
+  #[Route('/reservation/ajouter', name: 'app_reservation_add')]
+  public function add(Request $request, EntityManagerInterface $em): Response
+  {
+      $reservation = new Reservation();
+      $reservation->setOrderDate(new \DateTime()); 
+      $form = $this->createForm(ReservationType::class, $reservation);
+      $form->handleRequest($request);
+  
+      if ($form->isSubmitted() && $form->isValid()) {
+          $em->persist($reservation);
+          $em->flush();
+  
+          $this->addFlash('success', 'Réservation ajoutée avec succès !');
+          return $this->redirectToRoute('app_reservations');
+      }
+  
+      return $this->render('reservation/add.html.twig', [
+          'form' => $form->createView(),
+      ]);
+  }
+  
+
     
 }
