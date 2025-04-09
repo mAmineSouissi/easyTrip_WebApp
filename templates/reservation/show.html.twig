@@ -1,0 +1,133 @@
+{% extends 'base.html.twig'%}
+{% block stylesheets %}
+<style>
+ table {
+            width: 90%; /* Remplir toute la largeur disponible */
+            border-collapse: collapse; /* Supprimer l'espace entre les bordures des cellules */
+            margin: 20px auto; /* Marge autour du tableau et centré */
+            padding-right: 10px;
+            padding-left: 10px; /* Padding à droite du tableau */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombre discrète autour du tableau */
+            border-radius: 8px; /* Bords arrondis pour un effet plus moderne */
+            background-color: #fff; /* Fond du tableau blanc pour le contraste */
+        }
+
+ th, td {
+            padding: 15px 20px; /* Espacement autour du texte */
+            text-align: center; /* Centrer le texte dans les cellules */
+            border: 1px solid #ddd; /* Bordure fine et discrète autour des cellules */
+            font-family: 'Arial', sans-serif; /* Police moderne */
+            font-size: 1rem; /* Taille de texte uniforme */
+        }
+
+ th {
+            background-color: #e3d8c8; /* Couleur de fond plus moderne pour les en-têtes */
+            color: white; /* Texte blanc dans les en-têtes */
+            font-weight: bold; /* En-têtes en gras */
+            text-transform: uppercase; /* Majuscules pour les en-têtes */
+        }
+
+tbody tr:hover {
+            background-color: #f1f1f1; 
+            transition: background-color 0.3s ease; 
+        }
+
+tbody tr:nth-child(odd) {
+      background-color: #f9f9f9; 
+}
+tbody tr:nth-child(even) {
+      background-color: #ffffff; }
+
+form {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center; 
+    gap: 10px; 
+}
+input[type="text"] {
+    padding: 8px;
+    width: 250px; /* Largeur du champ de recherche */
+    border: 1px solid #ccc;
+    border-radius: 4px; /* Coins arrondis */
+}
+button {
+    padding: 8px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+.pagination .pagination {
+    margin: 0;
+}
+
+
+</style>
+{% endblock %}
+
+
+{% block body %}
+<br><br>
+
+<h3>Liste des Réservations</h3>
+
+ <form method="get" action="{{ path('app_reservations') }}">
+    <input type="text" name="nom" placeholder="Rechercher par nom" value="{{ app.request.get('nom') }}">
+    <button type="submit">🔍 Rechercher</button>
+    <a href="{{ path('app_reservations') }}">↺ Réinitialiser</a>
+ </form>
+
+  {# <a href="{{ path('app_reservation_add') }}" >➕ Ajouter une réservation</a> #}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Téléphone</th>
+                <th>Email</th>
+                <th>Places</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for reservation in pagination.items %}
+            <tr>
+                <td>{{ reservation.orderDate|date('Y-m-d') }}</td>
+                <td>{{ reservation.nom }}</td>
+                <td>{{ reservation.prenom }}</td>
+                <td>{{ reservation.phone }}</td>
+                <td>{{ reservation.email }}</td>
+                <td>{{ reservation.places }}</td>
+               {# <td>
+                 <form method="post" action="{{ path('app_reservation_delete', {id_reservation: reservation.id_reservation}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?');">
+                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id_reservation) }}">
+                 <button>🗑 Supprimer</button>
+                 </form>
+                 </td>
+                 <td>
+                <button> <a href="{{ path('app_reservation_edit', {id_reservation: reservation.id_reservation}) }}">✏️ Modifier</a></button>
+                </td>
+               #}
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6">Aucune réservation trouvée.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+<div class="pagination">
+{{ knp_pagination_render(pagination) }}
+</div>
+
+<br><br><br><br><br><br><br><br><br><br>
+{% endblock %}

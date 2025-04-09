@@ -16,7 +16,7 @@ class Reservation
     #[ORM\Column(type: "integer")]
     private int $id_reservation;
 
-        #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "reservations")]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "reservations")]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private User $user_id;
 
@@ -26,7 +26,7 @@ class Reservation
     #[ORM\Column(type: "string", length: 255)]
     private string $status;
 
-    #[ORM\Column(type: "date")]
+    #[ORM\Column(type: "date", name: 'orderDate')]
     private \DateTimeInterface $orderDate;
 
     #[ORM\Column(type: "integer")]
