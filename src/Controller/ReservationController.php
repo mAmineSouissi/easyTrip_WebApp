@@ -54,6 +54,18 @@ class ReservationController extends AbstractController
           'form' => $form->createView(),
       ]);
   }
+
+  #[Route('/reservation/supprimer/{id_reservation}', name: 'app_reservation_delete', methods: ['POST'])]
+  public function delete(Reservation $reservation, EntityManagerInterface $em, Request $request): Response
+   {
+  if ($this->isCsrfTokenValid('delete'.$reservation->getId_reservation(), $request->request->get('_token'))) {
+      $em->remove($reservation);
+      $em->flush();
+      $this->addFlash('success', 'Réservation supprimée avec succès.');
+  }
+
+  return $this->redirectToRoute('app_reservations');
+   }
   
 
     

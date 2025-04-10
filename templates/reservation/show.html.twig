@@ -75,7 +75,7 @@ button {
 {% block body %}
 <br><br><br>
 
- <form method="get" action="{{ path('app_reservations') }}">
+ <form method="get" action="{{ path('app_reservations') }}" data-turbo="false">
     <input type="text" name="nom" placeholder="Rechercher par nom" value="{{ app.request.get('nom') }}">
     <button type="submit">🔍 Rechercher</button>
     <a href="{{ path('app_reservations') }}">↺ Réinitialiser</a>
@@ -104,13 +104,13 @@ button {
                 <td>{{ reservation.phone }}</td>
                 <td>{{ reservation.email }}</td>
                 <td>{{ reservation.places }}</td>
-               {# <td>
-                 <form method="post" action="{{ path('app_reservation_delete', {id_reservation: reservation.id_reservation}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?');">
+               <td>
+                 <form method="post"  data-turbo="false" action="{{ path('app_reservation_delete', {id_reservation: reservation.id_reservation}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?');" >
                  <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id_reservation) }}">
-                 <button>🗑 Supprimer</button>
+                 <button class="btn btn-danger">🗑</button>
                  </form>
                  </td>
-                 <td>
+                 {# <td>
                 <button> <a href="{{ path('app_reservation_edit', {id_reservation: reservation.id_reservation}) }}">✏️ Modifier</a></button>
                 </td>
                #}
