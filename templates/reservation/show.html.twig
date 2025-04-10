@@ -73,9 +73,7 @@ button {
 
 
 {% block body %}
-<br><br>
-
-<h3>Liste des Réservations</h3>
+<br><br><br>
 
  <form method="get" action="{{ path('app_reservations') }}">
     <input type="text" name="nom" placeholder="Rechercher par nom" value="{{ app.request.get('nom') }}">
@@ -83,7 +81,7 @@ button {
     <a href="{{ path('app_reservations') }}">↺ Réinitialiser</a>
  </form>
 
-  {# <a href="{{ path('app_reservation_add') }}" >➕ Ajouter une réservation</a> #}
+   <a href="{{ path('app_reservation_add') }}" >➕ Ajouter une réservation</a> 
 
     <table>
         <thead>

@@ -27,7 +27,7 @@ class ReservationController extends AbstractController
     $pagination = $paginator->paginate(
         $queryBuilder->getQuery(), 
         $request->query->getInt('page', 1), 
-        2
+        4
     );
     return $this->render('reservation/show.html.twig', [
         'pagination' => $pagination,

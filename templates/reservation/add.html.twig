@@ -16,7 +16,7 @@
 		</div>
 	</div>
 
-{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'data-turbo': 'false'}}) }}
 	<div class="section">
 		<div class="container">
 			<div class="row">
@@ -58,7 +58,8 @@
 							</div>
 
 							<div class="col-12">
-                               <button class="btn btn-primary" >Enregistrer</button>
+							  <a href="{{ path('app_reservations') }}" class="btn btn-primary">← Retour </a>
+                              <button class="btn btn-primary" >Réserver</button>
 							</div>
 						</div>
 				</div>
