@@ -93,6 +93,7 @@ button {
                 <th>Email</th>
                 <th>Places</th>
                 <th>Actions</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -110,10 +111,10 @@ button {
                  <button class="btn btn-danger">🗑</button>
                  </form>
                  </td>
-                 {# <td>
-                <button> <a href="{{ path('app_reservation_edit', {id_reservation: reservation.id_reservation}) }}">✏️ Modifier</a></button>
+                <td>
+                   <button class="btn btn-success"> <a href="{{ path('app_reservation_edit', {id_reservation: reservation.id_reservation}) }}">✏️ </a></button>
                 </td>
-               #}
+              
             </tr>
         {% else %}
             <tr>
