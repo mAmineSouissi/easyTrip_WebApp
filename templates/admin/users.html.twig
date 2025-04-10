@@ -32,7 +32,18 @@
                     <td>{{ user.email }}</td>
                     <td>{{ user.phone }}</td>
                     <td>{{ user.addresse }}</td>
-                    <td>{{ user.role }}</td>
+                    <td>
+                        {% if user.role == 'Admin' %}
+                            <span class="badge bg-danger">{{ user.role }}</span>
+                        {% elseif user.role == 'Client' %}
+                            <span class="badge bg-success">{{ user.role }}</span>
+                        {% elseif user.role == 'Agent' %}
+                            <span class="badge bg-info">{{ user.role }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ user.role }}</span>
+                        {% endif %}
+                    </td>
+
                     <td>
                         <button class="btn btn-primary btn-sm edit-user" data-id="{{ user.id }}">Edit</button>
                         <button class="btn btn-danger btn-sm delete-user" data-id="{{ user.id }}">Delete</button>
@@ -98,7 +109,7 @@
 <script>
    $(document).ready(function() {
         $('#usersTable').DataTable({
-            lengthMenu: [ [5, 25, 50], [5, 25, 50] ]
+            lengthMenu: [ [5, 10, 30], [5, 10, 30] ]
         });
 
         $('.edit-user').on('click', function () {

@@ -35,6 +35,9 @@ final class AdminController extends AbstractController
             'id' => $user->getId(),
             'name' => $user->getName(),
             'email' => $user->getEmail(),
+            'phone' => $user->getPhone(),
+            'surname' => $user->getSurname(),
+            'address' => $user->getAddresse(),
             'role' => $user->getRole(),
         ]);
     }
@@ -67,6 +70,7 @@ final class AdminController extends AbstractController
         $user->setName($request->request->get('name'));
         $user->setEmail($request->request->get('email'));
         $user->setPhone($request->request->get('phone'));
+        $user->setSurname($request->request->get('surname'));
         $user->setAddresse($request->request->get('address')); 
         $user->setRole($request->request->get('role'));
 

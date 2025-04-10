@@ -9,23 +9,23 @@
     <!-- Sidebar Menu -->
     <div class="sidebar-content">
         <ul class="nav flex-column">
-            <!-- Dashboard Link -->
+            <!-- Dashboard -->
             <li class="nav-item">
                 <a class="nav-link text-white" href="{{ path('admin_dashboard') }}">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                    <i class="bi bi-speedometer2 me-2 text-white"></i> Dashboard
                 </a>
             </li>
-            
-            <!-- CRUD Menu with Collapse -->
+
+            <!-- CRUD -->
             <li class="nav-item">
                 <a class="nav-link text-white" data-bs-toggle="collapse" href="#crudMenu" role="button" aria-expanded="false" aria-controls="crudMenu">
-                    <i class="fas fa-cogs"></i> CRUD
+                    <i class="bi bi-gear-fill me-2 text-white"></i> CRUD
                 </a>
                 <div class="collapse" id="crudMenu">
                     <ul class="nav flex-column ms-3">
                         <li class="nav-item">
                             <a class="nav-link text-white" href="{{ path('admin_users') }}">
-                                <span class="sub-item">User Management</span>
+                                <i class="bi bi-people-fill me-2 text-white"></i> User Management
                             </a>
                         </li>
                         <!-- Add more submenu items if needed -->
@@ -33,10 +33,10 @@
                 </div>
             </li>
 
-            <!-- Additional links -->
+            <!-- Settings -->
             <li class="nav-item">
                 <a class="nav-link text-white" href="{{ path('admin_settings') }}">
-                    <i class="fas fa-cogs"></i> Settings
+                    <i class="bi bi-sliders me-2 text-white"></i> Settings
                 </a>
             </li>
         </ul>
