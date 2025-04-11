@@ -1,5 +1,5 @@
 <div class="container mt-4">
-    {{ form_start(form) }}
+    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': ''}}) }}
     <div class="card shadow-sm">
         <div class="card-header bg-white">
             <h3 class="h5 mb-0">
@@ -15,25 +15,91 @@
                     
                     <div class="mb-3">
                         {{ form_label(form.flightNumber, 'Numéro de vol', {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.flightNumber, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_widget(form.flightNumber, {'attr': {'class': 'form-control', 'required': 'required', 'min': '1'}}) }}
+                        {{ form_errors(form.flightNumber, {'attr': {'class': 'text-danger'}}) }}
                     </div>
                     
                     <div class="mb-3">
                         {{ form_label(form.airline, 'Compagnie aérienne', {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.airline, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_widget(form.airline, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                        {{ form_errors(form.airline, {'attr': {'class': 'text-danger'}}) }}
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 {{ form_label(form.departureCity, 'Ville de départ', {'label_attr': {'class': 'form-label'}}) }}
-                                {{ form_widget(form.departureCity, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_widget(form.departureCity, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                                {{ form_errors(form.departureCity, {'attr': {'class': 'text-danger'}}) }}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 {{ form_label(form.arrivalCity, 'Ville d\'arrivée', {'label_attr': {'class': 'form-label'}}) }}
-                                {{ form_widget(form.arrivalCity, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_widget(form.arrivalCity, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                                {{ form_errors(form.arrivalCity, {'attr': {'class': 'text-danger'}}) }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.departureDate, 'Date de départ', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.departureDate, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'required': 'required',
+                                        'type': 'date',
+                                        'min': 'now'|date('Y-m-d')
+                                    }
+                                }) }}
+                                {{ form_errors(form.departureDate, {'attr': {'class': 'text-danger'}}) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.departureTime, 'Heure de départ', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.departureTime, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'required': 'required',
+                                        'placeholder': 'HH:MM',
+                                        'pattern': '[0-2][0-9]:[0-5][0-9]'
+                                    }
+                                }) }}
+                                {{ form_errors(form.departureTime, {'attr': {'class': 'text-danger'}}) }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.arrivalDate, 'Date d\'arrivée', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.arrivalDate, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'required': 'required',
+                                        'type': 'date',
+                                        'min': 'now'|date('Y-m-d')
+                                    }
+                                }) }}
+                                {{ form_errors(form.arrivalDate, {'attr': {'class': 'text-danger'}}) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.arrivalTime, 'Heure d\'arrivée', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.arrivalTime, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'required': 'required',
+                                        'placeholder': 'HH:MM',
+                                        'pattern': '[0-2][0-9]:[0-5][0-9]'
+                                    }
+                                }) }}
+                                {{ form_errors(form.arrivalTime, {'attr': {'class': 'text-danger'}}) }}
                             </div>
                         </div>
                     </div>
@@ -46,20 +112,71 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 {{ form_label(form.ticketClass, 'Classe', {'label_attr': {'class': 'form-label'}}) }}
-                                {{ form_widget(form.ticketClass, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_widget(form.ticketClass, {'attr': {'class': 'form-select', 'required': 'required'}}) }}
+                                {{ form_errors(form.ticketClass, {'attr': {'class': 'text-danger'}}) }}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 {{ form_label(form.price, 'Prix (€)', {'label_attr': {'class': 'form-label'}}) }}
-                                {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_widget(form.price, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'required': 'required',
+                                        'step': '0.01',
+                                        'min': '0.01'
+                                    }
+                                }) }}
+                                {{ form_errors(form.price, {'attr': {'class': 'text-danger'}}) }}
                             </div>
                         </div>
                     </div>
                     
                     <div class="mb-3">
+                        {{ form_label(form.ticketType, 'Type de ticket', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.ticketType, {'attr': {'class': 'form-select', 'required': 'required'}}) }}
+                        {{ form_errors(form.ticketType, {'attr': {'class': 'text-danger'}}) }}
+                    </div>
+                    
+                    <div class="mb-3">
                         {{ form_label(form.imageAirline, 'Logo compagnie', {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.imageAirline, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_widget(form.imageAirline, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                        {{ form_errors(form.imageAirline, {'attr': {'class': 'text-danger'}}) }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.cityImage, 'Image de la ville', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.cityImage, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                        {{ form_errors(form.cityImage, {'attr': {'class': 'text-danger'}}) }}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.agencyId, 'ID Agence', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.agencyId, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'required': 'required',
+                                        'min': '1'
+                                    }
+                                }) }}
+                                {{ form_errors(form.agencyId, {'attr': {'class': 'text-danger'}}) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.promotionId, 'ID Promotion', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.promotionId, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'required': 'required',
+                                        'min': '0'
+                                    }
+                                }) }}
+                                {{ form_errors(form.promotionId, {'attr': {'class': 'text-danger'}}) }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -70,11 +187,26 @@
                 <a href="{{ path('app_tickets_index') }}" class="btn btn-outline-secondary">
                     <i class="fas fa-times"></i> Annuler
                 </a>
-                <button class="btn btn-primary">
+                <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
                 </button>
             </div>
         </div>
     </div>
     {{ form_end(form) }}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.needs-validation');
+            if (form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            }
+        });
+    </script>
 </div>

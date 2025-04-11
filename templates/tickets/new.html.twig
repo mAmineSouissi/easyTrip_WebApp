@@ -3,9 +3,21 @@
 {% block title %}New Tickets{% endblock %}
 
 {% block body %}
-    <h1>Create new Tickets</h1>
+    <div class="container mt-5">
+        <h1>Create New Ticket</h1>
 
-    {{ include('tickets/_form.html.twig') }}
+        {% if form is defined and form.vars.errors|length > 0 %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for error in form.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
 
-    <a href="{{ path('app_tickets_index') }}">back to list</a>
+        {{ include('tickets/_form.html.twig', {'button_label': 'Create'}) }}
+
+        <a href="{{ path('app_tickets_index') }}" class="btn btn-secondary mt-3">Back to list</a>
+    </div>
 {% endblock %}
