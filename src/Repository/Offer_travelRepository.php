@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\Offer_travel;
+use App\Entity\OfferTravel;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -10,8 +10,6 @@ class Offer_travelRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Offer_travel::class);
+        parent::__construct($registry, OfferTravel::class);
     }
-
-    // Add custom methods as needed
 }

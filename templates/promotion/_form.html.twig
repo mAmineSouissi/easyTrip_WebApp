@@ -1,0 +1,49 @@
+{{ form_start(form, {'attr': {'id': 'promotion-form', 'class': 'promotion-form', 'novalidate': 'novalidate'}}) }}
+    <div class="form-group">
+        {{ form_label(form.title) }}
+        {{ form_widget(form.title, {'attr': {'class': 'form-control' ~ (form.title.vars.errors|length ? ' is-invalid' : '')}}) }}
+        <div class="invalid-feedback">
+            {{ form_errors(form.title) }}
+        </div>
+        <div class="valid-feedback">
+            Titre valide
+        </div>
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description, {'attr': {'class': 'form-control' ~ (form.description.vars.errors|length ? ' is-invalid' : '')}}) }}
+        <div class="invalid-feedback">
+            {{ form_errors(form.description) }}
+        </div>
+        <div class="valid-feedback">
+            Description valide
+        </div>
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.discount_percentage) }}
+        {{ form_widget(form.discount_percentage, {'attr': {'class': 'form-control' ~ (form.discount_percentage.vars.errors|length ? ' is-invalid' : '')}}) }}
+        <div class="invalid-feedback">
+            {{ form_errors(form.discount_percentage) }}
+        </div>
+        <div class="valid-feedback">
+            Pourcentage valide
+        </div>
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.valid_until) }}
+        {{ form_widget(form.valid_until, {'attr': {'class': 'form-control' ~ (form.valid_until.vars.errors|length ? ' is-invalid' : '')}}) }}
+        <div class="invalid-feedback">
+            {{ form_errors(form.valid_until) }}
+        </div>
+        <div class="valid-feedback">
+            Date valide
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
+    </button>
+{{ form_end(form) }}

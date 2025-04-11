@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}OfferTravel{% endblock %}
+
+{% block body %}
+    <h1>OfferTravel</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ offer_travel.id }}</td>
+            </tr>
+            <tr>
+                <th>Departure</th>
+                <td>{{ offer_travel.departure }}</td>
+            </tr>
+            <tr>
+                <th>Destination</th>
+                <td>{{ offer_travel.destination }}</td>
+            </tr>
+            <tr>
+                <th>Departure_date</th>
+                <td>{{ offer_travel.departureDate ? offer_travel.departureDate|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Arrival_date</th>
+                <td>{{ offer_travel.arrivalDate ? offer_travel.arrivalDate|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Hotel_name</th>
+                <td>{{ offer_travel.hotelName }}</td>
+            </tr>
+            <tr>
+                <th>Discription</th>
+                <td>{{ offer_travel.discription }}</td>
+            </tr>
+            <tr>
+                <th>Category</th>
+                <td>{{ offer_travel.category }}</td>
+            </tr>
+            <tr>
+                <th>Price</th>
+                <td>{{ offer_travel.price }}</td>
+            </tr>
+            <tr>
+                <th>Image</th>
+                <td>{{ offer_travel.image }}</td>
+            </tr>
+            <tr>
+                <th>Flight_name</th>
+                <td>{{ offer_travel.flightName }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_offer_travel_index') }}">back to list</a>
+
+    <a href="{{ path('app_offer_travel_edit', {'id': offer_travel.id}) }}">edit</a>
+
+    {{ include('offer_travel/_delete_form.html.twig') }}
+{% endblock %}

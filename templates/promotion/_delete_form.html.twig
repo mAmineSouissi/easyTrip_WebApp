@@ -1,0 +1,31 @@
+{# Inclure SweetAlert2 directement dans ce template #}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<form method="post" action="{{ path('app_promotion_delete', {'id': promotion.id}) }}" onsubmit="return confirmDelete(event, this)" style="display: inline-block;">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ promotion.id) }}">
+    <button type="submit" class="{{ button_style|default('btn btn-danger') }}">
+        <i class="{{ button_icon|default('fas fa-trash') }}"></i> {{ button_label|default('Supprimer') }}
+    </button>
+</form>
+
+<script>
+    function confirmDelete(event, form) {
+        event.preventDefault();
+        Swal.fire({
+            title: 'Êtes-vous sûr ?',
+            text: "Vous ne pourrez pas annuler cette action !",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Oui, supprimer !',
+            cancelButtonText: 'Annuler'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+        return false;
+    }
+</script>

@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}OfferTravel index{% endblock %}
+
+{% block body %}
+    <h1>OfferTravel index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Departure</th>
+                <th>Destination</th>
+                <th>Departure_date</th>
+                <th>Arrival_date</th>
+                <th>Hotel_name</th>
+                <th>Discription</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Image</th>
+                <th>Flight_name</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for offer_travel in offer_travels %}
+            <tr>
+                <td>{{ offer_travel.id }}</td>
+                <td>{{ offer_travel.departure }}</td>
+                <td>{{ offer_travel.destination }}</td>
+                <td>{{ offer_travel.departureDate ? offer_travel.departureDate|date('Y-m-d') : '' }}</td>
+                <td>{{ offer_travel.arrivalDate ? offer_travel.arrivalDate|date('Y-m-d') : '' }}</td>
+                <td>{{ offer_travel.hotelName }}</td>
+                <td>{{ offer_travel.discription }}</td>
+                <td>{{ offer_travel.category }}</td>
+                <td>{{ offer_travel.price }}</td>
+                <td>{{ offer_travel.image }}</td>
+                <td>{{ offer_travel.flightName }}</td>
+                <td>
+                    <a href="{{ path('app_offer_travel_show', {'id': offer_travel.id}) }}">show</a>
+                    <a href="{{ path('app_offer_travel_edit', {'id': offer_travel.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="12">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_offer_travel_new') }}">Create new</a>
+{% endblock %}
