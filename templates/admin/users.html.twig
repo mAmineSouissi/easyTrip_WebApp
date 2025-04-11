@@ -65,35 +65,48 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="id" id="user-id">
+
                     <div class="mb-3">
                         <label for="user-name" class="form-label">Name</label>
                         <input type="text" class="form-control" id="user-name" name="name" required>
+                        <div class="form-text text-muted">Enter the user's first name.</div>
                     </div>
+
                     <div class="mb-3">
                         <label for="user-surname" class="form-label">Surname</label>
                         <input type="text" class="form-control" id="user-surname" name="surname" required>
+                        <div class="form-text text-muted">Enter the user's last name.</div>
                     </div>
+
                     <div class="mb-3">
                         <label for="user-email" class="form-label">Email</label>
                         <input type="email" class="form-control" id="user-email" name="email" required>
+                        <div class="form-text text-muted">Provide a valid email address (e.g., example@domain.com).</div>
                     </div>
+
                     <div class="mb-3">
                         <label for="user-phone" class="form-label">Phone</label>
                         <input type="text" class="form-control" id="user-phone" name="phone" required>
+                        <div class="form-text text-muted">Include the phone number with area code.</div>
                     </div>
+
                     <div class="mb-3">
                         <label for="user-address" class="form-label">Address</label>
                         <input type="text" class="form-control" id="user-address" name="address" required>
+                        <div class="form-text text-muted">Enter the user's full address (street, city, etc.).</div>
                     </div>
+
                     <div class="mb-3">
                         <label for="user-role" class="form-label">Role</label>
-                            <select class="form-select" id="user-role" name="role" required>
-                                <option value="Agent">Agent</option>
-                                <option value="Admin">Admin</option>
-                                <option value="Client">Client</option>
-                            </select>
+                        <select class="form-select" id="user-role" name="role" required>
+                            <option value="Agent">Agent</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Client">Client</option>
+                        </select>
+                        <div class="form-text text-muted">Select the appropriate user role.</div>
                     </div>
                 </div>
+
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
@@ -101,6 +114,7 @@
         </div>
     </div>
 </div>
+
 
 {% endblock %}
 
@@ -121,7 +135,7 @@
                 $('#user-role').val(user.role);
                 $('#user-surname').val(user.surname);
                 $('#user-phone').val(user.phone);
-                $('#user-address').val(user.addresse);
+                $('#user-address').val(user.address);
                 $('#userModalLabel').text('Edit User');
                 $('#userModal').modal('show');
             });
