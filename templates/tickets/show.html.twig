@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails du Ticket #{{ ticket.idTicket }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="h4 mb-0">
+                    <i class="fas fa-ticket-alt text-primary"></i> Détails du Ticket
+                </h2>
+                <div>
+                    <a href="{{ path('app_tickets_index') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Retour
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    {% if ticket.imageAirline %}
+                    <img src="{{ asset('uploads/airlines/' ~ ticket.imageAirline) }}" 
+                         alt="{{ ticket.airline }}" 
+                         class="img-fluid rounded mb-3" 
+                         style="max-height: 150px;">
+                    {% endif %}
+                    <h3>{{ ticket.airline }}</h3>
+                    <p class="text-muted">Vol #{{ ticket.flightNumber }}</p>
+                </div>
+                
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4 class="border-bottom pb-2">Informations de vol</h4>
+                            <div class="mb-3">
+                                <h5>Départ</h5>
+                                <p>
+                                    <i class="fas fa-plane-departure text-primary"></i> 
+                                    {{ ticket.departureCity }}<br>
+                                    <small class="text-muted">{{ ticket.departureDate|date('l d F Y') }}</small><br>
+                                    {{ ticket.departureTime }}
+                                </p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h5>Arrivée</h5>
+                                <p>
+                                    <i class="fas fa-plane-arrival text-success"></i> 
+                                    {{ ticket.arrivalCity }}<br>
+                                    <small class="text-muted">{{ ticket.arrivalDate|date('l d F Y') }}</small><br>
+                                    {{ ticket.arrivalTime }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h4 class="border-bottom pb-2">Détails du ticket</h4>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Classe:</span>
+                                    <span class="badge bg-{{ ticket.ticketClass == 'First' ? 'primary' : 'success' }}">
+                                        {{ ticket.ticketClass }}
+                                    </span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Type:</span>
+                                    <span>{{ ticket.ticketType }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Prix:</span>
+                                    <span class="fw-bold">{{ ticket.price }} €</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-footer bg-white">
+            <div class="d-flex justify-content-end">
+                <a href="{{ path('app_tickets_edit', {'idTicket': ticket.idTicket}) }}" 
+                   class="btn btn-primary me-2">
+                    <i class="fas fa-edit"></i> Modifier
+                </a>
+                {{ include('tickets/_delete_form.html.twig') }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

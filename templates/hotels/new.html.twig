@@ -1,0 +1,97 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter un nouvel hôtel{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">
+                            <i class="fas fa-plus-circle me-2"></i>Ajouter un nouvel hôtel
+                        </h3>
+                        <a href="{{ path('app_hotels_index') }}" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-left me-1"></i> Retour
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form_row(form.name, {
+                                'label': 'Nom de l\'hôtel',
+                                'attr': {'class': 'form-control', 'placeholder': 'Entrez le nom'}
+                            }) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.rating, {
+                                'label': 'Note (1-5)',
+                                'attr': {'class': 'form-control', 'min': 1, 'max': 5}
+                            }) }}
+                        </div>
+                        
+                        <div class="col-12">
+                            {{ form_row(form.adresse, {
+                                'label': 'Adresse complète',
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            {{ form_row(form.city, {
+                                'label': 'Ville',
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.price, {
+                                'label': 'Prix/nuit (€)',
+                                'attr': {'class': 'form-control', 'step': '0.01'}
+                            }) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.num_room, {
+                                'label': 'Nombre de chambres',
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {{ form_row(form.type_room, {
+                                'label': 'Type de chambre',
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.image, {
+                                'label': 'Image (URL)',
+                                'attr': {'class': 'form-control', 'placeholder': 'https://...'}
+                            }) }}
+                        </div>
+                        
+                        <div class="col-12">
+                            {{ form_row(form.description, {
+                                'label': 'Description',
+                                'attr': {'class': 'form-control', 'rows': 4}
+                            }) }}
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-save me-2"></i>Enregistrer
+                        </button>
+                    </div>
+                    
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

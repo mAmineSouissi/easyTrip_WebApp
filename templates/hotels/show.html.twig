@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails - {{ hotel.name }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="h4 mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Détails de l'hôtel
+                </h2>
+                <div>
+                    <a href="{{ path('app_hotels_index') }}" class="btn btn-sm btn-light">
+                        <i class="fas fa-arrow-left me-1"></i> Retour
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <h3 class="text-primary">{{ hotel.name }}</h3>
+                        <div class="text-muted mb-2">
+                            <i class="fas fa-map-marker-alt me-1"></i> 
+                            {{ hotel.adresse }}, {{ hotel.city }}
+                        </div>
+                        <div class="mb-3">
+                            {% for i in 1..5 %}
+                                <i class="fas fa-star{{ i > hotel.rating ? '-alt' : '' }} text-warning"></i>
+                            {% endfor %}
+                            <span class="ms-2">{{ hotel.rating }}/5</span>
+                        </div>
+                        <p class="lead">{{ hotel.description }}</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Informations</h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Type de chambre:</span>
+                                    <strong>{{ hotel.typeRoom }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Nombre de chambres:</span>
+                                    <strong>{{ hotel.numRoom }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Prix/nuit:</span>
+                                    <strong>{{ hotel.price }}</strong>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end">
+                <a href="{{ path('app_hotels_edit', {'id_hotel': hotel.idHotel}) }}" 
+                   class="btn btn-warning me-2">
+                    <i class="fas fa-edit me-1"></i> Modifier
+                </a>
+                {{ include('hotels/_delete_form.html.twig') }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

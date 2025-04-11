@@ -4,115 +4,116 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-use App\Entity\Hotels;
-
 #[ORM\Entity]
 class Webinaire
 {
-
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
-    private int $id;
+    private ?int $id = null;
 
-        #[ORM\ManyToOne(targetEntity: Hotels::class, inversedBy: "webinaires")]
-    #[ORM\JoinColumn(name: 'hotel_id', referencedColumnName: 'id_hotel', onDelete: 'CASCADE')]
-    private Hotels $hotel_id;
+    #[ORM\ManyToOne(targetEntity: Hotels::class, inversedBy: "webinaires")]
+    #[ORM\JoinColumn(name: "hotel_id", referencedColumnName: "id_hotel")]
+    private ?Hotels $hotel = null;
 
     #[ORM\Column(type: "string", length: 255)]
-    private string $title;
+    private ?string $title = null;
 
     #[ORM\Column(type: "text")]
-    private string $description;
+    private ?string $description = null;
 
     #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $debutDateTime;
+    private ?\DateTimeInterface $debutDateTime = null;
 
     #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $finitDateTime;
+    private ?\DateTimeInterface $finitDateTime = null;
 
     #[ORM\Column(type: "string", length: 255)]
-    private string $link;
+    private ?string $link = null;
 
     #[ORM\Column(type: "string", length: 255)]
-    private string $room_id;
+    private ?string $room_id = null;
 
-    public function getId()
+    // Getters et Setters
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId($value)
+    public function getHotel(): ?Hotels
     {
-        $this->id = $value;
+        return $this->hotel;
     }
 
-    public function getHotel_id()
+    public function setHotel(?Hotels $hotel): self
     {
-        return $this->hotel_id;
+        $this->hotel = $hotel;
+        return $this;
     }
 
-    public function setHotel_id($value)
-    {
-        $this->hotel_id = $value;
-    }
-
-    public function getTitle()
+    public function getTitle(): ?string
     {
         return $this->title;
     }
 
-    public function setTitle($value)
+    public function setTitle(string $title): self
     {
-        $this->title = $value;
+        $this->title = $title;
+        return $this;
     }
 
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function setDescription($value)
+    public function setDescription(string $description): self
     {
-        $this->description = $value;
+        $this->description = $description;
+        return $this;
     }
 
-    public function getDebutDateTime()
+    public function getDebutDateTime(): ?\DateTimeInterface
     {
         return $this->debutDateTime;
     }
 
-    public function setDebutDateTime($value)
+    public function setDebutDateTime(\DateTimeInterface $debutDateTime): self
     {
-        $this->debutDateTime = $value;
+        $this->debutDateTime = $debutDateTime;
+        return $this;
     }
 
-    public function getFinitDateTime()
+    public function getFinitDateTime(): ?\DateTimeInterface
     {
         return $this->finitDateTime;
     }
 
-    public function setFinitDateTime($value)
+    public function setFinitDateTime(\DateTimeInterface $finitDateTime): self
     {
-        $this->finitDateTime = $value;
+        $this->finitDateTime = $finitDateTime;
+        return $this;
     }
 
-    public function getLink()
+    public function getLink(): ?string
     {
         return $this->link;
     }
 
-    public function setLink($value)
+    public function setLink(string $link): self
     {
-        $this->link = $value;
+        $this->link = $link;
+        return $this;
     }
 
-    public function getRoom_id()
+    public function getRoomId(): ?string
     {
         return $this->room_id;
     }
 
-    public function setRoom_id($value)
+    public function setRoomId(string $room_id): self
     {
-        $this->room_id = $value;
+        $this->room_id = $room_id;
+        return $this;
     }
 }

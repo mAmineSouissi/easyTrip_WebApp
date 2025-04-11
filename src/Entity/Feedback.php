@@ -36,15 +36,6 @@ class Feedback
         $this->id = $value;
     }
 
-    public function getUserId()
-    {
-        return $this->userId;
-    }
-
-    public function setUserId($value)
-    {
-        $this->userId = $value;
-    }
 
     public function getOfferId()
     {

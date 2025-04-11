@@ -3,209 +3,211 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-
 use Doctrine\Common\Collections\Collection;
-use App\Entity\Webinaire;
+use Doctrine\Common\Collections\ArrayCollection;
 
 #[ORM\Entity]
 class Hotels
 {
-
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
-    private int $id_hotel;
-
-    
-    #[ORM\Column(type: "string", length: 255)]
-    private string $name;
+    private ?int $id_hotel = null;
 
     #[ORM\Column(type: "string", length: 255)]
-    private string $adresse;
+    private ?string $name = null;
 
     #[ORM\Column(type: "string", length: 255)]
-    private string $city;
+    private ?string $adresse = null;
+
+    #[ORM\Column(type: "string", length: 255)]
+    private ?string $city = null;
 
     #[ORM\Column(type: "integer")]
-    private int $rating;
+    private ?int $rating = null;
 
     #[ORM\Column(type: "text")]
-    private string $description;
+    private ?string $description = null;
 
     #[ORM\Column(type: "float")]
-    private float $price;
+    private ?float $price = null;
 
     #[ORM\Column(type: "string", length: 255)]
-    private string $type_room;
+    private ?string $type_room = null;
 
     #[ORM\Column(type: "integer")]
-    private int $num_room;
+    private ?int $num_room = null;
 
     #[ORM\Column(type: "string", length: 255)]
-    private string $image;
+    private ?string $image = null;
 
     #[ORM\Column(type: "integer")]
-    private int $promotion_id;
+    private ?int $promotion_id = null;
 
     #[ORM\Column(type: "integer")]
-    private int $agency_id;
+    private ?int $agency_id = null;
 
-    public function getId_hotel()
+    #[ORM\OneToMany(mappedBy: "hotel", targetEntity: Webinaire::class)]
+    private Collection $webinaires;
+
+    public function __construct()
+    {
+        $this->webinaires = new ArrayCollection();
+    }
+
+    public function getIdHotel(): ?int
     {
         return $this->id_hotel;
     }
 
-    public function setId_hotel($value)
-    {
-        $this->id_hotel = $value;
-    }
-
-    public function getUser_id()
-    {
-        return $this->user_id;
-    }
-
-    public function setUser_id($value)
-    {
-        $this->user_id = $value;
-    }
-
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function setName($value)
+    public function setName(string $name): self
     {
-        $this->name = $value;
+        $this->name = $name;
+        return $this;
     }
 
-    public function getAdresse()
+    public function getAdresse(): ?string
     {
         return $this->adresse;
     }
 
-    public function setAdresse($value)
+    public function setAdresse(string $adresse): self
     {
-        $this->adresse = $value;
+        $this->adresse = $adresse;
+        return $this;
     }
 
-    public function getCity()
+    public function getCity(): ?string
     {
         return $this->city;
     }
 
-    public function setCity($value)
+    public function setCity(string $city): self
     {
-        $this->city = $value;
+        $this->city = $city;
+        return $this;
     }
 
-    public function getRating()
+    public function getRating(): ?int
     {
         return $this->rating;
     }
 
-    public function setRating($value)
+    public function setRating(int $rating): self
     {
-        $this->rating = $value;
+        $this->rating = $rating;
+        return $this;
     }
 
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function setDescription($value)
+    public function setDescription(string $description): self
     {
-        $this->description = $value;
+        $this->description = $description;
+        return $this;
     }
 
-    public function getPrice()
+    public function getPrice(): ?float
     {
         return $this->price;
     }
 
-    public function setPrice($value)
+    public function setPrice(float $price): self
     {
-        $this->price = $value;
+        $this->price = $price;
+        return $this;
     }
 
-    public function getType_room()
+    public function getTypeRoom(): ?string
     {
         return $this->type_room;
     }
 
-    public function setType_room($value)
+    public function setTypeRoom(string $type_room): self
     {
-        $this->type_room = $value;
+        $this->type_room = $type_room;
+        return $this;
     }
 
-    public function getNum_room()
+    public function getNumRoom(): ?int
     {
         return $this->num_room;
     }
 
-    public function setNum_room($value)
+    public function setNumRoom(int $num_room): self
     {
-        $this->num_room = $value;
+        $this->num_room = $num_room;
+        return $this;
     }
 
-    public function getImage()
+    public function getImage(): ?string
     {
         return $this->image;
     }
 
-    public function setImage($value)
+    public function setImage(string $image): self
     {
-        $this->image = $value;
+        $this->image = $image;
+        return $this;
     }
 
-    public function getPromotion_id()
+    public function getPromotionId(): ?int
     {
         return $this->promotion_id;
     }
 
-    public function setPromotion_id($value)
+    public function setPromotionId(int $promotion_id): self
     {
-        $this->promotion_id = $value;
+        $this->promotion_id = $promotion_id;
+        return $this;
     }
 
-    public function getAgency_id()
+    public function getAgencyId(): ?int
     {
         return $this->agency_id;
     }
 
-    public function setAgency_id($value)
+    public function setAgencyId(int $agency_id): self
     {
-        $this->agency_id = $value;
+        $this->agency_id = $agency_id;
+        return $this;
     }
 
-    #[ORM\OneToMany(mappedBy: "hotel_id", targetEntity: Webinaire::class)]
-    private Collection $webinaires;
+    /**
+     * @return Collection<int, Webinaire>
+     */
+    public function getWebinaires(): Collection
+    {
+        return $this->webinaires;
+    }
 
-        public function getWebinaires(): Collection
-        {
-            return $this->webinaires;
+    public function addWebinaire(Webinaire $webinaire): self
+    {
+        if (!$this->webinaires->contains($webinaire)) {
+            $this->webinaires->add($webinaire);
+            $webinaire->setHotel($this);
         }
-    
-        public function addWebinaire(Webinaire $webinaire): self
-        {
-            if (!$this->webinaires->contains($webinaire)) {
-                $this->webinaires[] = $webinaire;
-                $webinaire->setHotel_id($this);
+
+        return $this;
+    }
+
+    public function removeWebinaire(Webinaire $webinaire): self
+    {
+        if ($this->webinaires->removeElement($webinaire)) {
+            // set the owning side to null (unless already changed)
+            if ($webinaire->getHotel() === $this) {
+                $webinaire->setHotel(null);
             }
-    
-            return $this;
         }
-    
-        public function removeWebinaire(Webinaire $webinaire): self
-        {
-            if ($this->webinaires->removeElement($webinaire)) {
-                // set the owning side to null (unless already changed)
-                if ($webinaire->getHotel_id() === $this) {
-                    $webinaire->setHotel_id(null);
-                }
-            }
-    
-            return $this;
-        }
+
+        return $this;
+    }
 }

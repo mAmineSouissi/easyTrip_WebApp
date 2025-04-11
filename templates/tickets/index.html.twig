@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Tickets{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-4">🎫 Liste des Tickets</h1>
+        <a href="{{ path('app_tickets_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nouveau Ticket
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Compagnie</th>
+                            <th>Trajet</th>
+                            <th>Date/Heure</th>
+                            <th>Classe</th>
+                            <th>Prix</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for ticket in tickets %}
+                        <tr>
+                            <td>#{{ ticket.idTicket }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if ticket.imageAirline %}
+                                    <img src="{{ asset('uploads/airlines/' ~ ticket.imageAirline) }}" 
+                                         alt="{{ ticket.airline }}" 
+                                         class="rounded-circle me-2" 
+                                         width="30" height="30">
+                                    {% endif %}
+                                    {{ ticket.airline }}
+                                </div>
+                            </td>
+                            <td>
+                                <strong>{{ ticket.departureCity }}</strong>
+                                <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                                <strong>{{ ticket.arrivalCity }}</strong>
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ ticket.departureDate|date('d M Y') }}</small><br>
+                                {{ ticket.departureTime }} → {{ ticket.arrivalTime }}
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ ticket.ticketClass == 'First' ? 'primary' : 'success' }}">
+                                    {{ ticket.ticketClass }}
+                                </span>
+                            </td>
+                            <td class="fw-bold">{{ ticket.price }} €</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ path('app_tickets_show', {'idTicket': ticket.idTicket}) }}" 
+                                       class="btn btn-sm btn-outline-primary"
+                                       data-bs-toggle="tooltip" title="Voir">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ path('app_tickets_edit', {'idTicket': ticket.idTicket}) }}" 
+                                       class="btn btn-sm btn-outline-secondary"
+                                       data-bs-toggle="tooltip" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {{ include('tickets/_delete_form.html.twig') }}
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+                                <p class="h5">Aucun ticket trouvé</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+// Activation des tooltips Bootstrap
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+});
+</script>
+{% endblock %}

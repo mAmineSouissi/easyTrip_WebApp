@@ -39,16 +39,7 @@ class Agency
         $this->id = $value;
     }
 
-    public function getUser_id()
-    {
-        return $this->user_id;
-    }
-
-    public function setUser_id($value)
-    {
-        $this->user_id = $value;
-    }
-
+ 
     public function getName()
     {
         return $this->name;

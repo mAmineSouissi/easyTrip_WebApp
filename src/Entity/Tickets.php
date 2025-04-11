@@ -4,228 +4,227 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: "App\Repository\TicketsRepository")]
 class Tickets
 {
-
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
-    private int $id_ticket;
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $idTicket = null;
 
-    
-    #[ORM\Column(type: "integer")]
-    private int $flight_number;
+    #[ORM\Column(type: 'integer')]
+    private int $flightNumber;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: 'string', length: 255)]
     private string $airline;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $departure_city;
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $departureCity;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $arrival_city;
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $arrivalCity;
 
-    #[ORM\Column(type: "date")]
-    private \DateTimeInterface $departure_date;
+    #[ORM\Column(type: 'date')]
+    private \DateTimeInterface $departureDate;
 
-    #[ORM\Column(type: "string")]
-    private string $departure_time;
+    #[ORM\Column(type: 'string', length: 8)]
+    private string $departureTime;
 
-    #[ORM\Column(type: "date")]
-    private \DateTimeInterface $arrival_date;
+    #[ORM\Column(type: 'date')]
+    private \DateTimeInterface $arrivalDate;
 
-    #[ORM\Column(type: "string")]
-    private string $arrival_time;
+    #[ORM\Column(type: 'string', length: 8)]
+    private string $arrivalTime;
 
-    #[ORM\Column(type: "string", length: 50)]
-    private string $ticket_class;
+    #[ORM\Column(type: 'string', length: 50)]
+    private string $ticketClass;
 
-    #[ORM\Column(type: "float")]
+    #[ORM\Column(type: 'float')]
     private float $price;
 
-    #[ORM\Column(type: "string", length: 50)]
-    private string $ticket_type;
+    #[ORM\Column(type: 'string', length: 50)]
+    private string $ticketType;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $image_airline;
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $imageAirline;
 
-    #[ORM\Column(type: "string", length: 1000)]
-    private string $city_image;
+    #[ORM\Column(type: 'string', length: 1000)]
+    private string $cityImage;
 
-    #[ORM\Column(type: "integer")]
-    private int $agency_id;
+    #[ORM\Column(type: 'integer')]
+    private int $agencyId;
 
-    #[ORM\Column(type: "integer")]
-    private int $promotion_id;
+    #[ORM\Column(type: 'integer')]
+    private int $promotionId;
 
-    public function getId_ticket()
+    // Getters and Setters
+    public function getIdTicket(): ?int
     {
-        return $this->id_ticket;
+        return $this->idTicket;
     }
 
-    public function setId_ticket($value)
+    public function getFlightNumber(): int
     {
-        $this->id_ticket = $value;
+        return $this->flightNumber;
     }
 
-    public function getUser_id()
+    public function setFlightNumber(int $flightNumber): self
     {
-        return $this->user_id;
+        $this->flightNumber = $flightNumber;
+        return $this;
     }
 
-    public function setUser_id($value)
-    {
-        $this->user_id = $value;
-    }
-
-    public function getFlight_number()
-    {
-        return $this->flight_number;
-    }
-
-    public function setFlight_number($value)
-    {
-        $this->flight_number = $value;
-    }
-
-    public function getAirline()
+    public function getAirline(): string
     {
         return $this->airline;
     }
 
-    public function setAirline($value)
+    public function setAirline(string $airline): self
     {
-        $this->airline = $value;
+        $this->airline = $airline;
+        return $this;
     }
 
-    public function getDeparture_city()
+    public function getDepartureCity(): string
     {
-        return $this->departure_city;
+        return $this->departureCity;
     }
 
-    public function setDeparture_city($value)
+    public function setDepartureCity(string $departureCity): self
     {
-        $this->departure_city = $value;
+        $this->departureCity = $departureCity;
+        return $this;
     }
 
-    public function getArrival_city()
+    public function getArrivalCity(): string
     {
-        return $this->arrival_city;
+        return $this->arrivalCity;
     }
 
-    public function setArrival_city($value)
+    public function setArrivalCity(string $arrivalCity): self
     {
-        $this->arrival_city = $value;
+        $this->arrivalCity = $arrivalCity;
+        return $this;
     }
 
-    public function getDeparture_date()
+    public function getDepartureDate(): \DateTimeInterface
     {
-        return $this->departure_date;
+        return $this->departureDate;
     }
 
-    public function setDeparture_date($value)
+    public function setDepartureDate(\DateTimeInterface $departureDate): self
     {
-        $this->departure_date = $value;
+        $this->departureDate = $departureDate;
+        return $this;
     }
 
-    public function getDeparture_time()
+    public function getDepartureTime(): string
     {
-        return $this->departure_time;
+        return $this->departureTime;
     }
 
-    public function setDeparture_time($value)
+    public function setDepartureTime(string $departureTime): self
     {
-        $this->departure_time = $value;
+        $this->departureTime = $departureTime;
+        return $this;
     }
 
-    public function getArrival_date()
+    public function getArrivalDate(): \DateTimeInterface
     {
-        return $this->arrival_date;
+        return $this->arrivalDate;
     }
 
-    public function setArrival_date($value)
+    public function setArrivalDate(\DateTimeInterface $arrivalDate): self
     {
-        $this->arrival_date = $value;
+        $this->arrivalDate = $arrivalDate;
+        return $this;
     }
 
-    public function getArrival_time()
+    public function getArrivalTime(): string
     {
-        return $this->arrival_time;
+        return $this->arrivalTime;
     }
 
-    public function setArrival_time($value)
+    public function setArrivalTime(string $arrivalTime): self
     {
-        $this->arrival_time = $value;
+        $this->arrivalTime = $arrivalTime;
+        return $this;
     }
 
-    public function getTicket_class()
+    public function getTicketClass(): string
     {
-        return $this->ticket_class;
+        return $this->ticketClass;
     }
 
-    public function setTicket_class($value)
+    public function setTicketClass(string $ticketClass): self
     {
-        $this->ticket_class = $value;
+        $this->ticketClass = $ticketClass;
+        return $this;
     }
 
-    public function getPrice()
+    public function getPrice(): float
     {
         return $this->price;
     }
 
-    public function setPrice($value)
+    public function setPrice(float $price): self
     {
-        $this->price = $value;
+        $this->price = $price;
+        return $this;
     }
 
-    public function getTicket_type()
+    public function getTicketType(): string
     {
-        return $this->ticket_type;
+        return $this->ticketType;
     }
 
-    public function setTicket_type($value)
+    public function setTicketType(string $ticketType): self
     {
-        $this->ticket_type = $value;
+        $this->ticketType = $ticketType;
+        return $this;
     }
 
-    public function getImage_airline()
+    public function getImageAirline(): string
     {
-        return $this->image_airline;
+        return $this->imageAirline;
     }
 
-    public function setImage_airline($value)
+    public function setImageAirline(string $imageAirline): self
     {
-        $this->image_airline = $value;
+        $this->imageAirline = $imageAirline;
+        return $this;
     }
 
-    public function getCity_image()
+    public function getCityImage(): string
     {
-        return $this->city_image;
+        return $this->cityImage;
     }
 
-    public function setCity_image($value)
+    public function setCityImage(string $cityImage): self
     {
-        $this->city_image = $value;
+        $this->cityImage = $cityImage;
+        return $this;
     }
 
-    public function getAgency_id()
+    public function getAgencyId(): int
     {
-        return $this->agency_id;
+        return $this->agencyId;
     }
 
-    public function setAgency_id($value)
+    public function setAgencyId(int $agencyId): self
     {
-        $this->agency_id = $value;
+        $this->agencyId = $agencyId;
+        return $this;
     }
 
-    public function getPromotion_id()
+    public function getPromotionId(): int
     {
-        return $this->promotion_id;
+        return $this->promotionId;
     }
 
-    public function setPromotion_id($value)
+    public function setPromotionId(int $promotionId): self
     {
-        $this->promotion_id = $value;
+        $this->promotionId = $promotionId;
+        return $this;
     }
 }
