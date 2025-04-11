@@ -7,10 +7,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Panier;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity]
 #[ORM\Table(name: "User")]
-class User implements PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
 
     #[ORM\Id]
@@ -72,9 +73,13 @@ class User implements PasswordAuthenticatedUserInterface
         $this->surname = $value;
     }
 
-    public function getPassword():?string
+    public function getPassword(): ?string
     {
         return $this->password;
+    }
+    public function getUserIdentifier(): string
+    {
+        return $this->email; 
     }
 
     public function setPassword($value)
@@ -122,10 +127,23 @@ class User implements PasswordAuthenticatedUserInterface
         $this->profilePhoto = $value;
     }
 
+    public function getRoles(): array
+    {
+        $role = strtoupper($this->role); 
+        $symfonyRole = 'ROLE_' . $role; 
+    
+        // Always add ROLE_USER as a default role
+        return array_unique([$symfonyRole, 'ROLE_USER']);
+    }
     public function getRole()
     {
         return $this->role;
     }
+    public function eraseCredentials()
+    {
+        // If you store any temporary sensitive data, clear it here
+    }
+    
 
     public function setRole($value)
     {
@@ -135,62 +153,62 @@ class User implements PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Reservation::class)]
     private Collection $reservations;
 
-        public function getReservations(): Collection
-        {
-            return $this->reservations;
+    public function getReservations(): Collection
+    {
+        return $this->reservations;
+    }
+
+    public function addReservation(Reservation $reservation): self
+    {
+        if (!$this->reservations->contains($reservation)) {
+            $this->reservations[] = $reservation;
+            $reservation->setUser_id($this);
         }
-    
-        public function addReservation(Reservation $reservation): self
-        {
-            if (!$this->reservations->contains($reservation)) {
-                $this->reservations[] = $reservation;
-                $reservation->setUser_id($this);
+
+        return $this;
+    }
+
+    public function removeReservation(Reservation $reservation): self
+    {
+        if ($this->reservations->removeElement($reservation)) {
+            // set the owning side to null (unless already changed)
+            if ($reservation->getUser_id() === $this) {
+                $reservation->setUser_id(null);
             }
-    
-            return $this;
         }
-    
-        public function removeReservation(Reservation $reservation): self
-        {
-            if ($this->reservations->removeElement($reservation)) {
-                // set the owning side to null (unless already changed)
-                if ($reservation->getUser_id() === $this) {
-                    $reservation->setUser_id(null);
-                }
-            }
-    
-            return $this;
-        }
+
+        return $this;
+    }
 
     #[ORM\OneToMany(mappedBy: "created_by", targetEntity: Survey::class)]
     private Collection $surveys;
 
-        public function getSurveys(): Collection
-        {
-            return $this->surveys;
+    public function getSurveys(): Collection
+    {
+        return $this->surveys;
+    }
+
+    public function addSurvey(Survey $survey): self
+    {
+        if (!$this->surveys->contains($survey)) {
+            $this->surveys[] = $survey;
+            $survey->setCreated_by($this);
         }
-    
-        public function addSurvey(Survey $survey): self
-        {
-            if (!$this->surveys->contains($survey)) {
-                $this->surveys[] = $survey;
-                $survey->setCreated_by($this);
+
+        return $this;
+    }
+
+    public function removeSurvey(Survey $survey): self
+    {
+        if ($this->surveys->removeElement($survey)) {
+            // set the owning side to null (unless already changed)
+            if ($survey->getCreated_by() === $this) {
+                $survey->setCreated_by(null);
             }
-    
-            return $this;
         }
-    
-        public function removeSurvey(Survey $survey): self
-        {
-            if ($this->surveys->removeElement($survey)) {
-                // set the owning side to null (unless already changed)
-                if ($survey->getCreated_by() === $this) {
-                    $survey->setCreated_by(null);
-                }
-            }
-    
-            return $this;
-        }
+
+        return $this;
+    }
 
     #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Panier::class)]
     private Collection $paniers;

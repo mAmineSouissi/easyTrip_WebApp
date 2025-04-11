@@ -4,8 +4,6 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\RegistrationType;
-use App\Repository\UserRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,7 +18,7 @@ class AuthController extends AbstractController
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         ManagerRegistry $doctrine
-        
+
     ): Response {
         $user = new User();
 
@@ -28,7 +26,7 @@ class AuthController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $em= $doctrine->getManager();
+            $em = $doctrine->getManager();
             $hashedPassword = $passwordHasher->hashPassword(
                 $user,
                 $form->get('password')->getData()
@@ -44,5 +42,20 @@ class AuthController extends AbstractController
         return $this->render('auth/register.html.twig', [
             'form' => $form->createView(),
         ]);
+    }
+    #[Route('/redirect', name: 'app_redirect_after_login')]
+    public function redirectAfterLogin(): Response
+    {
+        $user = $this->getUser();
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return $this->redirectToRoute('admin_dashboard');
+        }
+
+        if ($this->isGranted('ROLE_AGENT')) {
+            return $this->redirectToRoute('agent_dashboard');
+        }
+
+        return $this->redirectToRoute('app_home');
     }
 }
