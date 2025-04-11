@@ -59,6 +59,9 @@ class Tickets
     #[ORM\Column(type: "integer")]
     private int $promotion_id;
 
+    #[ORM\Column(type: "integer", nullable: true)]
+    private ?int $user_id = null;
+
     public function getId_ticket()
     {
         return $this->id_ticket;
