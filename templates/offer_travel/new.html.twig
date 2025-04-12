@@ -1,11 +1,219 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New OfferTravel{% endblock %}
+{% block title %}Nouvelle Offre de Voyage{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        .offer-form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        .form-title {
+            color: #2c3e50;
+            font-weight: 700;
+            margin: 0;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e1e5eb;
+            border-radius: 5px;
+        }
+        .form-control:focus {
+            border-color: #4361ee;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        .btn-submit {
+            background-color: #2dce89;
+            color: white;
+            padding: 0.875rem 1.75rem;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+        .btn-submit:hover {
+            background-color: #24b47e;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            color: #6c757d;
+            margin-top: 1.5rem;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            color: #4361ee;
+        }
+        .file-input-label {
+            display: inline-flex;
+            align-items: center;
+            background-color: #3498db;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+        .file-input-label:hover {
+            background-color: #2980b9;
+        }
+        .file-input-label i {
+            margin-right: 0.5rem;
+        }
+        #offer_travel_imageFile {
+            display: none;
+        }
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            display: none;
+            border-radius: 5px;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Create new OfferTravel</h1>
+<div class="offer-form-container">
+    <div class="form-header">
+        <h1 class="form-title">
+            <i class="fas fa-plane"></i> Créer une nouvelle offre
+        </h1>
+    </div>
 
-    {{ include('offer_travel/_form.html.twig') }}
+    {{ form_start(form, {'attr': {'id': 'create-offer-form'}}) }}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form_label(form.departure) }}
+                    {{ form_widget(form.departure, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.destination) }}
+                    {{ form_widget(form.destination, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.departure_date) }}
+                    {{ form_widget(form.departure_date, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.arrival_date) }}
+                    {{ form_widget(form.arrival_date, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form_label(form.hotel_name) }}
+                    {{ form_widget(form.hotel_name, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.category) }}
+                    {{ form_widget(form.category, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.price) }}
+                    {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.imageFile) }}
+                    <label for="offer_travel_imageFile" class="file-input-label">
+                        <i class="fas fa-image"></i> Choisir une image
+                    </label>
+                    {{ form_widget(form.imageFile) }}
+                    <img id="imagePreview" src="#" alt="Aperçu de l'image" class="image-preview">
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.flight_name) }}
+                    {{ form_widget(form.flight_name, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+        </div>
 
-    <a href="{{ path('app_offer_travel_index') }}">back to list</a>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form_label(form.agency) }}
+                    {{ form_widget(form.agency, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form_label(form.promotion) }}
+                    {{ form_widget(form.promotion, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.discription) }}
+            {{ form_widget(form.discription, {'attr': {'class': 'form-control', 'rows': 5}}) }}
+        </div>
+
+        <button type="submit" class="btn-submit">
+            <i class="fas fa-save"></i> Créer l'offre
+        </button>
+    {{ form_end(form) }}
+
+    <a href="{{ path('app_offer_travel_index') }}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Retour à la liste
+    </a>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Preview de l'image
+            document.getElementById('offer_travel_imageFile').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                const preview = document.getElementById('imagePreview');
+                
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+
+            // Gestion des messages flash
+            {% for type, messages in app.flashes %}
+                {% for message in messages %}
+                    Swal.fire({
+                        icon: '{{ type }}',
+                        title: '{{ message }}',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        {% if type == 'success' %}
+                            window.location.href = "{{ path('app_offer_travel_index') }}";
+                        {% endif %}
+                    });
+                {% endfor %}
+            {% endfor %}
+        });
+    </script>
 {% endblock %}

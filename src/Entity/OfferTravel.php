@@ -4,62 +4,81 @@ namespace App\Entity;
 
 use App\Repository\Offer_travelRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\File;
 
-#[ORM\Entity(repositoryClass: Offer_travelRepository::class)]
-#[ORM\Table(name: 'offer_travel')]
+
+#[ORM\Entity(repositoryClass: Offer_TravelRepository::class)]
 class OfferTravel
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    private string $departure;
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    private ?string $departure = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    private string $destination;
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    private ?string $destination = null;
 
     #[ORM\Column(type: 'date')]
-    private \DateTimeInterface $departure_date;
+    #[Assert\NotBlank]
+    private ?\DateTimeInterface $departure_date = null;
 
     #[ORM\Column(type: 'date')]
-    private \DateTimeInterface $arrival_date;
+    #[Assert\NotBlank]
+    private ?\DateTimeInterface $arrival_date = null;
 
-    #[ORM\Column(type: 'string', length: 50)]
-    private string $hotel_name;
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    private ?string $hotel_name = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    private string $discription;
+    #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank]
+    private ?string $discription = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    private string $category;
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    private ?string $category = null;
 
     #[ORM\Column(type: 'float')]
-    private float $price;
+    #[Assert\NotBlank]
+    private ?float $price = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    private string $image;
+    #[ORM\Column(length: 255, nullable: true)] // Ajouter nullable: true
+    #[Assert\NotBlank(message: "L'image est obligatoire", groups: ['create'])] // Ajouter groups
+    private ?string $image = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    private string $flight_name;
+// Modifier la validation pour imageFile
+    #[Assert\Image([
+    'maxSize' => '2M',
+    'mimeTypes' => ['image/jpeg', 'image/png'],
+    'mimeTypesMessage' => 'Veuillez uploader une image valide (JPEG ou PNG)',
+    'groups' => ['create', 'update'] // Ajouter des groupes
+    ])]
+    private ?File $imageFile = null;
 
-    #[ORM\ManyToOne(targetEntity: Agency::class, inversedBy: 'offerTravels')]
-    #[ORM\JoinColumn(nullable: false)]
-    private Agency $agency;
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    private ?string $flight_name = null;
 
-    #[ORM\ManyToOne(targetEntity: Promotion::class, inversedBy: 'offerTravels')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\ManyToOne(targetEntity: Agency::class)]
+    #[Assert\NotBlank]
+    private ?Agency $agency = null;
+
+    #[ORM\ManyToOne(targetEntity: Promotion::class)]
     private ?Promotion $promotion = null;
 
-    // Getters and Setters
-
+    // Getters et setters
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getDeparture(): string
+    public function getDeparture(): ?string
     {
         return $this->departure;
     }
@@ -70,7 +89,7 @@ class OfferTravel
         return $this;
     }
 
-    public function getDestination(): string
+    public function getDestination(): ?string
     {
         return $this->destination;
     }
@@ -81,7 +100,7 @@ class OfferTravel
         return $this;
     }
 
-    public function getDepartureDate(): \DateTimeInterface
+    public function getDepartureDate(): ?\DateTimeInterface
     {
         return $this->departure_date;
     }
@@ -92,7 +111,7 @@ class OfferTravel
         return $this;
     }
 
-    public function getArrivalDate(): \DateTimeInterface
+    public function getArrivalDate(): ?\DateTimeInterface
     {
         return $this->arrival_date;
     }
@@ -103,7 +122,7 @@ class OfferTravel
         return $this;
     }
 
-    public function getHotelName(): string
+    public function getHotelName(): ?string
     {
         return $this->hotel_name;
     }
@@ -114,7 +133,7 @@ class OfferTravel
         return $this;
     }
 
-    public function getDiscription(): string
+    public function getDiscription(): ?string
     {
         return $this->discription;
     }
@@ -125,7 +144,7 @@ class OfferTravel
         return $this;
     }
 
-    public function getCategory(): string
+    public function getCategory(): ?string
     {
         return $this->category;
     }
@@ -136,7 +155,7 @@ class OfferTravel
         return $this;
     }
 
-    public function getPrice(): float
+    public function getPrice(): ?float
     {
         return $this->price;
     }
@@ -147,18 +166,29 @@ class OfferTravel
         return $this;
     }
 
-    public function getImage(): string
+    public function getImage(): ?string
     {
         return $this->image;
     }
 
-    public function setImage(string $image): self
+    public function setImage(?string $image): self
     {
         $this->image = $image;
         return $this;
     }
 
-    public function getFlightName(): string
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageFile(?File $imageFile = null): self
+    {
+        $this->imageFile = $imageFile;
+        return $this;
+    }
+
+    public function getFlightName(): ?string
     {
         return $this->flight_name;
     }
@@ -169,12 +199,12 @@ class OfferTravel
         return $this;
     }
 
-    public function getAgency(): Agency
+    public function getAgency(): ?Agency
     {
         return $this->agency;
     }
 
-    public function setAgency(Agency $agency): self
+    public function setAgency(?Agency $agency): self
     {
         $this->agency = $agency;
         return $this;

@@ -1,53 +1,173 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}OfferTravel index{% endblock %}
+{% block title %}Liste des Offres de Voyage{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .offer-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        .page-title {
+            color: #2c3e50;
+            font-weight: 700;
+            margin: 0;
+        }
+        .btn-create {
+            background-color: #2dce89;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .btn-create:hover {
+            background-color: #24b47e;
+            transform: translateY(-2px);
+        }
+        .offer-card {
+            border: none;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        .offer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .offer-image {
+            height: 200px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .card-body {
+            padding: 1.5rem;
+        }
+        .offer-title {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .offer-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2dce89;
+        }
+        .offer-date {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .badge-category {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        .sportive { background-color: #4e73df; color: white; }
+        .romantique { background-color: #e74a3b; color: white; }
+        .religieuse { background-color: #f6c23e; color: #000; }
+        .touristique { background-color: #1cc88a; color: white; }
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .action-buttons .btn {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+        .no-offers {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+        .badge-count {
+            background-color: #3498db;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>OfferTravel index</h1>
+<div class="offer-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-plane"></i> Liste des Offres
+            <span class="badge-count">{{ offer_travels|length }}</span>
+        </h1>
+        <a href="{{ path('app_offer_travel_new') }}" class="btn-create">
+            <i class="fas fa-plus"></i> Nouvelle Offre
+        </a>
+    </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Departure</th>
-                <th>Destination</th>
-                <th>Departure_date</th>
-                <th>Arrival_date</th>
-                <th>Hotel_name</th>
-                <th>Discription</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Image</th>
-                <th>Flight_name</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for offer_travel in offer_travels %}
-            <tr>
-                <td>{{ offer_travel.id }}</td>
-                <td>{{ offer_travel.departure }}</td>
-                <td>{{ offer_travel.destination }}</td>
-                <td>{{ offer_travel.departureDate ? offer_travel.departureDate|date('Y-m-d') : '' }}</td>
-                <td>{{ offer_travel.arrivalDate ? offer_travel.arrivalDate|date('Y-m-d') : '' }}</td>
-                <td>{{ offer_travel.hotelName }}</td>
-                <td>{{ offer_travel.discription }}</td>
-                <td>{{ offer_travel.category }}</td>
-                <td>{{ offer_travel.price }}</td>
-                <td>{{ offer_travel.image }}</td>
-                <td>{{ offer_travel.flightName }}</td>
-                <td>
-                    <a href="{{ path('app_offer_travel_show', {'id': offer_travel.id}) }}">show</a>
-                    <a href="{{ path('app_offer_travel_edit', {'id': offer_travel.id}) }}">edit</a>
-                </td>
-            </tr>
+    <div class="row">
+        {% for offer in offer_travels %}
+            <div class="col-md-4 mb-4">
+                <div class="card offer-card">
+                    {% if offer.image %}
+                        <img src="{{ offer.image }}" alt="{{ offer.destination }}" class="offer-image">
+                    {% else %}
+                        <div class="offer-image bg-light d-flex align-items-center justify-content-center">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <span class="badge-category {{ offer.category|lower }}">{{ offer.category }}</span>
+                        <h5 class="offer-title">{{ offer.destination }}</h5>
+                        <div class="offer-price">{{ offer.price }} €</div>
+                        <p class="offer-date">
+                            <i class="fas fa-calendar-alt"></i> 
+                            {{ offer.departureDate|date('d/m/Y') }} - {{ offer.arrivalDate|date('d/m/Y') }}
+                        </p>
+                        <p>{{ offer.discription|slice(0, 100) }}...</p>
+                        
+                        <div class="action-buttons">
+                            <a href="{{ path('app_offer_travel_show', {'id': offer.id}) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i> Voir
+                            </a>
+                            <a href="{{ path('app_offer_travel_edit', {'id': offer.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         {% else %}
-            <tr>
-                <td colspan="12">no records found</td>
-            </tr>
+            <div class="col-12">
+                <div class="no-offers">
+                    <i class="fas fa-plane-slash fa-3x mb-3"></i>
+                    <h4>Aucune offre disponible</h4>
+                    <p>Commencez par créer une nouvelle offre</p>
+                    <a href="{{ path('app_offer_travel_new') }}" class="btn-create mt-2">
+                        <i class="fas fa-plus"></i> Créer une offre
+                    </a>
+                </div>
+            </div>
         {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_offer_travel_new') }}">Create new</a>
+    </div>
+</div>
 {% endblock %}
