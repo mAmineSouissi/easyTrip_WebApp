@@ -116,13 +116,4 @@ class OfferTravelType extends AbstractType
             'promotions' => [],
         ]);
     }
-
-    private function getPromotionsData(array $promotions): string
-    {
-        $data = [];
-        foreach ($promotions as $promotion) {
-            $data[$promotion->getId()] = $promotion->getDiscountPercentage();
-        }
-        return json_encode($data);
-    }
 }

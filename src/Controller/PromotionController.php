@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route('/promotion')]
 final class PromotionController extends AbstractController
@@ -79,8 +78,24 @@ final class PromotionController extends AbstractController
     public function delete(Request $request, Promotion $promotion, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$promotion->getId(), $request->getPayload()->getString('_token'))) {
+            // Mettre à jour les offres associées
+            $offers = $entityManager->getRepository(\App\Entity\OfferTravel::class)->findBy(['promotion' => $promotion]);
+            foreach ($offers as $offer) {
+                $currentPrice = $offer->getPrice();
+                $discountPercentage = $promotion->getDiscountPercentage();
+                // Calculer le prix initial : prix actuel / (1 - pourcentage de réduction)
+                $originalPrice = $currentPrice / (1 - $discountPercentage / 100);
+                $offer->setPrice(round($originalPrice, 2)); // Arrondir à 2 décimales
+                $entityManager->persist($offer);
+            }
+            // Appliquer les changements avant de supprimer la promotion
+            $entityManager->flush();
+
+            // Supprimer la promotion
             $entityManager->remove($promotion);
             $entityManager->flush();
+
+            $this->addFlash('success', 'Promotion supprimée et prix des offres restaurés avec succès !');
         }
 
         return $this->redirectToRoute('app_promotion_index', [], Response::HTTP_SEE_OTHER);
@@ -96,7 +111,7 @@ final class PromotionController extends AbstractController
         ]);
     }
 
-    #[Route('/filter/filter', name: 'app_promotion_filter', methods: ['POST'])]
+    #[Route('/filter', name: 'app_promotion_filter', methods: ['POST'])]
     public function filter(Request $request, PromotionRepository $promotionRepository, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);

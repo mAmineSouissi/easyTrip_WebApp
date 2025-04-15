@@ -159,7 +159,7 @@
                 </div>
                 <div class="form-group">
                     {{ form_label(form.price) }}
-                    {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_widget(form.price, {'attr': {'class': 'form-control original-price'}}) }}
                 </div>
                 <div class="form-group">
                     {{ form_label(form.imageFile) }}
@@ -186,7 +186,7 @@
             <div class="col-md-6">
                 <div class="form-group">
                     {{ form_label(form.promotion) }}
-                    {{ form_widget(form.promotion, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_widget(form.promotion, {'attr': {'class': 'form-control promotion-select'}}) }}
                 </div>
             </div>
         </div>
@@ -215,7 +215,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 1. Gestion de la prévisualisation de l'image
+            // Gestion de la prévisualisation de l'image
             const imageInput = document.getElementById('offer_travel_imageFile');
             const imagePreview = document.getElementById('imagePreview');
             
@@ -234,13 +234,16 @@
                 });
             }
 
-            // 2. Gestion des promotions et calcul du prix
+            // Gestion des promotions et calcul du prix
             const promotionSelect = document.querySelector('.promotion-select');
             const priceInput = document.querySelector('.original-price');
             
             if (promotionSelect && priceInput) {
-                // Récupérer le prix original depuis l'attribut data
+                // Récupérer le prix initial depuis l'attribut data-original-price
                 let originalPrice = parseFloat(priceInput.getAttribute('data-original-price')) || parseFloat(priceInput.value) || 0;
+                
+                // Stocker le prix initial dans l'attribut data
+                priceInput.setAttribute('data-original-price', originalPrice);
                 
                 // Écouter les changements de promotion
                 promotionSelect.addEventListener('change', function() {
@@ -252,14 +255,13 @@
                         const discountedPrice = originalPrice * (1 - discount / 100);
                         priceInput.value = discountedPrice.toFixed(2);
                     } else {
-                        // Si aucune promotion, revenir au prix original
                         priceInput.value = originalPrice.toFixed(2);
                     }
                 });
                 
                 // Écouter les changements manuels du prix
                 priceInput.addEventListener('input', function() {
-                    // Si aucune promotion n'est sélectionnée, mettre à jour le prix original
+                    // Mettre à jour le prix original uniquement si aucune promotion n'est sélectionnée
                     if (!promotionSelect.value) {
                         originalPrice = parseFloat(this.value) || 0;
                         this.setAttribute('data-original-price', originalPrice);
@@ -272,7 +274,7 @@
                 }
             }
 
-            // 3. Gestion des messages flash
+            // Gestion des messages flash
             {% for type, messages in app.flashes %}
                 {% for message in messages %}
                     Swal.fire({
