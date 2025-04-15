@@ -6,6 +6,7 @@
     {{ parent() }}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         .promotion-container {
             max-width: 1200px;
@@ -98,6 +99,40 @@
             padding: 2rem;
             color: #7f8c8d;
         }
+        .filter-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .filter-item {
+            flex: 1;
+            min-width: 200px;
+        }
+        .date-picker-container {
+            position: relative;
+            display: inline-block;
+        }
+        .date-input {
+            padding: 10px 35px 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+        .calendar-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+        }
     </style>
 {% endblock %}
 
@@ -113,11 +148,44 @@
         </a>
     </div>
 
+    <div class="filter-section">
+        <h3><i class="fas fa-filter"></i> Filtres</h3>
+        
+        <div class="filter-group">
+            <div class="filter-item">
+                <label for="search-name">Recherche par nom:</label>
+                <input type="text" id="search-name" class="form-control" placeholder="Nom de la promotion">
+            </div>
+            
+            <div class="filter-item">
+                <label for="discount-range">Pourcentage de réduction:</label>
+                <select id="discount-range" class="form-control">
+                    <option value="all">Tous</option>
+                    <option value="0-10">0-10%</option>
+                    <option value="11-20">11-20%</option>
+                    <option value="21-30">21-30%</option>
+                    <option value="31-100">31% et plus</option>
+                </select>
+            </div>
+            
+            <div class="filter-item">
+                <label>Filtrer par date:</label>
+                <div class="date-picker-container">
+                    <input type="text" id="date-filter" class="date-input" placeholder="Choisir une date" readonly>
+                    <i class="fas fa-calendar-alt calendar-icon" id="calendar-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {% if promotions|length > 0 %}
-        <div class="row">
+        <div class="row" id="promotions-container">
             {% for promotion in promotions %}
-                <div class="col-md-4">
-                    <div class="card promotion-card">
+                <div class="col-md-4 promotion-card" 
+                     data-name="{{ promotion.title|lower }}" 
+                     data-discount="{{ promotion.discountPercentage }}" 
+                     data-end-date="{{ promotion.validUntil|date('Y-m-d') }}">
+                    <div class="card">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start">
                                 <h5 class="promotion-title">{{ promotion.title }}</h5>
@@ -131,7 +199,6 @@
                             <p class="promotion-date">
                                 <i class="fas fa-calendar-alt"></i> Valide jusqu'au {{ promotion.validUntil|date('d/m/Y') }}
                             </p>
-                            <p class="text-muted">{{ promotion.description|slice(0, 100) }}...</p>
                             
                             <div class="action-buttons mt-3">
                                 <a href="{{ path('app_promotion_show', {'id': promotion.id}) }}" class="btn btn-sm btn-outline-primary">
@@ -167,11 +234,69 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
     <script>
-        // Animation au chargement
         document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.promotion-card');
-            cards.forEach((card, index) => {
+            // Initialiser le calendrier
+            const datePicker = flatpickr("#date-filter", {
+                locale: "fr",
+                dateFormat: "Y-m-d",
+                allowInput: false,
+                clickOpens: false,
+                onChange: function(selectedDates, dateStr) {
+                    applyFilters();
+                }
+            });
+
+            // Ouvrir le calendrier au clic sur l'icône
+            document.getElementById("calendar-icon").addEventListener("click", function() {
+                datePicker.open();
+            });
+
+            // Éléments du DOM
+            const searchInput = document.getElementById('search-name');
+            const discountSelect = document.getElementById('discount-range');
+            const promotionCards = document.querySelectorAll('.promotion-card');
+
+            // Fonction de filtrage
+            function applyFilters() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const discountRange = discountSelect.value;
+                const selectedDate = datePicker.selectedDates[0] 
+                    ? datePicker.formatDate(datePicker.selectedDates[0], 'Y-m-d') 
+                    : null;
+
+                promotionCards.forEach(card => {
+                    const name = card.dataset.name;
+                    const discount = parseFloat(card.dataset.discount);
+                    const endDate = card.dataset.endDate;
+
+                    // Vérification des filtres
+                    const nameMatch = name.includes(searchTerm);
+                    
+                    let discountMatch = true;
+                    if (discountRange !== 'all') {
+                        const [min, max] = discountRange.split('-').map(Number);
+                        discountMatch = discount >= min && discount <= max;
+                    }
+                    
+                    let dateMatch = true;
+                    if (selectedDate) {
+                        dateMatch = endDate >= selectedDate;
+                    }
+
+                    // Appliquer les filtres
+                    card.style.display = (nameMatch && discountMatch && dateMatch) ? 'block' : 'none';
+                });
+            }
+
+            // Écouteurs d'événements
+            searchInput.addEventListener('input', applyFilters);
+            discountSelect.addEventListener('change', applyFilters);
+
+            // Animation au chargement
+            promotionCards.forEach((card, index) => {
                 card.style.opacity = '0';
                 card.style.transform = 'translateY(20px)';
                 card.style.transition = 'all 0.3s ease-out';

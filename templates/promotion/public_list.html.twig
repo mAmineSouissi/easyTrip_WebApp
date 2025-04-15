@@ -1,0 +1,223 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Promotions en cours{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .promotion-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        .page-title {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .filter-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .filter-item {
+            flex: 1;
+            min-width: 200px;
+        }
+        .date-picker-container {
+            position: relative;
+            display: inline-block;
+        }
+        .date-input {
+            padding: 10px 35px 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+        .calendar-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+        }
+        .promotion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .promotion-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .promotion-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .promotion-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .promotion-discount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        .promotion-date {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .no-promotions {
+            text-align: center;
+            padding: 2rem;
+            color: #7f8c8d;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="promotion-container">
+    <h1 class="page-title">
+        <i class="fas fa-percentage"></i> Promotions en cours
+    </h1>
+
+    <div class="filter-section">
+        <h3><i class="fas fa-filter"></i> Filtres</h3>
+        
+        <div class="filter-group">
+            <div class="filter-item">
+                <label for="search-name">Recherche par nom:</label>
+                <input type="text" id="search-name" class="form-control" placeholder="Nom de la promotion">
+            </div>
+            
+            <div class="filter-item">
+                <label for="discount-range">Pourcentage de réduction:</label>
+                <select id="discount-range" class="form-control">
+                    <option value="all">Tous</option>
+                    <option value="0-10">0-10%</option>
+                    <option value="11-20">11-20%</option>
+                    <option value="21-30">21-30%</option>
+                    <option value="31-100">31% et plus</option>
+                </select>
+            </div>
+            
+            <div class="filter-item">
+                <label>Filtrer par date:</label>
+                <div class="date-picker-container">
+                    <input type="text" id="date-filter" class="date-input" placeholder="Choisir une date" readonly>
+                    <i class="fas fa-calendar-alt calendar-icon" id="calendar-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="promotions-container">
+        {% if promotions|length > 0 %}
+            <div class="promotion-grid">
+                {% for promotion in promotions %}
+                    <div class="promotion-card" 
+                         data-name="{{ promotion.title|lower }}" 
+                         data-discount="{{ promotion.discountPercentage }}" 
+                         data-end-date="{{ promotion.validUntil|date('Y-m-d') }}">
+                        <h3 class="promotion-title">{{ promotion.title }}</h3>
+                        <div class="promotion-discount">
+                            -{{ promotion.discountPercentage }}%
+                        </div>
+                        <p>{{ promotion.description }}</p>
+                        <p class="promotion-date">
+                            <i class="fas fa-calendar-alt"></i> Valable jusqu'au {{ promotion.validUntil|date('d/m/Y') }}
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-promotions">
+                <i class="fas fa-percentage fa-3x mb-3"></i>
+                <h3>Aucune promotion en cours</h3>
+                <p>Revenez plus tard pour découvrir nos offres</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialiser le calendrier
+            const datePicker = flatpickr("#date-filter", {
+                locale: "fr",
+                dateFormat: "Y-m-d",
+                allowInput: false,
+                clickOpens: false, // Désactiver l'ouverture au clic sur l'input
+                onChange: function(selectedDates, dateStr) {
+                    applyFilters();
+                }
+            });
+
+            // Ouvrir le calendrier au clic sur l'icône
+            document.getElementById("calendar-icon").addEventListener("click", function() {
+                datePicker.open();
+            });
+
+            // Éléments du DOM
+            const searchInput = document.getElementById('search-name');
+            const discountSelect = document.getElementById('discount-range');
+            const promotionCards = document.querySelectorAll('.promotion-card');
+
+            // Fonction de filtrage
+            function applyFilters() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const discountRange = discountSelect.value;
+                const selectedDate = datePicker.selectedDates[0] 
+                    ? datePicker.formatDate(datePicker.selectedDates[0], 'Y-m-d') 
+                    : null;
+
+                promotionCards.forEach(card => {
+                    const name = card.dataset.name;
+                    const discount = parseFloat(card.dataset.discount);
+                    const endDate = card.dataset.endDate;
+
+                    // Vérification des filtres
+                    const nameMatch = name.includes(searchTerm);
+                    
+                    let discountMatch = true;
+                    if (discountRange !== 'all') {
+                        const [min, max] = discountRange.split('-').map(Number);
+                        discountMatch = discount >= min && discount <= max;
+                    }
+                    
+                    let dateMatch = true;
+                    if (selectedDate) {
+                        dateMatch = endDate >= selectedDate;
+                    }
+
+                    // Appliquer les filtres
+                    card.style.display = (nameMatch && discountMatch && dateMatch) ? 'block' : 'none';
+                });
+            }
+
+            // Écouteurs d'événements
+            searchInput.addEventListener('input', applyFilters);
+            discountSelect.addEventListener('change', applyFilters);
+        });
+    </script>
+{% endblock %}
+{% endblock %}

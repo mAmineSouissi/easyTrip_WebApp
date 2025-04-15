@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\AgencyRepository;
 
+
 #[ORM\Entity(repositoryClass: AgencyRepository::class)]
 class Agency
 {
@@ -71,10 +72,17 @@ class Agency
     #[ORM\OneToMany(targetEntity: OfferTravel::class, mappedBy: "agency")]
     private Collection $offerTravels;
 
+    
+
+// Ajoutez ces méthodes getter et setter
+
+
     public function __construct()
     {
         $this->offerTravels = new ArrayCollection();
     }
+
+    
 
     public function getId(): int
     {

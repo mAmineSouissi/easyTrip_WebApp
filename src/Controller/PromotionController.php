@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Promotion;
 use App\Form\PromotionType;
+use App\Repository\PromotionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -80,5 +81,15 @@ final class PromotionController extends AbstractController
         }
 
         return $this->redirectToRoute('app_promotion_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/agent/list',name: 'app_promotion_public', methods: ['GET'])]
+    public function index_list(PromotionRepository $promotionRepository): Response
+    {
+        
+        $promotions = $promotionRepository->findAll(); // On récupère toutes les promotions
+        return $this->render('promotion/public_list.html.twig', [
+            'promotions' => $promotions,
+        ]);
     }
 }
