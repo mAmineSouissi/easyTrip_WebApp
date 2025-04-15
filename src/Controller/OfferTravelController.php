@@ -18,6 +18,7 @@ class OfferTravelController extends AbstractController
 {
     private string $baseImageUrl = 'http://localhost:8000/img/offers/';
 
+    // Route pour lister toutes les offres (admin)
     #[Route('/', name: 'app_offer_travel_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): Response
     {
@@ -30,6 +31,7 @@ class OfferTravelController extends AbstractController
         ]);
     }
 
+    // Route pour créer une nouvelle offre (admin)
     #[Route('/new', name: 'app_offer_travel_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
@@ -69,6 +71,7 @@ class OfferTravelController extends AbstractController
         ]);
     }
 
+    // Route pour éditer une offre (admin)
     #[Route('/{id}/edit', name: 'app_offer_travel_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, OfferTravel $offerTravel, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
@@ -116,6 +119,7 @@ class OfferTravelController extends AbstractController
         ]);
     }
 
+    // Route pour voir le détail d'une offre (admin)
     #[Route('/{id}', name: 'app_offer_travel_show', methods: ['GET'])]
     public function show(OfferTravel $offerTravel): Response
     {
@@ -124,7 +128,8 @@ class OfferTravelController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_offer_travel_delete', methods: ['POST'])]
+    // Route pour supprimer une offre (admin)
+    #[Route('/{id}/delete', name: 'app_offer_travel_delete', methods: ['POST'])]
     public function delete(Request $request, OfferTravel $offerTravel, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('delete'.$offerTravel->getId(), $request->request->get('_token'))) {
@@ -144,5 +149,30 @@ class OfferTravelController extends AbstractController
         }
 
         return $this->redirectToRoute('app_offer_travel_index');
+    }
+
+    // Route pour lister les offres (public)
+    #[Route('/client/listoffers', name: 'app_offer_travel_public_list', methods: ['GET'])]
+    public function publicList(EntityManagerInterface $em): Response
+{
+    $offers = $em->getRepository(OfferTravel::class)->findAll();
+    return $this->render('offer_travel/public_list.html.twig', [
+        'offer_travels' => $offers,
+    ]);
+}
+
+    // Route pour voir le détail d'une offre (public)
+    #[Route('/client/offer/{id}', name: 'app_offer_travel_public_show', methods: ['GET'], requirements: ['id' => '\d+'])]    
+    public function publicShow(int $id, EntityManagerInterface $em): Response
+    {
+        $offer = $em->getRepository(OfferTravel::class)->find($id);
+        
+        if (!$offer) {
+            throw $this->createNotFoundException('Offre non trouvée');
+        }
+
+        return $this->render('offer_travel/public_show.html.twig', [
+            'offer_travel' => $offer,
+        ]);
     }
 }
