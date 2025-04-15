@@ -182,24 +182,68 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Preview de l'image
-            document.getElementById('offer_travel_imageFile').addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                const preview = document.getElementById('imagePreview');
-                
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        preview.src = e.target.result;
-                        preview.style.display = 'block';
+            // 1. Gestion de la prévisualisation de l'image
+            const imageInput = document.getElementById('offer_travel_imageFile');
+            const imagePreview = document.getElementById('imagePreview');
+            
+            if (imageInput && imagePreview) {
+                imageInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            imagePreview.src = e.target.result;
+                            imagePreview.style.display = 'block';
+                        }
+                        reader.readAsDataURL(file);
+                    } else {
+                        imagePreview.style.display = 'none';
                     }
-                    reader.readAsDataURL(file);
-                } else {
-                    preview.style.display = 'none';
-                }
-            });
+                });
+            }
 
-            // Gestion des messages flash
+            // 2. Gestion des promotions et calcul du prix
+            const promotionSelect = document.querySelector('.promotion-select');
+            const priceInput = document.querySelector('.original-price');
+            
+            if (promotionSelect && priceInput) {
+                let originalPrice = parseFloat(priceInput.value) || 0;
+                
+                // Stocker le prix original dans l'attribut data
+                priceInput.setAttribute('data-original-price', originalPrice);
+                
+                // Écouter les changements de promotion
+                promotionSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const discount = selectedOption ? parseFloat(selectedOption.getAttribute('data-discount')) || 0 : 0;
+                    
+                    // Mettre à jour le prix affiché
+                    if (discount > 0) {
+                        const discountedPrice = originalPrice * (1 - discount / 100);
+                        priceInput.value = discountedPrice.toFixed(2);
+                    } else {
+                        // Si aucune promotion, revenir au prix original
+                        priceInput.value = originalPrice.toFixed(2);
+                    }
+                });
+                
+                // Écouter les changements manuels du prix
+                priceInput.addEventListener('input', function() {
+                    // Si aucune promotion n'est sélectionnée, mettre à jour le prix original
+                    if (!promotionSelect.value) {
+                        originalPrice = parseFloat(this.value) || 0;
+                        this.setAttribute('data-original-price', originalPrice);
+                    }
+                });
+                
+                // Déclencher le calcul initial si une promotion est déjà sélectionnée
+                if (promotionSelect.value) {
+                    promotionSelect.dispatchEvent(new Event('change'));
+                }
+            }
+
+            // 3. Gestion des messages flash
             {% for type, messages in app.flashes %}
                 {% for message in messages %}
                     Swal.fire({

@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use App\Entity\Promotion;
 
 #[Route('/offer/travel')]
 class OfferTravelController extends AbstractController
@@ -36,11 +37,20 @@ class OfferTravelController extends AbstractController
     public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $offerTravel = new OfferTravel();
-        $form = $this->createForm(OfferTravelType::class, $offerTravel);
+        $form = $this->createForm(OfferTravelType::class, $offerTravel, [
+            'promotions' => $em->getRepository(Promotion::class)->findAll(),
+        ]);
+        
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
-            // Gestion de l'image
+            // Appliquer la promotion si elle existe
+            $promotion = $offerTravel->getPromotion();
+            if ($promotion) {
+                $originalPrice = $offerTravel->getPrice();
+                $discountedPrice = $originalPrice * (1 - $promotion->getDiscountPercentage() / 100);
+                $offerTravel->setPrice($discountedPrice);
+            }
             $imageFile = $form->get('imageFile')->getData();
             
             if ($imageFile) {
@@ -59,6 +69,8 @@ class OfferTravelController extends AbstractController
                 }
             }
 
+            // Si une promotion est sélectionnée, on stocke le prix déjà calculé (avec la réduction)
+            // Le calcul a été fait côté client via JavaScript
             $em->persist($offerTravel);
             $em->flush();
 
@@ -75,11 +87,29 @@ class OfferTravelController extends AbstractController
     #[Route('/{id}/edit', name: 'app_offer_travel_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, OfferTravel $offerTravel, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
-        $form = $this->createForm(OfferTravelType::class, $offerTravel);
-        $form->handleRequest($request);
+        // Calcul du prix original avant promotion (si une promotion est active)
+       // Stocker le prix original avant toute modification
+    $originalPrice = $offerTravel->getPromotion() ? 
+    $offerTravel->getPrice() / (1 - $offerTravel->getPromotion()->getDiscountPercentage() / 100) : 
+    $offerTravel->getPrice();
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Gestion de l'image
+$form = $this->createForm(OfferTravelType::class, $offerTravel, [
+    'original_price' => $originalPrice,
+    'promotions' => $em->getRepository(Promotion::class)->findAll(),
+]);
+
+$form->handleRequest($request);
+
+if ($form->isSubmitted() && $form->isValid()) {
+    // Recalculer le prix si la promotion a changé
+    $newPromotion = $offerTravel->getPromotion();
+    if ($newPromotion) {
+        $newPrice = $originalPrice * (1 - $newPromotion->getDiscountPercentage() / 100);
+        $offerTravel->setPrice($newPrice);
+    } else {
+        // Si pas de promotion, utiliser le prix original
+        $offerTravel->setPrice($originalPrice);
+    }
             $imageFile = $form->get('imageFile')->getData();
             
             if ($imageFile) {
@@ -107,6 +137,7 @@ class OfferTravelController extends AbstractController
                 }
             }
 
+            // Le prix est déjà calculé avec la promotion (si applicable) via JavaScript
             $em->flush();
 
             $this->addFlash('success', 'Offre modifiée avec succès !');
@@ -154,12 +185,12 @@ class OfferTravelController extends AbstractController
     // Route pour lister les offres (public)
     #[Route('/client/listoffers', name: 'app_offer_travel_public_list', methods: ['GET'])]
     public function publicList(EntityManagerInterface $em): Response
-{
-    $offers = $em->getRepository(OfferTravel::class)->findAll();
-    return $this->render('offer_travel/public_list.html.twig', [
-        'offer_travels' => $offers,
-    ]);
-}
+    {
+        $offers = $em->getRepository(OfferTravel::class)->findAll();
+        return $this->render('offer_travel/public_list.html.twig', [
+            'offer_travels' => $offers,
+        ]);
+    }
 
     // Route pour voir le détail d'une offre (public)
     #[Route('/client/offer/{id}', name: 'app_offer_travel_public_show', methods: ['GET'], requirements: ['id' => '\d+'])]    

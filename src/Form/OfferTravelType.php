@@ -58,12 +58,16 @@ class OfferTravelType extends AbstractType
             ->add('price', NumberType::class, [
                 'label' => 'Prix (€)',
                 'html5' => true,
-                'attr' => ['placeholder' => 'Prix du voyage'],
+                'attr' => [
+                    'placeholder' => 'Prix du voyage',
+                    'class' => 'original-price',
+                    'data-original-price' => $options['original_price'] ?? null
+                ],
             ])
             ->add('imageFile', FileType::class, [
                 'label' => 'Image de voyage',
-                'mapped' => false, // Changer à false car on gère manuellement l'upload
-                'required' => false, // Laisser à false
+                'mapped' => false,
+                'required' => false,
                 'constraints' => [
                     new Assert\Image([
                         'maxSize' => '2M',
@@ -87,9 +91,17 @@ class OfferTravelType extends AbstractType
             ])
             ->add('promotion', EntityType::class, [
                 'class' => Promotion::class,
-                'choice_label' => 'title',
+                'choice_label' => function(Promotion $promotion) {
+                    return $promotion->getTitle() . ' (-' . $promotion->getDiscountPercentage() . '%)';
+                },
                 'required' => false,
                 'label' => 'Promotion',
+                'attr' => [
+                    'class' => 'promotion-select',
+                ],
+                'choice_attr' => function(Promotion $promotion) {
+                    return ['data-discount' => $promotion->getDiscountPercentage()];
+                },
             ]);
     }
 
@@ -99,7 +111,18 @@ class OfferTravelType extends AbstractType
             'data_class' => OfferTravel::class,
             'csrf_protection' => true,
             'csrf_field_name' => '_token',
-            'csrf_token_id' => 'offer_travel_form'
+            'csrf_token_id' => 'offer_travel_form',
+            'original_price' => null,
+            'promotions' => [],
         ]);
+    }
+
+    private function getPromotionsData(array $promotions): string
+    {
+        $data = [];
+        foreach ($promotions as $promotion) {
+            $data[$promotion->getId()] = $promotion->getDiscountPercentage();
+        }
+        return json_encode($data);
     }
 }
