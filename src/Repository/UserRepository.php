@@ -17,17 +17,7 @@ class UserRepository extends ServiceEntityRepository
         $this->em = $this->getEntityManager();
     }
 
-    public function addUser(User $user): bool
-    {
-        try {
-            $this->em->persist($user);
-            $this->em->flush();
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
-    
+ 
 
     public function getUserById(int $id): ?User
     {
@@ -39,15 +29,5 @@ class UserRepository extends ServiceEntityRepository
         return $this->findAll();
     }
 
-    public function updateUser(User $user): void
-    {
-        $this->em->persist($user); // optional if the user is already managed
-        $this->em->flush();
-    }
-
-    public function deleteUser(User $user): void
-    {
-        $this->em->remove($user);
-        $this->em->flush();
-    }
+  
 }

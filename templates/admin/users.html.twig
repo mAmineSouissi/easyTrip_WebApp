@@ -1,0 +1,172 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Users Management{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Users Management</h2>
+
+    <div class="text-end mb-3">
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#userModal" data-action="add">Add User</button>
+    </div>
+
+    <table id="usersTable" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Role</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr data-id="{{ user.id }}">
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.surname}}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.phone }}</td>
+                    <td>{{ user.addresse }}</td>
+                    <td>
+                        {% if user.role == 'Admin' %}
+                            <span class="badge bg-danger">{{ user.role }}</span>
+                        {% elseif user.role == 'Client' %}
+                            <span class="badge bg-success">{{ user.role }}</span>
+                        {% elseif user.role == 'Agent' %}
+                            <span class="badge bg-info">{{ user.role }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ user.role }}</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <button class="btn btn-primary btn-sm edit-user" data-id="{{ user.id }}">Edit</button>
+                        <button class="btn btn-danger btn-sm delete-user" data-id="{{ user.id }}">Delete</button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="userForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="user-id">
+
+                    <div class="mb-3">
+                        <label for="user-name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="user-name" name="name" required>
+                        <div class="form-text text-muted">Enter the user's first name.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="user-surname" class="form-label">Surname</label>
+                        <input type="text" class="form-control" id="user-surname" name="surname" required>
+                        <div class="form-text text-muted">Enter the user's last name.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="user-email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="user-email" name="email" required>
+                        <div class="form-text text-muted">Provide a valid email address (e.g., example@domain.com).</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="user-phone" class="form-label">Phone</label>
+                        <input type="text" class="form-control" id="user-phone" name="phone" required>
+                        <div class="form-text text-muted">Include the phone number with area code.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="user-address" class="form-label">Address</label>
+                        <input type="text" class="form-control" id="user-address" name="address" required>
+                        <div class="form-text text-muted">Enter the user's full address (street, city, etc.).</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="user-role" class="form-label">Role</label>
+                        <select class="form-select" id="user-role" name="role" required>
+                            <option value="Agent">Agent</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Client">Client</option>
+                        </select>
+                        <div class="form-text text-muted">Select the appropriate user role.</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+   $(document).ready(function() {
+        $('#usersTable').DataTable({
+            lengthMenu: [ [5, 10, 30], [5, 10, 30] ]
+        });
+
+        $('.edit-user').on('click', function () {
+            const id = $(this).data('id');
+            $.get(`/admin/users/${id}`, function (user) {
+                $('#user-id').val(user.id);
+                $('#user-name').val(user.name);
+                $('#user-email').val(user.email);
+                $('#user-role').val(user.role);
+                $('#user-surname').val(user.surname);
+                $('#user-phone').val(user.phone);
+                $('#user-address').val(user.address);
+                $('#userModalLabel').text('Edit User');
+                $('#userModal').modal('show');
+            });
+        });
+
+        $('.delete-user').on('click', function () {
+            const id = $(this).data('id');
+            if (confirm('Are you sure you want to delete this user?')) {
+                $.post(`/admin/users/${id}/delete/confirm`, {
+                    _token: '{{ csrf_token("delete") }}'
+                }, function () {
+                    location.reload();
+                });
+            }
+        });
+
+        $('#userForm').on('submit', function (e) {
+            e.preventDefault();
+            const id = $('#user-id').val();
+            const url = id ? `/admin/users/${id}/edit/confirm` : '/admin/users/create';
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function () {
+                    $('#userModal').modal('hide');
+                    location.reload();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

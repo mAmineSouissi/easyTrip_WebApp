@@ -2,9 +2,11 @@
 
 namespace App\Entity;
 
+
 use App\Entity\User;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+
 
 #[ORM\Entity]
 #[ORM\Table(name: "reclamation")]
@@ -12,12 +14,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Reclamation
 {
     #[ORM\Id]
+
     #[ORM\GeneratedValue(strategy: "IDENTITY")]
     #[ORM\Column(name: "id", type: "integer", nullable: false)]
     private ?int $id = null;
 
     #[ORM\Column(name: "status", type: "string", length: 15, nullable: false)]
     #[Assert\Choice(choices: ["En cours", "Fermée", "En attente"], message: "Le statut doit être 'En cours', 'Fermée' ou 'En attente'.")]
+
     private string $status;
 
     #[ORM\Column(name: "date", type: "date", nullable: false)]
