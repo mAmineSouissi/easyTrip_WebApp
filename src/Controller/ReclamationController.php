@@ -23,9 +23,9 @@ class ReclamationController extends AbstractController
     }
 
     private function getFakeUser(EntityManagerInterface $em): ?User
-{
-    return $em->getRepository(User::class)->findOneBy(['email' => 'oussema_666@outlook.fr']);
-}
+    {
+        return $em->getRepository(User::class)->findOneBy(['email' => 'oussema_666@outlook.fr']);
+    }
 
     #[Route('/test', name: 'gestion-test')]
     public function test(): Response
@@ -83,7 +83,7 @@ class ReclamationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $reclamation->setUserid($user);
+            $reclamation->setUser($user);
             $em->persist($reclamation);
             $em->flush();
 
@@ -136,26 +136,25 @@ class ReclamationController extends AbstractController
                 $reclamation->setIssue($originalIssue);
 
                 if ($originalStatus !== $reclamation->getStatus()) {
-                    $userEmail = $reclamation->getUserid()?->getEmail() ?? 'omsehli@gmail.com';
-                
+                    $userEmail = $reclamation->getUser()?->getEmail() ?? 'omsehli@gmail.com';
+
                     $email = (new Email())
-                        ->from('oussema.msehli@esprit.com') 
+                        ->from('oussema.msehli@esprit.com')
                         ->to($userEmail)
                         ->subject('📬 Statut mis à jour')
                         ->html("
-                            <p>Bonjour,</p>
-                            <p>Le statut de votre réclamation a changé :</p>
-                            <ul>
-                              <li><strong>Problème :</strong> {$reclamation->getIssue()}</li>
-                              <li><strong>Nouveau statut :</strong> {$reclamation->getStatus()}</li>
-                            </ul>
-                            <p>Merci pour votre confiance.<br>– EasyTrip</p>
-                        ");
-                
+                        <p>Bonjour,</p>
+                        <p>Le statut de votre réclamation a changé :</p>
+                        <ul>
+                        <li><strong>Problème :</strong> {$reclamation->getIssue()}</li>
+                        <li><strong>Nouveau statut :</strong> {$reclamation->getStatus()}</li>
+                        </ul>
+                        <p>Merci pour votre confiance.<br>– EasyTrip</p>
+                    ");
+
                     $mailer->send($email);
                     $this->addFlash('success', '✉️ Email envoyé à ' . $userEmail);
                 }
-                
             } else {
                 $reclamation->setStatus($originalStatus);
             }
@@ -199,33 +198,30 @@ class ReclamationController extends AbstractController
             ->to('oussema_666@outlook.fr')
             ->subject('🚀 Test d’envoi réel depuis Symfony')
             ->text('Ceci est un test réel envoyé via Gmail SMTP.');
-    
+
         $mailer->send($email);
-    
+
         $this->addFlash('success', '✅ Email réel envoyé (si la configuration Gmail est bonne)');
         return $this->redirectToRoute('reclamation_index');
     }
-    
 
     #[Route('/{id}/send-mail', name: 'reclamation_send_mail', methods: ['GET'])]
-public function sendMailManual(int $id, ReclamationRepository $repo, MailerInterface $mailer): Response
-{
-    $reclamation = $repo->find($id);
-    if (!$reclamation) {
-        throw $this->createNotFoundException('Réclamation introuvable');
+    public function sendMailManual(int $id, ReclamationRepository $repo, MailerInterface $mailer): Response
+    {
+        $reclamation = $repo->find($id);
+        if (!$reclamation) {
+            throw $this->createNotFoundException('Réclamation introuvable');
+        }
+
+        $email = (new Email())
+            ->from('oussema.msehli@esprit.com')
+            ->to($reclamation->getUser()?->getEmail() ?? 'oussema.msehli@esprit.com')
+            ->subject('📬 Suivi de votre réclamation')
+            ->html("<p>Bonjour,</p><p>Un administrateur vient de vous envoyer une notification liée à votre réclamation : <strong>{$reclamation->getIssue()}</strong>.</p><p><strong>Statut actuel :</strong> {$reclamation->getStatus()}</p><hr><p>L’équipe EasyTrip</p>");
+
+        $mailer->send($email);
+
+        $this->addFlash('success', '✉️ Email envoyé avec succès !');
+        return $this->redirectToRoute('reclamation_edit', ['id' => $id]);
     }
-
-    $email = (new Email())
-    ->from('oussema.msehli@esprit.com')
-        ->to($reclamation->getUserid()?->getEmail() ?? 'oussema.msehli@esprit.com')
-        ->subject('📬 Suivi de votre réclamation')
-        ->html("<p>Bonjour,</p><p>Un administrateur vient de vous envoyer une notification liée à votre réclamation : <strong>{$reclamation->getIssue()}</strong>.</p><p><strong>Statut actuel :</strong> {$reclamation->getStatus()}</p><hr><p>L’équipe EasyTrip</p>");
-
-    $mailer->send($email);
-
-    $this->addFlash('success', '✉️ Email envoyé avec succès !');
-    return $this->redirectToRoute('reclamation_edit', ['id' => $id]);
-}
-
-
 }
