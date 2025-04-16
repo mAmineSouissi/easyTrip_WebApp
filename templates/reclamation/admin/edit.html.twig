@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier le Statut - Réclamation{% endblock %}
+
+{% block body %}
+<div class="section bg-light py-5">
+  <div class="container">
+
+    {# ✅ Messages flash #}
+    {% for message in app.flashes('success') %}
+      <div class="alert alert-success text-center">{{ message }}</div>
+    {% endfor %}
+
+    <div class="row justify-content-between align-items-center mb-4">
+      <div class="col-lg-6">
+        <h2 class="fw-bold text-dark"><i class="fa fa-edit"></i> Modifier le Statut</h2>
+        <p class="text-muted">
+          📄 <strong>Problème :</strong> {{ reclamation.issue }}<br>
+          📁 <strong>Catégorie :</strong> {{ reclamation.category }}
+        </p>
+      </div>
+      <div class="col-lg-6 text-end">
+        <a href="{{ path('reclamation_index') }}" class="btn btn-outline-secondary rounded-pill me-2">
+          ↩️ Retour à la liste
+        </a>
+        <a href="{{ path('reclamation_send_mail', {id: reclamation.id}) }}" class="btn btn-outline-primary rounded-pill">
+          ✉️ Envoyer un mail
+        </a>
+      </div>
+    </div>
+
+    <div class="card p-4 shadow-sm border border-light">
+      {{ form_start(form) }}
+
+        <div class="mb-3">
+          {{ form_label(form.status, '🟢 Statut', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+          {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+          {{ form_errors(form.status) }}
+        </div>
+
+        {{ form_row(form._token) }}
+
+        <div class="text-center mt-4">
+          <button type="submit" class="btn text-white px-4 py-2" style="background-color: #228be6; border-radius: 20px;">
+            💾 Enregistrer le nouveau statut
+          </button>
+        </div>
+
+      {{ form_end(form, { render_rest: false }) }}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

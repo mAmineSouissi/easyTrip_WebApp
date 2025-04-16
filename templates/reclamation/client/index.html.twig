@@ -1,0 +1,141 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Réclamations{% endblock %}
+
+{% block body %}
+<div class="section bg-light py-5">
+  <div class="container">
+
+    {% for message in app.flashes('success') %}
+      <div class="alert alert-success text-center">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+      <div class="alert alert-danger text-center">{{ message }}</div>
+    {% endfor %}
+
+    <div class="row justify-content-between align-items-center mb-4">
+      <div class="col-lg-6">
+        <h2 class="heading"><i class="fa fa-bullhorn"></i> Mes Réclamations</h2>
+      </div>
+      <div class="col-lg-6 text-end">
+        <a href="{{ path('reclamation_new') }}" class="btn btn-success rounded-pill">
+          ➕ Nouvelle Réclamation
+        </a>
+      </div>
+    </div>
+
+    {# 🔍 Formulaire de recherche / tri #}
+    <form method="get" class="row mb-4 gy-2 gx-2 align-items-center">
+      <div class="col-md-4">
+        <input type="text" name="search" placeholder="🔍 Rechercher un problème..." value="{{ search }}" class="form-control">
+      </div>
+      <div class="col-md-3">
+        <select name="sort" class="form-select">
+          <option value="category" {% if sort == 'category' %}selected{% endif %}>Trier par catégorie</option>
+          <option value="status" {% if sort == 'status' %}selected{% endif %}>Trier par statut</option>
+          <option value="date" {% if sort == 'date' %}selected{% endif %}>Trier par date</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select name="order" class="form-select">
+          <option value="ASC" {% if order == 'ASC' %}selected{% endif %}>Croissant</option>
+          <option value="DESC" {% if order == 'DESC' %}selected{% endif %}>Décroissant</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+  <button type="submit"
+          class="btn w-50 rounded-pill"
+          style="background-color: #0d6efd; color: white; border: none;">
+    🔎 Filtrer
+  </button>
+  <a href="{{ path('reclamation_index') }}"
+     class="btn w-30 rounded-pill"
+     style="background-color: #f8f9fa; color: #212529; border: 1px solid #ced4da;">
+    ♻️ Réinitialiser
+  </a>
+</div>
+
+    </form>
+
+    {# 📋 Cartes des réclamations #}
+    <div class="row" id="reclamations-list">
+      {% for reclamation in reclamations %}
+        <div class="col-md-4 mb-4 reclamation-card">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title"><i class="bi bi-folder2-open"></i> {{ reclamation.category }}</h5>
+              <p class="card-text">
+                <strong>📝 Problème :</strong> {{ reclamation.issue }}<br>
+                <strong>📌 Statut :</strong>
+                {% if reclamation.status == 'En attente' %}
+                  <span class="badge bg-warning text-dark">En attente</span>
+                {% elseif reclamation.status == 'En cours' %}
+                  <span class="badge bg-info text-dark">En cours</span>
+                {% elseif reclamation.status == 'Fermée' %}
+                  <span class="badge bg-success">Fermée</span>
+                {% endif %}<br>
+                <strong>📅 Date :</strong> {{ reclamation.date ? reclamation.date|date('Y-m-d') : '—' }}
+              </p>
+            </div>
+            <div class="card-footer bg-transparent text-center">
+              <a href="{{ path('reclamation_show', {'id': reclamation.id}) }}"
+                 class="btn btn-primary text-white rounded-pill btn-sm">
+                👁️ Voir les détails
+              </a>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="text-center mt-4">
+          <p class="alert alert-info">🚫 Aucune réclamation trouvée.</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    {# 🔁 Pagination JS #}
+    <div class="text-center mt-4" id="pagination-controls"></div>
+
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const cards = document.querySelectorAll('.reclamation-card');
+    const itemsPerPage = 3;
+    let currentPage = 1;
+
+    function displayPage(page) {
+      const start = (page - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      cards.forEach((card, index) => {
+        card.style.display = index >= start && index < end ? 'block' : 'none';
+      });
+      renderPagination(page);
+    }
+
+    function renderPagination(current) {
+      const totalPages = Math.ceil(cards.length / itemsPerPage);
+      let html = '';
+
+      if (totalPages > 1) {
+        html += `<button class="btn btn-outline-secondary mx-1" ${current === 1 ? 'disabled' : ''} onclick="changePage(${current - 1})">⬅️</button>`;
+
+        for (let i = 1; i <= totalPages; i++) {
+          html += `<button class="btn btn-${i === current ? 'primary' : 'outline-primary'} mx-1" onclick="changePage(${i})">${i}</button>`;
+        }
+
+        html += `<button class="btn btn-outline-secondary mx-1" ${current === totalPages ? 'disabled' : ''} onclick="changePage(${current + 1})">➡️</button>`;
+      }
+
+      document.getElementById('pagination-controls').innerHTML = html;
+    }
+
+    window.changePage = function (page) {
+      currentPage = page;
+      displayPage(currentPage);
+    }
+
+    displayPage(currentPage);
+  });
+</script>
+{% endblock %}

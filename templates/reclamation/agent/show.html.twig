@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail Réclamation (Agent){% endblock %}
+
+{% block body %}
+<div class="section bg-light py-5">
+  <div class="container">
+
+    <div class="row mb-4">
+      <div class="col text-center">
+        <h2 class="heading"><i class="fa fa-eye"></i> Détails de la Réclamation</h2>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 600px;">
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">
+            <strong>📂 Catégorie :</strong> {{ reclamation.category }}
+          </li>
+          <li class="list-group-item">
+            <strong>📝 Problème :</strong> {{ reclamation.issue }}
+          </li>
+          <li class="list-group-item">
+            <strong>⏳ Statut :</strong> {{ reclamation.status }}
+          </li>
+          <li class="list-group-item">
+            <strong>📅 Date :</strong> {{ reclamation.date ? reclamation.date|date('Y-m-d') : '—' }}
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="{{ path('reclamation_index') }}" class="btn btn-outline-primary rounded-pill px-4">
+        ⬅️ Retour à la liste
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
