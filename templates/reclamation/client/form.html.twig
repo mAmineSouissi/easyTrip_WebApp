@@ -1,0 +1,30 @@
+{{ form_start(form) }}
+
+<div class="mb-3">
+  {{ form_label(form.category) }}
+  {{ form_widget(form.category, {'attr': {'class': 'form-select'}}) }}
+  {{ form_errors(form.category) }}
+</div>
+
+<div class="mb-3">
+  {{ form_label(form.issue) }}
+  {{ form_widget(form.issue, {'attr': {'class': 'form-control', 'maxlength': '50'}}) }}
+  {{ form_errors(form.issue) }}
+</div>
+
+{# Si le champ 'status' est disponible (admin uniquement) #}
+{% if form.status is defined %}
+  <div class="mb-3">
+    {{ form_label(form.status) }}
+    {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+    {{ form_errors(form.status) }}
+  </div>
+{% endif %}
+
+<div class="text-center mt-4">
+  <button class="btn btn-success rounded-pill px-4 py-2">
+    {{ button_label|default('✅ Envoyer') }}
+  </button>
+</div>
+
+{{ form_end(form) }}

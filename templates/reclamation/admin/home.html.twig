@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil Réclamations Admin{% endblock %}
+
+{% block body %}
+<div class="section bg-light py-5">
+  <div class="container">
+
+    {# 🔙 Bouton retour vers la page test #}
+    <div class="mb-4">
+      <a href="{{ path('gestion_test') }}" class="btn btn-outline-secondary rounded-pill">
+        ⬅ Retour à la page test
+      </a>
+    </div>
+
+    <div class="text-center">
+      <h2 class="mb-4"><i class="fa fa-bullhorn"></i> Gestion des Réclamations</h2>
+      <p class="lead text-muted">Bienvenue dans votre interface d’administration.</p>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+      <div class="col-md-6">
+        <div class="card shadow-sm border-start border-4 border-primary">
+          <div class="card-body text-center">
+            <h4 class="card-title mb-3"><i class="fa fa-list"></i> Liste des Réclamations</h4>
+            <p class="card-text">Accédez à toutes les réclamations enregistrées dans le système.</p>
+
+            <a href="{{ path('reclamation_index') }}" class="btn btn-outline-warning rounded-pill mt-3">
+              📋 Voir la liste
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

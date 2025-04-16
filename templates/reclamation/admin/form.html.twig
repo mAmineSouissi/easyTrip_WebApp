@@ -1,0 +1,29 @@
+{{ form_start(form) }}
+
+{# 📂 Catégorie en lecture seule #}
+<div class="mb-3">
+  <label class="form-label fw-semibold">📂 Catégorie</label>
+  <div class="form-control-plaintext">{{ reclamation.category }}</div>
+</div>
+
+{# 📝 Problème en lecture seule #}
+<div class="mb-3">
+  <label class="form-label fw-semibold">📝 Problème</label>
+  <div class="form-control-plaintext">{{ reclamation.issue }}</div>
+</div>
+
+{# ✅ Statut modifiable #}
+<div class="mb-3">
+  {{ form_label(form.status, '🟢 Statut', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+  {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+  {{ form_errors(form.status) }}
+</div>
+
+{# 🔘 Bouton de soumission #}
+<div class="text-center mt-3">
+  <button type="submit" class="btn text-white px-4 py-2" style="background-color: #228be6; border-radius: 20px;">
+    ✅ Enregistrer
+  </button>
+</div>
+
+{{ form_end(form) }}
