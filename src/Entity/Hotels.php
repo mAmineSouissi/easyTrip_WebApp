@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-use App\Entity\User;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Webinaire;
 
@@ -16,10 +15,7 @@ class Hotels
     #[ORM\Column(type: "integer")]
     private int $id_hotel;
 
-        #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "hotelss")]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private User $user_id;
-
+    
     #[ORM\Column(type: "string", length: 255)]
     private string $name;
 

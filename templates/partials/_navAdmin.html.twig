@@ -1,0 +1,45 @@
+<nav class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
+    <div class="container-fluid px-4 d-flex justify-content-between align-items-center">
+        <a class="navbar-brand text-white" href="#">EasyTrip Admin Dashboard</a>
+
+        <ul class="navbar-nav d-flex align-items-center ms-auto">
+            <li class="nav-item dropdown">
+                <a class="dropdown-toggle d-flex align-items-center text-white text-decoration-none" data-bs-toggle="dropdown" href="#" aria-expanded="false">
+                    <img src="{{ asset('img/profile.jpg') }}" alt="Avatar" class="rounded-circle me-2" style="width: 35px; height: 35px;">
+                    <div class="d-none d-md-block text-white text-decoration-none">
+                        <span class="op-7">Hi,</span> <span class="fw-bold text-white text-decoration-none">Hizrian</span>
+                    </div>
+                </a>
+
+                <ul class="dropdown-menu dropdown-user px-3 animated fadeIn dropdown-menu-end">
+                    <div class="dropdown-user-scroll scrollbar-outer">
+                        <li>
+                            <div class="user-box text-center">
+                                <div class="avatar avatar-lg mb-2">
+                                    <img src="{{ asset('img/profile.jpg') }}" alt="image profile" class="avatar-img rounded"/>
+                                </div>
+                                <div class="u-text">
+                                    <h4>Hizrian</h4>
+                                    <p class="text-muted">hello@example.com</p>
+                                    <a href="profile.html" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">My Profile</a>
+                            <a class="dropdown-item" href="#">My Balance</a>
+                            <a class="dropdown-item" href="#">Inbox</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Account Setting</a>
+                            <div class="dropdown-divider"></div>
+                            <div class="text-center py-2">
+                                <a class="btn btn-danger btn-sm w-100" href="{{ path('app_logout') }}">Logout</a>
+                            </div>
+                        </li>
+                    </div>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</nav>

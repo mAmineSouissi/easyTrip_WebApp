@@ -3,54 +3,44 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+
 use Doctrine\Common\Collections\Collection;
-use App\Entity\SurveyResponse;
+use App\Entity\Panier;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity]
-class User implements PasswordAuthenticatedUserInterface
+#[ORM\Table(name: "User")]
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
     private int $id;
 
     #[ORM\Column(type: "string", length: 255)]
-    #[Assert\NotBlank(message: "Name cannot be blank")]
     private string $name;
 
     #[ORM\Column(type: "string", length: 255)]
-    #[Assert\NotBlank(message: "Surname cannot be blank")]
     private string $surname;
 
     #[ORM\Column(type: "string", length: 255)]
-    #[Assert\NotBlank(message: "Password cannot be blank")]
     private string $password;
 
     #[ORM\Column(type: "string", length: 255)]
-    #[Assert\NotBlank(message: "Email cannot be blank")]
-    #[Assert\Email(message: "Please enter a valid email address.")]
     private string $email;
 
     #[ORM\Column(type: "string", length: 20)]
-    #[Assert\NotBlank(message: "Phone number cannot be blank")]
-    #[Assert\Regex(
-        pattern: "/^[0-9]{10}$/",
-        message: "Please enter a valid phone number with 10 digits."
-    )]
     private string $phone;
 
     #[ORM\Column(type: "string", length: 255)]
-    #[Assert\NotBlank(message: "Address cannot be blank")]
     private string $addresse;
 
     #[ORM\Column(type: "string", length: 255)]
-    #[Assert\NotBlank(message: "Profile photo cannot be blank")]
     private string $profilePhoto;
 
     #[ORM\Column(type: "string", length: 255)]
-    #[Assert\NotBlank(message: "Role cannot be blank")]
     private string $role;
 
     public function getId()
@@ -86,6 +76,10 @@ class User implements PasswordAuthenticatedUserInterface
     public function getPassword(): ?string
     {
         return $this->password;
+    }
+    public function getUserIdentifier(): string
+    {
+        return $this->email; 
     }
 
     public function setPassword($value)
@@ -133,10 +127,23 @@ class User implements PasswordAuthenticatedUserInterface
         $this->profilePhoto = $value;
     }
 
+    public function getRoles(): array
+    {
+        $role = strtoupper($this->role); 
+        $symfonyRole = 'ROLE_' . $role; 
+    
+        // Always add ROLE_USER as a default role
+        return array_unique([$symfonyRole, 'ROLE_USER']);
+    }
     public function getRole()
     {
         return $this->role;
     }
+    public function eraseCredentials()
+    {
+        // If you store any temporary sensitive data, clear it here
+    }
+    
 
     public function setRole($value)
     {
@@ -203,51 +210,6 @@ class User implements PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Agency::class)]
-    private Collection $agencys;
-
-    #[ORM\OneToMany(mappedBy: "userId", targetEntity: Feedback::class)]
-    private Collection $feedbacks;
-
-    public function getFeedbacks(): Collection
-    {
-        return $this->feedbacks;
-    }
-
-    public function addFeedback(Feedback $feedback): self
-    {
-        if (!$this->feedbacks->contains($feedback)) {
-            $this->feedbacks[] = $feedback;
-            $feedback->setUserId($this);
-        }
-
-        return $this;
-    }
-
-    public function removeFeedback(Feedback $feedback): self
-    {
-        if ($this->feedbacks->removeElement($feedback)) {
-            // set the owning side to null (unless already changed)
-            if ($feedback->getUserId() === $this) {
-                $feedback->setUserId(null);
-            }
-        }
-
-        return $this;
-    }
-
-    #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Hotels::class)]
-    private Collection $hotelss;
-
-    #[ORM\OneToMany(mappedBy: "userId", targetEntity: Reclamation::class)]
-    private Collection $reclamations;
-
-    #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Tickets::class)]
-    private Collection $ticketss;
-
     #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Panier::class)]
     private Collection $paniers;
-
-    #[ORM\OneToMany(mappedBy: "user_id", targetEntity: SurveyResponse::class)]
-    private Collection $surveyresponses;
 }
