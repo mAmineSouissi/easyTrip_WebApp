@@ -51,7 +51,7 @@ class ReclamationRepository extends ServiceEntityRepository
     public function searchAndSortByUserQuery(User $user, ?string $keyword, string $sort = 'date', string $order = 'DESC'): Query
     {
         $qb = $this->createQueryBuilder('r')
-            ->andWhere('r.userid = :user')
+            ->andWhere('r.user = :user')
             ->setParameter('user', $user);
 
         if ($keyword) {

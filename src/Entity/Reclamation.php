@@ -35,7 +35,7 @@ class Reclamation
     private string $category;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'reclamations')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'userId', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
     // Getters et Setters
