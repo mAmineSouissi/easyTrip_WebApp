@@ -21,6 +21,14 @@ public function show(ReservationRepository $reservationRepository, Request $requ
     $prenom = $request->query->get('prenom');
     $orderDate = $request->query->get('orderDate');
 
+    //trier par nom
+    $sort = $request->query->get('sort', 'r.nom'); 
+    $direction = $request->query->get('direction', 'asc'); 
+    $allowedSorts = ['r.nom'];
+    if (!in_array($sort, $allowedSorts)) {
+        $sort = 'r.nom';
+    }
+
     $queryBuilder = $reservationRepository->createQueryBuilder('r');
 
     if ($nom) {
@@ -37,6 +45,10 @@ public function show(ReservationRepository $reservationRepository, Request $requ
         $queryBuilder->andWhere('r.orderDate = :orderDate')
                      ->setParameter('orderDate', $orderDate);
     }
+
+    $queryBuilder->orderBy($sort, $direction);
+        
+
 
     $pagination = $paginator->paginate(
         $queryBuilder->getQuery(),

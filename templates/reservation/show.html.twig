@@ -73,6 +73,8 @@ button {
 
 
 {% block body %}
+{% set currentSort = app.request.get('sort') %}
+{% set currentDirection = app.request.get('direction') %}
 <br><br><br>
 
  <form  data-turbo="false" method="get" action="{{ path('app_reservations') }}">
@@ -81,6 +83,18 @@ button {
     <input type="date" name="date" value="{{ app.request.get('orderDate') }}">
     <button type="submit">🔍 Rechercher</button>
     <a href="{{ path('app_reservations') }}">↺ Réinitialiser</a>
+     
+    <a href="{{ path('app_reservations', app.request.query.all | merge({
+      sort: 'r.nom',
+      direction: currentSort == 'r.nom' and currentDirection == 'asc' ? 'desc' : 'asc'
+      })) }}">
+      trier selon Nom 
+      {% if currentSort == 'r.nom' %}
+        {{ currentDirection == 'asc' ? '🔼' : '🔽' }}
+       {% endif %}
+    </a>
+
+
 </form>
 
 
