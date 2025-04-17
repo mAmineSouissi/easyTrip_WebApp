@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+	<div class="hero overlay">
+		<div class="img-bg rellax">
+			<img src="{{ asset('images/hero_2.jpg') }}" alt="Image" class="img-fluid">
+		</div>
+		<div class="container">
+			<div class="row align-items-center justify-content-start">
+				<div class="col-lg-6 mx-auto text-center">
+					<h1 class="heading" data-aos="fade-up">Service Réservation</h1>
+					<p data-aos="fade-up">Choisissez votre créneau et confirmez votre réservation en quelques étapes simples...</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'data-turbo': 'false'}}) }}
+	<div class="section">
+		<div class="container">
+			<div class="row">
+				<div class="col-12" data-aos="fade-up">
+					<h2 class="heading mb-5">Modifier service</h2>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-8" data-aos="fade-up" data-aos-delay="200">
+						<div class="row">
+							<div class="col-12 mb-3">
+                            {{ form_label(form.service) }}
+							{{ form_widget(form.service, { 'attr': { 'class': 'form-control', 'placeholder': 'Saisir ici service ' } }) }}
+                            {{ form_errors(form.service) }}
+							</div>
+
+							<div class="col-12 mb-3">
+                             {{ form_label(form.description) }}
+                             {{ form_widget(form.description, {
+                              'attr': {
+                                    'class': 'form-control',
+                                    'placeholder': 'Saisir description',
+                                    'rows': 7, 
+                                    'cols': 50  
+                                    }
+                                  }) }}
+                             {{ form_errors(form.description) }}
+                            </div>
+
+                          <br><br> <br><br>
+							<div class="col-12">
+							  <a href="{{ path('app_servicereservations') }}" class="btn btn-primary">← Retour </a>
+                              <button class="btn btn-primary" >Modifier</button>
+							</div>
+                        </div>
+				</div>
+			</div>
+		</div>
+	</div>
+ {{ form_end(form) }}
+<br>
+{% endblock %}

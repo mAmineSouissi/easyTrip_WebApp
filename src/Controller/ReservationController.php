@@ -15,24 +15,39 @@ use Symfony\Component\HttpFoundation\Request;
 class ReservationController extends AbstractController
 {
     #[Route('/reservations', name: 'app_reservations')]
-    public function show(ReservationRepository $reservationRepository, Request $request, PaginatorInterface $paginator): Response
-   {
+public function show(ReservationRepository $reservationRepository, Request $request, PaginatorInterface $paginator): Response
+{
     $nom = $request->query->get('nom');
+    $prenom = $request->query->get('prenom');
+    $orderDate = $request->query->get('orderDate');
+
     $queryBuilder = $reservationRepository->createQueryBuilder('r');
+
     if ($nom) {
-        $queryBuilder
-            ->where('r.nom LIKE :nom')
-            ->setParameter('nom', '%' . $nom . '%');
+        $queryBuilder->andWhere('r.nom LIKE :nom')
+                     ->setParameter('nom', '%' . $nom . '%');
     }
+
+    if ($prenom) {
+        $queryBuilder->andWhere('r.prenom LIKE :prenom')
+                     ->setParameter('prenom', '%' . $prenom . '%');
+    }
+
+    if ($orderDate) {
+        $queryBuilder->andWhere('r.orderDate = :orderDate')
+                     ->setParameter('orderDate', $orderDate);
+    }
+
     $pagination = $paginator->paginate(
-        $queryBuilder->getQuery(), 
-        $request->query->getInt('page', 1), 
+        $queryBuilder->getQuery(),
+        $request->query->getInt('page', 1),
         4
     );
+
     return $this->render('reservation/show.html.twig', [
         'pagination' => $pagination,
     ]);
-  }
+}
 
   #[Route('/reservation/ajouter', name: 'app_reservation_add')]
   public function add(Request $request, EntityManagerInterface $em): Response

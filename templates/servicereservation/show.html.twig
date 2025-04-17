@@ -75,53 +75,45 @@ button {
 {% block body %}
 <br><br><br>
 
- <form  data-turbo="false" method="get" action="{{ path('app_reservations') }}">
-    <input type="text" name="nom" placeholder="Nom" value="{{ app.request.get('nom') }}">
-    <input type="text" name="prenom" placeholder="Prénom" value="{{ app.request.get('prenom') }}">
-    <input type="date" name="date" value="{{ app.request.get('orderDate') }}">
+ <form method="get" action="{{ path('app_servicereservations') }}" data-turbo="false">
+    <input type="text" name="service" placeholder="Rechercher par service" value="{{ app.request.get('service') }}">
     <button type="submit">🔍 Rechercher</button>
-    <a href="{{ path('app_reservations') }}">↺ Réinitialiser</a>
-</form>
+    <a href="{{ path('app_servicereservations') }}">↺ Réinitialiser</a>
+ </form>
 
-
-   <a href="{{ path('app_reservation_add') }}" >➕ Ajouter une réservation</a> 
-   <a href="{{ path('app_servicereservation_add') }}" >➕ Ajouter un service</a>
     <table>
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Nom</th>
-                <th>Prénom</th>
-                <th>Téléphone</th>
-                <th>Email</th>
-                <th>Places</th>
+                <th>Service</th>
+                <th>Description</th>
                 <th>Actions</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-        {% for reservation in pagination.items %}
+        {% for servicereservation in pagination.items %}
             <tr>
-                <td>{{ reservation.orderDate|date('Y-m-d') }}</td>
-                <td>{{ reservation.nom }}</td>
-                <td>{{ reservation.prenom }}</td>
-                <td>{{ reservation.phone }}</td>
-                <td>{{ reservation.email }}</td>
-                <td>{{ reservation.places }}</td>
+                <td>{{ servicereservation.service }}</td>
+                <td>{{ servicereservation.description }}</td>
+
+
                <td>
-                 <form method="post"  data-turbo="false" action="{{ path('app_reservation_delete', {id_reservation: reservation.id_reservation}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?');" >
-                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id_reservation) }}">
-                 <button class="btn btn-danger">🗑</button>
-                 </form>
+                 <form method="post" data-turbo="false" 
+      action="{{ path('app_servicereservation_delete', {id_servicereservation: servicereservation.getIdServicereservation()}) }}" 
+      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce service ?');">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ servicereservation.getIdServicereservation()) }}">
+    <button class="btn btn-danger">🗑</button>
+</form>
+
                  </td>
-                <td>
-                   <button class="btn btn-success"> <a href="{{ path('app_reservation_edit', {id_reservation: reservation.id_reservation}) }}">✏️ </a></button>
-                </td>
+                <td><button class="btn btn-success">
+    <a href="{{ path('app_servicereservation_edit', {id_servicereservation: servicereservation.getIdServicereservation()}) }}">✏️</a>
+</button><td>
               
             </tr>
         {% else %}
             <tr>
-                <td colspan="6">Aucune réservation trouvée.</td>
+                <td colspan="6">Aucun service trouvé.</td>
             </tr>
         {% endfor %}
         </tbody>
@@ -130,7 +122,6 @@ button {
 <div class="pagination">
     {{ knp_pagination_render(pagination, 'pagination/bootstrap5.html.twig') }}
 </div>
-
 
 <br><br><br><br><br><br><br><br><br><br>
 {% endblock %}
