@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier le Feedback{% endblock %}
+
+{% block body %}
+<div class="section bg-light">
+  <div class="container">
+
+    {% for message in app.flashes('success') %}
+      <div class="alert alert-success text-center">
+        {{ message }}
+      </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+      <div class="alert alert-danger text-center">
+        {{ message }}
+      </div>
+    {% endfor %}
+
+    <div class="row justify-content-between align-items-center mb-4">
+      <div class="col-lg-6">
+        <h2 class="heading"><i class="fa fa-edit"></i> Modifier le Feedback</h2>
+      </div>
+      <div class="col-lg-3 text-end">
+        <a href="{{ path('feedback_index') }}" class="btn btn-primary">
+          ⬅️ Retour
+        </a>
+      </div>
+    </div>
+
+    <div class="card p-4 shadow-sm">
+      {{ form_start(form) }}
+
+        <div class="mb-3">
+          {{ form_label(form.message) }}
+          {{ form_widget(form.message, {'attr': {'class': 'form-control'}}) }}
+          {{ form_errors(form.message) }}
+        </div>
+
+        <div class="mb-3">
+          {{ form_label(form.rating) }}
+          {{ form_widget(form.rating) }}
+          {{ form_errors(form.rating) }}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Offre liée</label>
+          <div class="form-control bg-light">
+            {% if feedback.hotel %}
+              🏨 Hôtel : {{ feedback.hotel.name }}
+            {% elseif feedback.ticket %}
+              ✈️ Ticket : {{ feedback.ticket.flightNumber }}
+            {% elseif feedback.travel %}
+              🧳 Voyage : {{ feedback.travel.destination }}
+            {% else %}
+              —
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-warning px-4 py-2">
+            💾 Enregistrer
+          </button>
+        </div>
+
+      {{ form_end(form) }}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

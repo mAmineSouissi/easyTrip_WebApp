@@ -1,0 +1,121 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Feedbacks{% endblock %}
+
+{% block body %}
+<div class="section bg-light">
+  <div class="container">
+
+    <div class="row justify-content-between align-items-center mb-4">
+      <div class="col-lg-6">
+        <h2 class="heading"><i class="fa fa-comment-dots"></i> Mes Feedbacks</h2>
+      </div>
+      <div class="col-lg-6 text-end">
+        <a href="{{ path('feedback_new', { type: 'hotel', id: 1 }) }}" class="btn btn-success me-2">
+          ➕ Ajouter un Feedback
+        </a>
+        <a href="{{ path('gestion_test') }}" class="btn btn-outline-secondary">
+          ⬅️ Retour à l'accueil
+        </a>
+      </div>
+    </div>
+
+    <form method="get" class="row mb-4 gy-2 gx-2 align-items-center">
+      <div class="col-md-4">
+        <input type="text" name="q" placeholder="🔍 Rechercher un feedback..." value="{{ app.request.get('q') }}" class="form-control">
+      </div>
+      <div class="col-md-3">
+        <select name="sort" class="form-select">
+          <option value="message" {% if app.request.get('sort') == 'message' %}selected{% endif %}>Trier par message</option>
+          <option value="rating" {% if app.request.get('sort') == 'rating' %}selected{% endif %}>Trier par note</option>
+          <option value="date" {% if app.request.get('sort') == 'date' %}selected{% endif %}>Trier par date</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select name="dir" class="form-select">
+          <option value="ASC" {% if app.request.get('dir') == 'ASC' %}selected{% endif %}>Croissant</option>
+          <option value="DESC" {% if app.request.get('dir') == 'DESC' %}selected{% endif %}>Décroissant</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-outline-primary w-100">🔎 Filtrer</button>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle">
+        <thead class="table-dark text-center">
+          <tr>
+            <th>Message</th>
+            <th>Note</th>
+            <th>Date</th>
+            <th>Offre liée</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="feedback-table-body">
+          {% for feedback in feedbacks %}
+            <tr>
+              <td>{{ feedback.message }}</td>
+              <td>{{ feedback.rating }}/5</td>
+              <td>{{ feedback.date ? feedback.date|date('Y-m-d') : '—' }}</td>
+              <td>
+                {% if feedback.hotel %}
+                  🏨 Hôtel : {{ feedback.hotel.name }}
+                {% elseif feedback.ticket %}
+                  ✈️ Ticket : {{ feedback.ticket.flightNumber }}
+                {% elseif feedback.travel %}
+                  🧳 Voyage : {{ feedback.travel.destination }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td class="text-center">
+                <a href="{{ path('feedback_show', {'id': feedback.id}) }}"
+                   class="btn btn-sm text-white px-2"
+                   style="background-color: #ff922b; border-radius: 20px;"
+                   title="Voir">
+                  <i class="bi bi-eye"></i> Voir
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div id="pagination" class="text-center mt-3"></div>
+
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const rows = document.querySelectorAll("#feedback-table-body tr");
+    const itemsPerPage = 5;
+    let currentPage = 1;
+    const totalPages = Math.ceil(rows.length / itemsPerPage);
+    const paginationContainer = document.getElementById("pagination");
+
+    function showPage(page) {
+      rows.forEach((row, index) => {
+        row.style.display = (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) ? '' : 'none';
+      });
+      renderPagination(page);
+    }
+
+    function renderPagination(active) {
+      paginationContainer.innerHTML = "";
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.className = "btn btn-sm mx-1 " + (i === active ? "btn-primary text-white" : "btn-outline-dark");
+        btn.addEventListener("click", () => showPage(i));
+        paginationContainer.appendChild(btn);
+      }
+    }
+
+    if (rows.length > 0) showPage(currentPage);
+  });
+</script>
+{% endblock %}

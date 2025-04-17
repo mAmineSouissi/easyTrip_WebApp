@@ -1,0 +1,66 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Détail du Feedback - Admin{% endblock %}
+
+{% block body %}
+<div class="section bg-light py-5">
+  <div class="container">
+
+    <!-- 🔙 Retour -->
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+      <h2 class="fw-bold text-primary">
+        <i class="fa fa-comment-dots"></i> Détail du Feedback
+      </h2>
+      <a href="{{ path('feedback_index') }}" class="btn btn-outline-dark rounded-pill">
+        ← Retour à la liste
+      </a>
+    </div>
+
+    <!-- 📋 Détails -->
+    <div class="card shadow-sm border-start border-primary border-4">
+      <div class="card-body p-4">
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <p><strong>📝 Message :</strong><br> {{ feedback.message }}</p>
+          </div>
+          <div class="col-md-2">
+            <p><strong>⭐ Note :</strong><br> {{ feedback.rating }}/5</p>
+          </div>
+          <div class="col-md-3">
+            <p><strong>📅 Date :</strong><br> {{ feedback.date ? feedback.date|date('Y-m-d') : '—' }}</p>
+          </div>
+          <div class="col-md-3">
+            <p><strong>👤 Utilisateur :</strong><br> {{ feedback.user ? feedback.user.email : '—' }}</p>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="row text-center">
+          <div class="col-md-4">
+            <p><strong>✈️ Ticket :</strong><br>
+              {% if feedback.ticket %}
+                Vol {{ feedback.ticket.flight_number }}<br>
+                {{ feedback.ticket.departure_city }} ➡ {{ feedback.ticket.arrival_city }}
+              {% else %}
+                —
+              {% endif %}
+            </p>
+          </div>
+          <div class="col-md-4">
+            <p><strong>🏨 Hôtel :</strong><br>
+              {{ feedback.hotel ? feedback.hotel.name : '—' }}
+            </p>
+          </div>
+          <div class="col-md-4">
+            <p><strong>🌍 Voyage :</strong><br>
+              {{ feedback.travel ? feedback.travel.destination : '—' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

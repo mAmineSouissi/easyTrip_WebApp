@@ -1,0 +1,153 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Offres & Feedbacks{% endblock %}
+
+{% block body %}
+<div class="section bg-light py-5">
+  <div class="container">
+
+    <!-- 🔙 Retour -->
+    <div class="mb-4 text-end">
+      <a href="{{ path('gestion_test') }}" class="btn btn-secondary">
+        ⬅️ Retour au dashboard
+      </a>
+    </div>
+
+    <!-- 🔍 Barre de recherche -->
+    <form method="get" class="row mb-4">
+      <div class="col-md-10">
+        <input type="text" name="search" value="{{ app.request.get('search') }}"
+               class="form-control" placeholder="🔍 Rechercher une offre (nom, destination...)">
+      </div>
+      <div class="col-md-2 text-end">
+        <button type="submit" class="btn btn-dark w-100">Rechercher</button>
+      </div>
+    </form>
+
+    {% if topOffers is not empty %}
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title">📊 Top Offres les Mieux Notées</h5>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+              <thead class="table-light text-center">
+                <tr>
+                  <th>#</th>
+                  <th>Type</th>
+                  <th>Offre</th>
+                  <th>Note</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for offer in topOffers %}
+                  <tr>
+                    <td class="text-center">🥇{{ loop.index }}</td>
+                    <td class="text-center">{{ offer.type }}</td>
+                    <td>{{ offer.label }}</td>
+                    <td class="text-center">⭐ {{ offer.avg }}/5</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <h2 class="mb-4 text-center">💼 Feedbacks sur vos Offres</h2>
+    <div class="row">
+
+      <!-- HÔTELS -->
+      <div class="col-md-4">
+        <h4 class="text-primary text-center">🏨 Hôtels</h4>
+        <div id="hotel-list">
+          {% for hotel in hotels %}
+            <div class="card shadow-sm border-primary p-3 mb-3">
+              <h5>{{ hotel.name }}</h5>
+              <small class="text-muted">{{ hotelCounts[hotel.idHotel]|default(0) }} feedback(s)</small>
+              <a href="{{ path('feedback_by_offer', { type: 'hotel', id: hotel.idHotel }) }}"
+                 class="btn btn-sm btn-primary w-100 mt-2 text-white">👁️ Voir feedbacks</a>
+            </div>
+          {% endfor %}
+        </div>
+        <div id="hotel-pagination" class="text-center mt-3"></div>
+      </div>
+
+      <!-- TICKETS -->
+      <div class="col-md-4">
+        <h4 class="text-success text-center">✈️ Tickets</h4>
+        <div id="ticket-list">
+          {% for ticket in tickets %}
+            <div class="card shadow-sm border-success p-3 mb-3">
+              <h5>{{ ticket.departureCity }} ➝ {{ ticket.arrivalCity }}</h5>
+              <small class="text-muted">{{ ticketCounts[ticket.idTicket]|default(0) }} feedback(s)</small>
+              <a href="{{ path('feedback_by_offer', { type: 'ticket', id: ticket.idTicket }) }}"
+                 class="btn btn-sm btn-success w-100 mt-2 text-white">👁️ Voir feedbacks</a>
+            </div>
+          {% endfor %}
+        </div>
+        <div id="ticket-pagination" class="text-center mt-3"></div>
+      </div>
+
+      <!-- VOYAGES -->
+      <div class="col-md-4">
+        <h4 class="text-info text-center">🌍 Voyages</h4>
+        <div id="travel-list">
+          {% for travel in travels %}
+            <div class="card shadow-sm border-info p-3 mb-3">
+              <h5>{{ travel.departure }} ➝ {{ travel.destination }}</h5>
+              <small class="text-muted">{{ travelCounts[travel.id]|default(0) }} feedback(s)</small>
+              <a href="{{ path('feedback_by_offer', { type: 'travel', id: travel.id }) }}"
+                 class="btn btn-sm btn-info w-100 mt-2 text-white">👁️ Voir feedbacks</a>
+            </div>
+          {% endfor %}
+        </div>
+        <div id="travel-pagination" class="text-center mt-3"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ✅ PAGINATION JS MULTI-COLONNE (2 items / page avec style visible) -->
+<script>
+  function paginate(sectionId, paginationId, itemsPerPage = 2) {
+    const container = document.getElementById(sectionId);
+    const pagination = document.getElementById(paginationId);
+    const items = container.querySelectorAll('.card');
+    let currentPage = 1;
+    const totalPages = Math.ceil(items.length / itemsPerPage);
+
+    function showPage(page) {
+      items.forEach((el, i) => {
+        el.style.display = (i >= (page - 1) * itemsPerPage && i < page * itemsPerPage) ? 'block' : 'none';
+      });
+      renderPagination(page);
+    }
+
+    function renderPagination(current) {
+      pagination.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.className = 'btn btn-sm mx-1 ' + (i === current ? 'btn-primary text-white' : 'btn-outline-dark');
+        btn.addEventListener('click', () => {
+          currentPage = i;
+          showPage(i);
+        });
+        pagination.appendChild(btn);
+      }
+    }
+
+    if (items.length > 0) {
+      showPage(currentPage);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    paginate('hotel-list', 'hotel-pagination', 2);
+    paginate('ticket-list', 'ticket-pagination', 2);
+    paginate('travel-list', 'travel-pagination', 2);
+  });
+</script>
+{% endblock %}

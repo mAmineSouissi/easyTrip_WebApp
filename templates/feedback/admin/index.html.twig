@@ -1,0 +1,157 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Feedbacks - Administration{% endblock %}
+
+{% block body %}
+<div class="section bg-light py-5">
+  <div class="container">
+
+    <!-- 🔙 Retour -->
+    <div class="mb-4">
+      <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-dark rounded-pill">
+        ⬅ Retour au Dashboard
+      </a>
+    </div>
+
+    <!-- 🧾 Titre -->
+    <h2 class="mb-4 fw-bold text-dark"><i class="fa fa-comments"></i> Feedbacks - Administration</h2>
+
+    <!-- 🔍 Filtres -->
+    <form method="get" class="row gy-2 gx-2 align-items-center mb-4">
+      <div class="col-md-3">
+        <input type="text" name="q" placeholder="🔍 Rechercher un message..." value="{{ app.request.get('q') }}" class="form-control rounded-pill">
+      </div>
+      <div class="col-md-2">
+        <select name="sort" class="form-select rounded-pill">
+          <option value="message" {% if app.request.get('sort') == 'message' %}selected{% endif %}>Trier par message</option>
+          <option value="rating" {% if app.request.get('sort') == 'rating' %}selected{% endif %}>Trier par note</option>
+          <option value="date" {% if app.request.get('sort') == 'date' %}selected{% endif %}>Trier par date</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="dir" class="form-select rounded-pill">
+          <option value="ASC" {% if app.request.get('dir') == 'ASC' %}selected{% endif %}>Croissant</option>
+          <option value="DESC" {% if app.request.get('dir') == 'DESC' %}selected{% endif %}>Décroissant</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="type" class="form-select rounded-pill">
+          <option value="">Tous types</option>
+          <option value="hotel" {% if app.request.get('type') == 'hotel' %}selected{% endif %}>Hôtel</option>
+          <option value="ticket" {% if app.request.get('type') == 'ticket' %}selected{% endif %}>Ticket</option>
+          <option value="travel" {% if app.request.get('type') == 'travel' %}selected{% endif %}>Voyage</option>
+        </select>
+      </div>
+      <div class="col-md-1">
+        <button class="btn btn-outline-primary rounded-pill w-100">🔎</button>
+      </div>
+      <div class="col-md-2">
+        <a href="{{ path('feedback_index') }}" class="btn btn-outline-danger rounded-pill w-100">♻ Réinitialiser</a>
+      </div>
+    </form>
+
+    <!-- 📋 Tableau -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle text-center">
+        <thead class="table-dark">
+          <tr>
+            <th>Message</th>
+            <th>Note</th>
+            <th>Date</th>
+            <th>Utilisateur</th>
+            <th>Ticket</th>
+            <th>Hôtel</th>
+            <th>Voyage</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="admin-feedback-table">
+          {% for feedback in feedbacks %}
+            <tr>
+              <td>{{ feedback.message }}</td>
+              <td>{{ feedback.rating }}/5</td>
+              <td>{{ feedback.date ? feedback.date|date('Y-m-d') : '—' }}</td>
+              <td class="text-start">
+                {% set feedbackCount = feedback.user.feedbacks|length %}
+                {% set badge = '' %}
+                {% set color = '' %}
+                {% if feedbackCount >= 10 %}
+                  {% set badge = '🏅 Super Actif' %}
+                  {% set color = 'success' %}
+                {% elseif feedbackCount >= 5 %}
+                  {% set badge = '👍 Actif' %}
+                  {% set color = 'primary' %}
+                {% elseif feedbackCount >= 2 %}
+                  {% set badge = '🙂 Débutant' %}
+                  {% set color = 'warning' %}
+                {% else %}
+                  {% set badge = '💤 Inactif' %}
+                  {% set color = 'secondary' %}
+                {% endif %}
+                <div>{{ feedback.user.email }}</div>
+                <span class="badge bg-{{ color }}">{{ badge }}</span>
+              </td>
+              <td>
+                {% if feedback.ticket %}
+                  Vol {{ feedback.ticket.getFlight_number() }}<br>
+                  {{ feedback.ticket.getDeparture_city() }} ➡ {{ feedback.ticket.getArrival_city() }}
+                {% else %} — {% endif %}
+              </td>
+              <td>{{ feedback.hotel ? feedback.hotel.name : '—' }}</td>
+              <td>{{ feedback.travel ? feedback.travel.destination : '—' }}</td>
+              <td class="d-flex gap-1 justify-content-center">
+                <a href="{{ path('feedback_show', {'id': feedback.id}) }}" class="btn btn-sm btn-outline-warning rounded-pill px-3">
+                  <i class="bi bi-eye"></i> Voir
+                </a>
+                <form method="post" action="{{ path('feedback_delete', {'id': feedback.id}) }}" onsubmit="return confirm('Confirmer la suppression ?');">
+                  <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ feedback.id) }}">
+                  <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                    <i class="bi bi-trash"></i> Supprimer
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="8" class="text-center">🚫 Aucun feedback trouvé.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 📄 Pagination JS -->
+    <div id="pagination" class="text-center mt-4"></div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const rows = document.querySelectorAll("#admin-feedback-table tr");
+    const itemsPerPage = 6;
+    let currentPage = 1;
+    const totalPages = Math.ceil(rows.length / itemsPerPage);
+    const paginationContainer = document.getElementById("pagination");
+
+    function showPage(page) {
+      rows.forEach((row, index) => {
+        row.style.display = (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) ? '' : 'none';
+      });
+      renderPagination(page);
+    }
+
+    function renderPagination(active) {
+      paginationContainer.innerHTML = "";
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.className = "btn btn-sm mx-1 " + (i === active ? "btn-primary text-white" : "btn-outline-dark");
+        btn.addEventListener("click", () => showPage(i));
+        paginationContainer.appendChild(btn);
+      }
+    }
+
+    if (rows.length > 0) showPage(currentPage);
+  });
+</script>
+{% endblock %}

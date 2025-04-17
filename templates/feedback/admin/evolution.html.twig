@@ -1,0 +1,85 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Évolution des Feedbacks{% endblock %}
+
+{% block body %}
+<div class="section bg-light py-5">
+  <div class="container">
+
+    <!-- 🔙 Retour -->
+    <div class="mb-4">
+      <a href="{{ path('feedback_home_admin') }}" class="btn btn-outline-dark rounded-pill">
+        ⬅ Retour
+      </a>
+    </div>
+
+    <!-- 🧾 Titre -->
+    <h2 class="mb-4 fw-bold text-dark"><i class="fa fa-chart-line"></i> Évolution des Feedbacks</h2>
+
+    <!-- 📊 Graphe -->
+    <div class="bg-white border rounded shadow-sm p-4 mb-4">
+      <canvas id="feedbackChart" height="100"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  window.addEventListener('load', function () {
+    const labels = {{ data|map(f => f.feedback_date)|json_encode|raw }};
+    const counts = {{ data|map(f => f.total)|json_encode|raw }};
+
+    const ctx = document.getElementById('feedbackChart')?.getContext('2d');
+    if (!ctx) return;
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Feedbacks par jour',
+          data: counts,
+          borderColor: '#007bff',
+          backgroundColor: 'rgba(0, 123, 255, 0.2)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 4,
+          pointBackgroundColor: '#007bff'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true, position: 'top' },
+          tooltip: { mode: 'index', intersect: false }
+        },
+        interaction: {
+          mode: 'nearest',
+          axis: 'x',
+          intersect: false
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Date'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Nombre de feedbacks'
+            },
+            ticks: {
+              precision: 0
+            }
+          }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

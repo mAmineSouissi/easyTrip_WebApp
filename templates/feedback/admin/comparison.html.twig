@@ -1,0 +1,63 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Comparaison Mensuelle - Feedbacks{% endblock %}
+
+{% block body %}
+<div class="section bg-light py-5">
+  <div class="container">
+
+    <!-- 🔙 Retour -->
+    <div class="mb-4">
+      <a href="{{ path('feedback_home_admin') }}" class="btn btn-outline-dark rounded-pill">
+        ⬅ Retour à l'accueil
+      </a>
+    </div>
+
+    <!-- 🧾 Titre -->
+    <h2 class="mb-4 fw-bold text-dark">
+      <i class="fa fa-balance-scale"></i> Comparaison des Feedbacks Mensuels
+    </h2>
+
+    {% if current and previous %}
+      {% set diff = current.total - previous.total %}
+      {% set change = diff > 0 ? '+' ~ diff : (diff < 0 ? diff : '0') %}
+      {% set color = diff > 0 ? 'success' : (diff < 0 ? 'danger' : 'secondary') %}
+      {% set icon = diff > 0 ? 'bi-arrow-up-circle-fill' : (diff < 0 ? 'bi-arrow-down-circle-fill' : 'bi-dash-circle') %}
+
+      <div class="card shadow-sm border-start border-{{ color }} border-4">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <h5 class="text-dark">📅 Mois en cours : 
+                <span class="badge bg-primary">{{ current.month }}</span>
+              </h5>
+              <p class="mb-0">Nombre de feedbacks : <strong>{{ current.total }}</strong></p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <h5 class="text-dark">📅 Mois précédent : 
+                <span class="badge bg-secondary">{{ previous.month }}</span>
+              </h5>
+              <p class="mb-0">Nombre de feedbacks : <strong>{{ previous.total }}</strong></p>
+            </div>
+          </div>
+
+          <hr>
+
+          <h4 class="text-center mt-3">
+            📈 Évolution :
+            <span class="text-{{ color }} fw-bold">
+              <i class="bi {{ icon }}"></i> {{ change }} feedbacks
+            </span>
+          </h4>
+        </div>
+      </div>
+    {% else %}
+      <div class="alert alert-warning text-center shadow-sm">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        Pas assez de données pour comparer les mois (au moins deux mois requis).
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

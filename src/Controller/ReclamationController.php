@@ -130,6 +130,23 @@ class ReclamationController extends AbstractController
     {
         return in_array('ROLE_ADMIN', $user->getRoles(), true) ? 'admin' : 'agent';
     }
+
+    #[Route('/mail-test', name: 'mail_test')]
+    public function testMail(MailerInterface $mailer): Response
+    {
+        $email = (new Email())
+            ->from('omsehli@gmail.com')
+            ->to('oussema_666@outlook.fr')
+            ->subject('🚀 Test d’envoi réel depuis Symfony')
+            ->text('Ceci est un test réel envoyé via Gmail SMTP.');
+    
+        $mailer->send($email);
+    
+        $this->addFlash('success', '✅ Email réel envoyé (si la configuration Gmail est bonne)');
+        return $this->redirectToRoute('reclamation_index');
+    }
+    
+    
     #[Route('/{id}/send-mail', name: 'reclamation_send_mail', methods: ['GET'])]
     public function sendMailManual(int $id, ReclamationRepository $repo, MailerInterface $mailer): Response
     {
