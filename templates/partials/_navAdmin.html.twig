@@ -5,9 +5,9 @@
         <ul class="navbar-nav d-flex align-items-center ms-auto">
             <li class="nav-item dropdown">
                 <a class="dropdown-toggle d-flex align-items-center text-white text-decoration-none" data-bs-toggle="dropdown" href="#" aria-expanded="false">
-                    <img src="{{ asset('img/profile.jpg') }}" alt="Avatar" class="rounded-circle me-2" style="width: 35px; height: 35px;">
+                    <img src="{{ app.user.profilePhoto }}" alt="Avatar" class="rounded-circle me-2" style="width: 35px; height: 35px;">
                     <div class="d-none d-md-block text-white text-decoration-none">
-                        <span class="op-7">Hi,</span> <span class="fw-bold text-white text-decoration-none">Hizrian</span>
+                        <span class="op-7">Hi,</span> <span class="fw-bold text-white text-decoration-none">{{app.user.name}}</span>
                     </div>
                 </a>
 
@@ -19,8 +19,8 @@
                                     <img src="{{ asset('img/profile.jpg') }}" alt="image profile" class="avatar-img rounded"/>
                                 </div>
                                 <div class="u-text">
-                                    <h4>Hizrian</h4>
-                                    <p class="text-muted">hello@example.com</p>
+                                    <h4>{{app.user.name}}</h4>
+                                    <p class="text-muted">{{app.user.email}}</p>
                                     <a href="profile.html" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
                                 </div>
                             </div>

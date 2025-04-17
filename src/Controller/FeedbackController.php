@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\Feedback;
 use App\Entity\Hotels;
 use App\Entity\Tickets;
-use App\Entity\OfferTravel;
+use App\Entity\Offer_travel;
 use App\Entity\User;
 use App\Form\FeedbackType;
 use App\Repository\FeedbackRepository;
@@ -43,28 +43,28 @@ class FeedbackController extends AbstractController
             if (!$agent) throw $this->createNotFoundException("Agent non trouvé.");
 
             $hotels = array_filter(
-                $em->getRepository(Hotels::class)->findBy(['user' => $agent]),
+                $em->getRepository(Hotels::class)->findBy(['user_id' => $agent]),
                 fn($h) => !$query || stripos($h->getName(), $query) !== false
             );
 
             $tickets = array_filter(
-                $em->getRepository(Tickets::class)->findBy(['user' => $agent]),
-                fn($t) => !$query || stripos($t->getDepartureCity(), $query) !== false || stripos($t->getArrivalCity(), $query) !== false
+                $em->getRepository(Tickets::class)->findBy(['user_id' => $agent]),
+                fn($t) => !$query || stripos($t->getDeparture_city(), $query) !== false || stripos($t->getArrival_city(), $query) !== false
             );
 
             $travels = array_filter(
-                $em->getRepository(OfferTravel::class)->findBy(['user' => $agent]),
+                $em->getRepository(Offer_travel::class)->findBy(['user_id' => $agent]),
                 fn($t) => !$query || stripos($t->getDeparture(), $query) !== false || stripos($t->getDestination(), $query) !== false
             );
 
             $hotelCounts = [];
             foreach ($hotels as $hotel) {
-                $hotelCounts[$hotel->getIdHotel()] = $feedbackRepository->countByOffer('hotel', $hotel->getIdHotel());
+                $hotelCounts[$hotel->getId_hotel()] = $feedbackRepository->countByOffer('hotel', $hotel->getId_hotel());
             }
 
             $ticketCounts = [];
             foreach ($tickets as $ticket) {
-                $ticketCounts[$ticket->getIdTicket()] = $feedbackRepository->countByOffer('ticket', $ticket->getIdTicket());
+                $ticketCounts[$ticket->getId_ticket()] = $feedbackRepository->countByOffer('ticket', $ticket->getId_ticket());
             }
 
             $travelCounts = [];
@@ -86,10 +86,10 @@ class FeedbackController extends AbstractController
                         break;
                     case 'ticket':
                         $entity = $em->getRepository(Tickets::class)->find($entry['offer_id']);
-                        $label = $entity ? $entity->getDepartureCity() . ' ➔ ' . $entity->getArrivalCity() : 'Ticket inconnu';
+                        $label = $entity ? $entity->getDeparture_city() . ' ➔ ' . $entity->getArrival_city() : 'Ticket inconnu';
                         break;
                     case 'travel':
-                        $entity = $em->getRepository(OfferTravel::class)->find($entry['offer_id']);
+                        $entity = $em->getRepository(Offer_travel::class)->find($entry['offer_id']);
                         $label = $entity ? $entity->getDeparture() . ' ➔ ' . $entity->getDestination() : 'Voyage inconnu';
                         break;
                 }
@@ -155,7 +155,7 @@ class FeedbackController extends AbstractController
         $feedback = new Feedback();
         $user = $em->getRepository(User::class)->findOneBy(['role' => 'Client']);
         if (!$user) throw $this->createNotFoundException("Client non trouvé.");
-        $feedback->setUserid($user);
+        $feedback->setUser($user);
 
         switch ($type) {
             case 'hotel':
@@ -169,7 +169,7 @@ class FeedbackController extends AbstractController
                 $feedback->setTicket($entity);
                 break;
             case 'travel':
-                $entity = $em->getRepository(OfferTravel::class)->find($id);
+                $entity = $em->getRepository(Offer_travel::class)->find($id);
                 if (!$entity) throw $this->createNotFoundException("Voyage introuvable.");
                 $feedback->setTravel($entity);
                 break;
@@ -258,38 +258,35 @@ class FeedbackController extends AbstractController
     }
 
     #[Route('/admin/statistics/evolution', name: 'feedback_evolution', methods: ['GET'])]
-public function evolution(FeedbackRepository $feedbackRepository): Response
-{
-    $data = $feedbackRepository->getFeedbackCountByDate();
+    public function evolution(FeedbackRepository $feedbackRepository): Response
+    {
+        $data = $feedbackRepository->getFeedbackCountByDate();
 
-    return $this->render('feedback/admin/evolution.html.twig', [
-        'data' => $data,
-    ]);
-}
+        return $this->render('feedback/admin/evolution.html.twig', [
+            'data' => $data,
+        ]);
+    }
 
-#[Route('/admin/statistics/comparison', name: 'feedback_month_comparison', methods: ['GET'])]
-public function monthlyComparison(FeedbackRepository $feedbackRepository): Response
-{
-    $data = $feedbackRepository->getMonthlyComparison();
+    #[Route('/admin/statistics/comparison', name: 'feedback_month_comparison', methods: ['GET'])]
+    public function monthlyComparison(FeedbackRepository $feedbackRepository): Response
+    {
+        $data = $feedbackRepository->getMonthlyComparison();
+        $current = $data[0] ?? null;
+        $previous = $data[1] ?? null;
 
-    // Parser les deux mois (si dispo)
-    $current = $data[0] ?? null;
-    $previous = $data[1] ?? null;
+        return $this->render('feedback/admin/comparison.html.twig', [
+            'current' => $current,
+            'previous' => $previous,
+        ]);
+    }
 
-    return $this->render('feedback/admin/comparison.html.twig', [
-        'current' => $current,
-        'previous' => $previous,
-    ]);
-}
+    #[Route('/admin/statistics/negative', name: 'feedback_negative', methods: ['GET'])]
+    public function negativeFeedbacks(FeedbackRepository $feedbackRepository): Response
+    {
+        $feedbacks = $feedbackRepository->findNegativeFeedbacks();
 
-#[Route('/admin/statistics/negative', name: 'feedback_negative', methods: ['GET'])]
-public function negativeFeedbacks(FeedbackRepository $feedbackRepository): Response
-{
-    $feedbacks = $feedbackRepository->findNegativeFeedbacks();
-
-    return $this->render('feedback/admin/negative.html.twig', [
-        'feedbacks' => $feedbacks,
-    ]);
-}
-
+        return $this->render('feedback/admin/negative.html.twig', [
+            'feedbacks' => $feedbacks,
+        ]);
+    }
 }

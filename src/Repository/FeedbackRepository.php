@@ -65,7 +65,7 @@ class FeedbackRepository extends ServiceEntityRepository
     public function findByUser(int $userId): Query
     {
         return $this->createQueryBuilder('f')
-            ->andWhere('f.userid = :userId')
+            ->andWhere('f.userId = :userId')
             ->setParameter('userId', $userId)
             ->orderBy('f.date', 'DESC')
             ->getQuery();
@@ -80,7 +80,7 @@ class FeedbackRepository extends ServiceEntityRepository
         if (!in_array($sort, $allowedFields)) $sort = 'date';
 
         $qb = $this->createQueryBuilder('f')
-            ->andWhere('f.userid = :user')
+            ->andWhere('f.userId = :user')
             ->setParameter('user', $user);
 
         if ($search) {
@@ -249,7 +249,7 @@ class FeedbackRepository extends ServiceEntityRepository
 {
     return $this->createQueryBuilder('f')
         ->select('COUNT(f.id)')
-        ->andWhere('f.userid = :userId')
+        ->andWhere('f.userId = :userId')
         ->setParameter('userId', $userId)
         ->getQuery()
         ->getSingleScalarResult();
