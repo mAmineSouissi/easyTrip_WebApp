@@ -39,3 +39,5 @@ security:
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/, roles: PUBLIC_ACCESS }
+        - { path: ^/contact, roles: ROLE_CLIENT }
+        - { path: /reclamation, roles: [ROLE_AGENT, ROLE_ADMIN] }

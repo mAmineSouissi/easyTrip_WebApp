@@ -10,40 +10,19 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/reclamation')]
 class ReclamationController extends AbstractController
 {
-    private function getFakeRole(): string
-    {
-        return 'admin'; // ou 'agent' / 'client'
-    }
-
-    private function getFakeUser(EntityManagerInterface $em): ?User
-{
-    return $em->getRepository(User::class)->findOneBy(['email' => 'oussema_666@outlook.fr']);
-}
-
-    #[Route('/test', name: 'gestion-test')]
-    public function test(): Response
-    {
-        return $this->render('reclamation/test/gestion_test.html.twig');
-    }
-
-    #[Route('/admin/home', name: 'reclamation_home_admin')]
-    public function adminHome(): Response
-    {
-        return $this->render('reclamation/admin/home.html.twig');
-    }
-
     #[Route('/', name: 'reclamation_index', methods: ['GET'])]
-    public function index(Request $request, ReclamationRepository $reclamationRepository, EntityManagerInterface $em): Response
+    public function index(Request $request, ReclamationRepository $reclamationRepository): Response
     {
-        $role = $this->getFakeRole();
-        $user = $this->getFakeUser($em);
+        /** @var User $user */
+        $user = $this->getUser();
+        $role = $this->getUserRole($user);
 
         $keyword = $request->query->get('search');
         $sort = $request->query->get('sort', 'date');
@@ -67,23 +46,23 @@ class ReclamationController extends AbstractController
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $reclamation = new Reclamation();
-        $role = $this->getFakeRole();
-        $user = $this->getFakeUser($em);
+        /** @var User $user */
+        $user = $this->getUser();
+        $role = $this->getUserRole($user);
 
         $reclamation->setDate(new \DateTime());
 
-        if ($role !== 'admin') {
+        if ($role === 'agent') {
             $reclamation->setStatus('En attente');
         }
 
-        $form = $this->createForm(ReclamationType::class, $reclamation, [
-            'user_role' => $role,
-        ]);
+        // ✅ Removed 'user_role' option
+        $form = $this->createForm(ReclamationType::class, $reclamation);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $reclamation->setUserid($user);
+            $reclamation->setUser($user);
             $em->persist($reclamation);
             $em->flush();
 
@@ -96,15 +75,12 @@ class ReclamationController extends AbstractController
         ]);
     }
 
-    #[Route('/show/{id}', name: 'reclamation_show', methods: ['GET'])]
-    public function show(int $id, ReclamationRepository $reclamationRepository): Response
+    #[Route('/{id}', name: 'reclamation_show', methods: ['GET'])]
+    public function show(Reclamation $reclamation): Response
     {
-        $reclamation = $reclamationRepository->find($id);
-        if (!$reclamation) {
-            throw $this->createNotFoundException('Réclamation non trouvée.');
-        }
-
-        $role = $this->getFakeRole();
+        /** @var User $user */
+        $user = $this->getUser();
+        $role = $this->getUserRole($user);
 
         return $this->render("reclamation/{$role}/show.html.twig", [
             'reclamation' => $reclamation,
@@ -112,120 +88,65 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'reclamation_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, int $id, ReclamationRepository $reclamationRepository, EntityManagerInterface $em, MailerInterface $mailer): Response
+    public function edit(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
     {
-        $reclamation = $reclamationRepository->find($id);
-        if (!$reclamation) {
-            throw $this->createNotFoundException('Réclamation non trouvée.');
-        }
-
-        $role = $this->getFakeRole();
-        $originalStatus = $reclamation->getStatus();
-        $originalCategory = $reclamation->getCategory();
-        $originalIssue = $reclamation->getIssue();
-
         $form = $this->createForm(ReclamationType::class, $reclamation, [
-            'user_role' => $role,
+            'is_edit' => true, // tell the form to lock category and issue
         ]);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if ($role === 'admin') {
-                $reclamation->setCategory($originalCategory);
-                $reclamation->setIssue($originalIssue);
-
-                if ($originalStatus !== $reclamation->getStatus()) {
-                    $userEmail = $reclamation->getUserid()?->getEmail() ?? 'omsehli@gmail.com';
-                
-                    $email = (new Email())
-                        ->from('oussema.msehli@esprit.com') 
-                        ->to($userEmail)
-                        ->subject('📬 Statut mis à jour')
-                        ->html("
-                            <p>Bonjour,</p>
-                            <p>Le statut de votre réclamation a changé :</p>
-                            <ul>
-                              <li><strong>Problème :</strong> {$reclamation->getIssue()}</li>
-                              <li><strong>Nouveau statut :</strong> {$reclamation->getStatus()}</li>
-                            </ul>
-                            <p>Merci pour votre confiance.<br>– EasyTrip</p>
-                        ");
-                
-                    $mailer->send($email);
-                    $this->addFlash('success', '✉️ Email envoyé à ' . $userEmail);
-                }
-                
-            } else {
-                $reclamation->setStatus($originalStatus);
-            }
-
+            // Only the status will be updated because the other fields are disabled
             $em->flush();
-            $this->addFlash('success', '✅ Réclamation modifiée avec succès.');
 
-            return $this->redirectToRoute('reclamation_edit', ['id' => $id]);
+            $this->addFlash('success', '✅ Le statut a été mis à jour avec succès !');
+
+            return $this->redirectToRoute('reclamation_index');
         }
 
-        return $this->render("reclamation/{$role}/edit.html.twig", [
-            'form' => $form->createView(),
+        return $this->render('reclamation/admin/edit.html.twig', [
+            'form' => $form,
             'reclamation' => $reclamation,
         ]);
     }
 
-    #[Route('/{id}', name: 'reclamation_delete', methods: ['POST'])]
-    public function delete(Request $request, int $id, ReclamationRepository $reclamationRepository, EntityManagerInterface $em): Response
-    {
-        $reclamation = $reclamationRepository->find($id);
-        if (!$reclamation) {
-            throw $this->createNotFoundException('Réclamation non trouvée.');
-        }
 
+
+    #[Route('/{id}', name: 'reclamation_delete', methods: ['POST'])]
+    public function delete(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
+    {
         if ($this->isCsrfTokenValid('delete' . $reclamation->getId(), $request->request->get('_token'))) {
             $em->remove($reclamation);
             $em->flush();
-            $this->addFlash('success', '🖑️ Réclamation supprimée avec succès.');
-        } else {
-            $this->addFlash('error', '❌ Échec de la suppression de la réclamation.');
+
+            $this->addFlash('danger', '🗑️ Réclamation supprimée avec succès.');
         }
 
         return $this->redirectToRoute('reclamation_index');
     }
 
-    #[Route('/mail-test', name: 'mail_test')]
-    public function testMail(MailerInterface $mailer): Response
+    private function getUserRole(User $user): string
     {
-        $email = (new Email())
-            ->from('omsehli@gmail.com')
-            ->to('oussema_666@outlook.fr')
-            ->subject('🚀 Test d’envoi réel depuis Symfony')
-            ->text('Ceci est un test réel envoyé via Gmail SMTP.');
-    
-        $mailer->send($email);
-    
-        $this->addFlash('success', '✅ Email réel envoyé (si la configuration Gmail est bonne)');
-        return $this->redirectToRoute('reclamation_index');
+        return in_array('ROLE_ADMIN', $user->getRoles(), true) ? 'admin' : 'agent';
     }
-    
-
     #[Route('/{id}/send-mail', name: 'reclamation_send_mail', methods: ['GET'])]
-public function sendMailManual(int $id, ReclamationRepository $repo, MailerInterface $mailer): Response
-{
-    $reclamation = $repo->find($id);
-    if (!$reclamation) {
-        throw $this->createNotFoundException('Réclamation introuvable');
+    public function sendMailManual(int $id, ReclamationRepository $repo, MailerInterface $mailer): Response
+    {
+        $reclamation = $repo->find($id);
+        if (!$reclamation) {
+            throw $this->createNotFoundException('Réclamation introuvable');
+        }
+
+        $email = (new Email())
+            ->from('oussema.msehli@esprit.com')
+            ->to($reclamation->getUser()?->getEmail() ?? 'oussema.msehli@esprit.com')
+            ->subject('📬 Suivi de votre réclamation')
+            ->html("<p>Bonjour,</p><p>Un administrateur vient de vous envoyer une notification liée à votre réclamation : <strong>{$reclamation->getIssue()}</strong>.</p><p><strong>Statut actuel :</strong> {$reclamation->getStatus()}</p><hr><p>L’équipe EasyTrip</p>");
+
+        $mailer->send($email);
+
+        $this->addFlash('success', '✉️ Email envoyé avec succès !');
+        return $this->redirectToRoute('reclamation_edit', ['id' => $id]);
     }
-
-    $email = (new Email())
-    ->from('oussema.msehli@esprit.com')
-        ->to($reclamation->getUserid()?->getEmail() ?? 'oussema.msehli@esprit.com')
-        ->subject('📬 Suivi de votre réclamation')
-        ->html("<p>Bonjour,</p><p>Un administrateur vient de vous envoyer une notification liée à votre réclamation : <strong>{$reclamation->getIssue()}</strong>.</p><p><strong>Statut actuel :</strong> {$reclamation->getStatus()}</p><hr><p>L’équipe EasyTrip</p>");
-
-    $mailer->send($email);
-
-    $this->addFlash('success', '✉️ Email envoyé avec succès !');
-    return $this->redirectToRoute('reclamation_edit', ['id' => $id]);
-}
-
-
 }
