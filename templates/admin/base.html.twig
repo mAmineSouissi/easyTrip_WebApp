@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>
+			{% block title %}Admin Dashboard
+			{% endblock %}
+		</title>
+
+		<!-- Preconnect for fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link
+		rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+		<!-- Web Fonts -->
+		<script src="{{ asset('js/plugin/webfont/webfont.min.js') }}"></script>
+
+		{% block stylesheets %}
+			<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+			<link rel="icon" href="{{ asset('img/kaiadmin/favicon.ico') }}" type="image/x-icon"/>
+			<link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
+			<link rel="stylesheet" href="{{ asset('css/plugins.min.css') }}">
+			<link rel="stylesheet" href="{{ asset('css/kaiadmin.min.css') }}">
+			<link rel="stylesheet" href="{{ asset('css/demo.css') }}">
+			<style>
+				body,
+				html {
+					height: 100%;
+					margin: 0;
+				}
+
+				.wrapper {
+					display: flex;
+					height: 100vh;
+					flex-direction: row;
+				}
+
+				.sidebar {
+					height: 100%;
+					width: 250px;
+					position: fixed;
+					top: 0;
+					left: 0;
+					background-color: #343a40;
+					overflow-y: auto;
+					z-index: 1000;
+				}
+
+				nav.navbar {
+					position: fixed;
+					top: 0;
+					left: 250px;
+					right: 0;
+					z-index: 999;
+					background-color: #343a40;
+					padding: 15px 20px;
+					box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+					height: 70px;
+				}
+
+				.main-panel {
+					margin-left: 250px;
+					background-color: #f8f9fa;
+					flex-grow: 1;
+					height: 100%;
+					overflow-y: auto;
+					padding: 90px 30px 30px; /* top = navbar height + spacing */
+				}
+
+				/* Wrap body content for centered layout */
+				.main-content-wrapper {
+					max-width: 1000px;
+					margin: 0 auto;
+				}
+
+				.sidebar .nav-item {
+					margin-bottom: 10px;
+				}
+
+				.sidebar .nav-link {
+					color: #fff;
+					padding: 10px 20px;
+					font-size: 1.1rem;
+					text-align: left;
+				}
+
+				.sidebar .nav-link:hover {
+					background-color: #495057;
+				}
+
+				.sidebar .collapse {
+					background-color: #495057;
+				}
+				.main-header {
+					background-color: transparent !important;
+					padding: 0 !important;
+					box-shadow: none !important;
+				}
+			</style>
+		{% endblock %}
+
+		{% block javascripts_head %}{% endblock %}
+	</head>
+	<body>
+		<!-- Sidebar -->
+		{% include 'partials/_sidebar.html.twig' %}
+
+		<div class="main-panel">
+			<div
+				class="main-header">
+				<!-- Navbar -->
+				{% include 'partials/_navAdmin.html.twig' %}
+			</div>
+
+			<!-- Main Content Centered -->
+			<div class="main-content-wrapper"> {% block body %}{% endblock %}
+				</div>
+			</div>
+
+			{% block javascripts %}
+				<script src="{{ asset('js/core/jquery-3.7.1.min.js') }}"></script>
+				<script src="{{ asset('js/core/popper.min.js') }}"></script>
+				<script src="{{ asset('js/core/bootstrap.min.js') }}"></script>
+				<script src="{{ asset('js/plugin/jquery-scrollbar/jquery.scrollbar.min.js') }}"></script>
+				<script src="{{ asset('js/plugin/chart.js/chart.min.js') }}"></script>
+				<script src="{{ asset('js/plugin/jquery.sparkline/jquery.sparkline.min.js') }}"></script>
+				<script src="{{ asset('js/plugin/chart-circle/circles.min.js') }}"></script>
+				<script src="{{ asset('js/plugin/datatables/datatables.min.js') }}"></script>
+				<script src="{{ asset('js/plugin/bootstrap-notify/bootstrap-notify.min.js') }}"></script>
+				<script src="{{ asset('js/plugin/jsvectormap/jsvectormap.min.js') }}"></script>
+				<script src="{{ asset('js/plugin/jsvectormap/world.js') }}"></script>
+				<script src="{{ asset('js/plugin/sweetalert/sweetalert.min.js') }}"></script>
+				<script src="{{ asset('js/kaiadmin.min.js') }}"></script>
+				<script src="{{ asset('js/setting-demo.js') }}"></script>
+				<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+				<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+			{% endblock %}
+		</body>
+	</html>

@@ -1,0 +1,62 @@
+{% extends 'admin/base.html.twig' %}
+
+
+{% block body %}
+    <div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <div class="text-center">
+            <h1 class="display-4 mb-4">Coming Soon!</h1>
+            <p class="lead mb-4">We're working hard to bring you this feature. Stay tuned!</p>
+            <div class="countdown mt-4">
+                <div class="d-flex justify-content-center">
+                    <div class="countdown-item mx-2">
+                        <h3 class="display-3" id="days">00</h3>
+                        <p>Days</p>
+                    </div>
+                    <div class="countdown-item mx-2">
+                        <h3 class="display-3" id="hours">00</h3>
+                        <p>Hours</p>
+                    </div>
+                    <div class="countdown-item mx-2">
+                        <h3 class="display-3" id="minutes">00</h3>
+                        <p>Minutes</p>
+                    </div>
+                    <div class="countdown-item mx-2">
+                        <h3 class="display-3" id="seconds">00</h3>
+                        <p>Seconds</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-4">We will be live soon. Thank you for your patience!</p>
+        </div>
+    </div>
+
+    <!-- Countdown Timer Script -->
+    <script>
+        function countdownTimer() {
+            const targetDate = new Date('2025-12-31T00:00:00').getTime(); // Set your target date
+
+            const interval = setInterval(function () {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                if (distance <= 0) {
+                    clearInterval(interval);
+                    document.querySelector('.countdown').innerHTML = "<h2>We're Live!</h2>";
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById('days').textContent = days;
+                document.getElementById('hours').textContent = hours;
+                document.getElementById('minutes').textContent = minutes;
+                document.getElementById('seconds').textContent = seconds;
+            }, 1000);
+        }
+
+        countdownTimer();
+    </script>
+{% endblock %}

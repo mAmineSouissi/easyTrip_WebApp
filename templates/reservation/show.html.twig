@@ -1,150 +1,86 @@
-{% extends 'base.html.twig'%}
-{% block stylesheets %}
-<style>
- table {
-            width: 90%; /* Remplir toute la largeur disponible */
-            border-collapse: collapse; /* Supprimer l'espace entre les bordures des cellules */
-            margin: 20px auto; /* Marge autour du tableau et centré */
-            padding-right: 10px;
-            padding-left: 10px; /* Padding à droite du tableau */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombre discrète autour du tableau */
-            border-radius: 8px; /* Bords arrondis pour un effet plus moderne */
-            background-color: #fff; /* Fond du tableau blanc pour le contraste */
-        }
-
- th, td {
-            padding: 15px 20px; /* Espacement autour du texte */
-            text-align: center; /* Centrer le texte dans les cellules */
-            border: 1px solid #ddd; /* Bordure fine et discrète autour des cellules */
-            font-family: 'Arial', sans-serif; /* Police moderne */
-            font-size: 1rem; /* Taille de texte uniforme */
-        }
-
- th {
-            background-color: #e3d8c8; /* Couleur de fond plus moderne pour les en-têtes */
-            color: white; /* Texte blanc dans les en-têtes */
-            font-weight: bold; /* En-têtes en gras */
-            text-transform: uppercase; /* Majuscules pour les en-têtes */
-        }
-
-tbody tr:hover {
-            background-color: #f1f1f1; 
-            transition: background-color 0.3s ease; 
-        }
-
-tbody tr:nth-child(odd) {
-      background-color: #f9f9f9; 
-}
-tbody tr:nth-child(even) {
-      background-color: #ffffff; }
-
-form {
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: center; 
-    gap: 10px; 
-}
-input[type="text"] {
-    padding: 8px;
-    width: 250px; /* Largeur du champ de recherche */
-    border: 1px solid #ccc;
-    border-radius: 4px; /* Coins arrondis */
-}
-button {
-    padding: 8px 15px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-.pagination {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-.pagination .pagination {
-    margin: 0;
-}
-
-
-</style>
-{% endblock %}
-
+{% extends 'base.html.twig' %}
 
 {% block body %}
 {% set currentSort = app.request.get('sort') %}
 {% set currentDirection = app.request.get('direction') %}
 <br><br><br>
 
- <form  data-turbo="false" method="get" action="{{ path('app_reservations') }}">
-    <input type="text" name="nom" placeholder="Nom" value="{{ app.request.get('nom') }}">
-    <input type="text" name="prenom" placeholder="Prénom" value="{{ app.request.get('prenom') }}">
-    <input type="date" name="date" value="{{ app.request.get('orderDate') }}">
-    <button type="submit">🔍 Rechercher</button>
-    <a href="{{ path('app_reservations') }}">↺ Réinitialiser</a>
-     
-    <a href="{{ path('app_reservations', app.request.query.all | merge({
-      sort: 'r.nom',
-      direction: currentSort == 'r.nom' and currentDirection == 'asc' ? 'desc' : 'asc'
-      })) }}">
-      trier selon Nom 
-      {% if currentSort == 'r.nom' %}
-        {{ currentDirection == 'asc' ? '🔼' : '🔽' }}
-       {% endif %}
+<form method="get" action="{{ path('app_reservations') }}" data-turbo="false"  style="margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
+    <input type="text" name="nom" placeholder="Nom" value="{{ app.request.get('nom') }}" style="padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px;">
+    <input type="text" name="prenom" placeholder="Prénom" value="{{ app.request.get('prenom') }}" style="padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px;">
+    <input type="date" name="date" value="{{ app.request.get('orderDate') }}" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+    
+    <button type="submit" style="padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px;">🔍 Rechercher</button>
+
+    <a href="{{ path('app_reservations') }}" style="padding: 8px 15px; background-color: #0d6efd; color: white; text-decoration: none; border-radius: 4px;">
+        <i class="bi bi-plus-circle me-1"></i> ↺ Réinitialiser
     </a>
 
-
+    <a href="{{ path('app_reservations', app.request.query.all | merge({
+        sort: 'r.nom',
+        direction: currentSort == 'r.nom' and currentDirection == 'asc' ? 'desc' : 'asc'
+    })) }}" style="padding: 8px 15px; background-color: #0d6efd; color: white; text-decoration: none; border-radius: 4px;">
+        Trier selon Nom 
+        {% if currentSort == 'r.nom' %}
+            {{ currentDirection == 'asc' ? '🔼' : '🔽' }}
+        {% endif %}
+    </a>
 </form>
 
+<div style="text-align: end; margin-bottom: 20px;">
+    <a href="{{ path('app_reservation_add') }}" style="padding: 8px 15px; background-color: #28a745; color: white; border-radius: 4px; text-decoration: none;">
+        <i class="bi bi-plus-circle me-1"></i> Ajouter une réservation
+    </a>
+</div>
 
-   <a href="{{ path('app_reservation_add') }}" >➕ Ajouter une réservation</a> 
-   <a href="{{ path('app_servicereservation_add') }}" >➕ Ajouter un service</a>
-    <table>
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Nom</th>
-                <th>Prénom</th>
-                <th>Téléphone</th>
-                <th>Email</th>
-                <th>Places</th>
-                <th>Actions</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for reservation in pagination.items %}
-            <tr>
-                <td>{{ reservation.orderDate|date('Y-m-d') }}</td>
-                <td>{{ reservation.nom }}</td>
-                <td>{{ reservation.prenom }}</td>
-                <td>{{ reservation.phone }}</td>
-                <td>{{ reservation.email }}</td>
-                <td>{{ reservation.places }}</td>
-               <td>
-                 <form method="post"  data-turbo="false" action="{{ path('app_reservation_delete', {id_reservation: reservation.id_reservation}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?');" >
-                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id_reservation) }}">
-                 <button class="btn btn-danger">🗑</button>
-                 </form>
-                 </td>
-                <td>
-                   <button class="btn btn-success"> <a href="{{ path('app_reservation_edit', {id_reservation: reservation.id_reservation}) }}">✏️ </a></button>
-                </td>
-              
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">Aucune réservation trouvée.</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<div style="text-align: end; margin-bottom: 20px;">
+    <a href="{{ path('app_servicereservation_add') }}" style="padding: 8px 15px; background-color: #28a745; color: white; border-radius: 4px; text-decoration: none;">
+        <i class="bi bi-plus-circle me-1"></i> Ajouter un service
+    </a>
+</div>
 
-<div class="pagination">
+<table style="width: 90%; border-collapse: collapse; margin: 20px auto; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 8px; background-color: #fff;">
+    <thead>
+        <tr style="background-color: #e3d8c8; color: white; text-transform: uppercase;">
+            <th style="padding: 15px 20px; border: 1px solid #ddd;">Date</th>
+            <th style="padding: 15px 20px; border: 1px solid #ddd;">Nom</th>
+            <th style="padding: 15px 20px; border: 1px solid #ddd;">Prénom</th>
+            <th style="padding: 15px 20px; border: 1px solid #ddd;">Téléphone</th>
+            <th style="padding: 15px 20px; border: 1px solid #ddd;">Email</th>
+            <th style="padding: 15px 20px; border: 1px solid #ddd;">Places</th>
+            <th colspan="2" style="padding: 15px 20px; border: 1px solid #ddd;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for reservation in pagination.items %}
+        <tr style="background-color: {{ loop.index is odd ? '#f9f9f9' : '#ffffff' }};" onmouseover="this.style.backgroundColor='#f1f1f1';" onmouseout="this.style.backgroundColor='{{ loop.index is odd ? '#f9f9f9' : '#ffffff' }}';">
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.orderDate|date('Y-m-d') }}</td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.nom }}</td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.prenom }}</td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.phone }}</td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.email }}</td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.places }}</td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">
+                <form method="post" data-turbo="false" action="{{ path('app_reservation_delete', {id_reservation: reservation.id_reservation}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id_reservation) }}">
+                    <button style="padding: 5px 10px; background-color: #dc3545; color: white; border: none; border-radius: 4px;">🗑</button>
+                </form>
+            </td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">
+                <a href="{{ path('app_reservation_edit', {id_reservation: reservation.id_reservation}) }}" style="padding: 5px 10px; background-color: #198754; color: white; border-radius: 4px; text-decoration: none;">✏️</a>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="8" style="text-align: center; padding: 15px 20px;">Aucune réservation trouvée.</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<div style="display: flex; justify-content: center; margin-top: 20px;">
     {{ knp_pagination_render(pagination, 'pagination/bootstrap5.html.twig') }}
 </div>
 
-
-<br><br><br><br><br><br><br><br><br><br>
+<br><br>
 {% endblock %}

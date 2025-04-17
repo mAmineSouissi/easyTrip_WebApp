@@ -112,5 +112,16 @@ public function show(ReservationRepository $reservationRepository, Request $requ
        ]);
    }
 
+
+
+   #[Route('/adminreservations', name: 'app_adminreservations')]
+public function adminshow(ReservationRepository $reservationRepository, Request $request, PaginatorInterface $paginator): Response
+{
+    $reservations = $reservationRepository->findAll();
+    return $this->render('reservation/admin_show.html.twig', [
+        'reservations' => $reservations
+    ]);
+}
+
     
 }
