@@ -202,8 +202,34 @@ class User implements PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Agency::class)]
-    private Collection $agencys;
+    #[ORM\OneToMany(mappedBy: "user", targetEntity: Agency::class)]
+    private Collection $agencies;
+
+ 
+
+public function getAgencies(): Collection
+{
+    return $this->agencies;
+}
+
+public function addAgency(Agency $agency): self
+{
+    if (!$this->agencies->contains($agency)) {
+        $this->agencies[] = $agency;
+        $agency->setUser($this);
+    }
+    return $this;
+}
+
+public function removeAgency(Agency $agency): self
+{
+    if ($this->agencies->removeElement($agency)) {
+        // set the owning side to null (unless already changed)
+        if ($agency->getUser() === $this) {
+            $agency->setUser(null);
+        }
+    }
+    return $this;}
 
     #[ORM\OneToMany(mappedBy: "userId", targetEntity: Feedback::class)]
     private Collection $feedbacks;

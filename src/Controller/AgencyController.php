@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Agency;
 use App\Form\AgencyType;
+use App\Entity\User; // Ajout de l'import
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -33,6 +34,15 @@ final class AgencyController extends AbstractController
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $agency = new Agency();
+        
+        // Définir l'utilisateur avec ID 12 par défaut
+        $user = $em->getRepository(User::class)->find(12);
+        if ($user) {
+            $agency->setUser($user);
+        } else {
+            $this->addFlash('error', 'L\'utilisateur par défaut (ID:12) n\'existe pas');
+            return $this->redirectToRoute('app_agency_index');
+        }
         $form = $this->createForm(AgencyType::class, $agency);
         $form->handleRequest($request);
 
@@ -94,7 +104,14 @@ final class AgencyController extends AbstractController
 
     #[Route('/{id}/edit', name: 'app_agency_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Agency $agency, EntityManagerInterface $em): Response
-    {
+    {   // S'assurer que l'utilisateur est bien ID 12
+        $user = $em->getRepository(User::class)->find(12);
+        if ($user) {
+            $agency->setUser($user);
+        } else {
+            $this->addFlash('error', 'L\'utilisateur par défaut (ID:12) n\'existe pas');
+            return $this->redirectToRoute('app_agency_index');
+        }
         $form = $this->createForm(AgencyType::class, $agency);
         $form->handleRequest($request);
 
