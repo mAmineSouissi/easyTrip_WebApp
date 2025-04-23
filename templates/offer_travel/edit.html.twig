@@ -215,6 +215,18 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
+            const form = document.getElementById('edit-offer-form');
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Désactiver la validation HTML5 pour permettre la soumission sans image
+            form.noValidate = true;
+            
+            // Vous pouvez ajouter ici une validation personnalisée si nécessaire
+            return true;
+        });
+    }
             // Gestion de la prévisualisation de l'image
             const imageInput = document.getElementById('offer_travel_imageFile');
             const imagePreview = document.getElementById('imagePreview');

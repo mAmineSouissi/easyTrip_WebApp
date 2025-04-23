@@ -108,67 +108,69 @@ class OfferTravelController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_offer_travel_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, OfferTravel $offerTravel, EntityManagerInterface $em, SluggerInterface $slugger): Response
-    {
-        // Calculer le prix initial (avant promotion, si applicable)
-        $originalPrice = $offerTravel->getPromotion() 
-            ? $offerTravel->getPrice() / (1 - $offerTravel->getPromotion()->getDiscountPercentage() / 100)
-            : $offerTravel->getPrice();
+public function edit(Request $request, OfferTravel $offerTravel, EntityManagerInterface $em, SluggerInterface $slugger): Response
+{
+    // Calculer le prix initial (avant promotion, si applicable)
+    $originalPrice = $offerTravel->getPromotion() 
+        ? $offerTravel->getPrice() / (1 - $offerTravel->getPromotion()->getDiscountPercentage() / 100)
+        : $offerTravel->getPrice();
 
-        $form = $this->createForm(OfferTravelType::class, $offerTravel, [
-            'original_price' => round($originalPrice, 2),
-            'promotions' => $em->getRepository(Promotion::class)->findAll(),
-        ]);
+    $form = $this->createForm(OfferTravelType::class, $offerTravel, [
+        'original_price' => round($originalPrice, 2),
+        'promotions' => $em->getRepository(Promotion::class)->findAll(),
+        'required_image' => false, // Ajoutez cette ligne
+    ]);
 
-        $form->handleRequest($request);
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $imageFile = $form->get('imageFile')->getData();
-            $newPromotion = $offerTravel->getPromotion();
+    if ($form->isSubmitted() && $form->isValid()) {
+        $imageFile = $form->get('imageFile')->getData();
+        $newPromotion = $offerTravel->getPromotion();
 
-            // Recalculer le prix si la promotion a changé
-            if ($newPromotion) {
-                $newPrice = $originalPrice * (1 - $newPromotion->getDiscountPercentage() / 100);
-                $offerTravel->setPrice(round($newPrice, 2));
-            } else {
-                $offerTravel->setPrice(round($originalPrice, 2));
-            }
-            
-            if ($imageFile) {
-                if ($offerTravel->getImage()) {
-                    $oldFilename = basename($offerTravel->getImage());
-                    $oldPath = $this->getParameter('offers_images_directory').'/'.$oldFilename;
-                    if (file_exists($oldPath)) {
-                        unlink($oldPath);
-                    }
-                }
-
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
-
-                try {
-                    $imageFile->move(
-                        $this->getParameter('offers_images_directory'),
-                        $newFilename
-                    );
-                    $offerTravel->setImage($this->baseImageUrl . $newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image');
+        // Recalculer le prix si la promotion a changé
+        if ($newPromotion) {
+            $newPrice = $originalPrice * (1 - $newPromotion->getDiscountPercentage() / 100);
+            $offerTravel->setPrice(round($newPrice, 2));
+        } else {
+            $offerTravel->setPrice(round($originalPrice, 2));
+        }
+        
+        // Traitement de l'image seulement si un nouveau fichier est fourni
+        if ($imageFile) {
+            if ($offerTravel->getImage()) {
+                $oldFilename = basename($offerTravel->getImage());
+                $oldPath = $this->getParameter('offers_images_directory').'/'.$oldFilename;
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
                 }
             }
 
-            $em->flush();
+            $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename = $slugger->slug($originalFilename);
+            $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
 
-            $this->addFlash('success', 'Offre modifiée avec succès !');
-            return $this->redirectToRoute('app_offer_travel_index');
+            try {
+                $imageFile->move(
+                    $this->getParameter('offers_images_directory'),
+                    $newFilename
+                );
+                $offerTravel->setImage($this->baseImageUrl . $newFilename);
+            } catch (FileException $e) {
+                $this->addFlash('error', 'Erreur lors de l\'upload de l\'image');
+            }
         }
 
-        return $this->render('offer_travel/edit.html.twig', [
-            'form' => $form->createView(),
-            'offer_travel' => $offerTravel,
-        ]);
+        $em->flush();
+
+        $this->addFlash('success', 'Offre modifiée avec succès !');
+        return $this->redirectToRoute('app_offer_travel_index');
     }
+
+    return $this->render('offer_travel/edit.html.twig', [
+        'form' => $form->createView(),
+        'offer_travel' => $offerTravel,
+    ]);
+}
 
     #[Route('/{id}', name: 'app_offer_travel_show', methods: ['GET'])]
     public function show(OfferTravel $offerTravel): Response
