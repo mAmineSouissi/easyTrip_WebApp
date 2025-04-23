@@ -28,6 +28,11 @@
                     <label for="inputPassword">Password</label>
                     <input type="password" name="_password" id="inputPassword" class="form-control" autocomplete="current-password" required>
                     <small class="form-text text-muted">Your password must be at least 8 characters long.</small>
+                    <div class="mt-2">
+                        <a href="{{ path('app_forgot_password') }}" class="text-decoration-none small">
+                            <i class="fas fa-unlock-alt me-1"></i> Forgot your password?
+                        </a>
+                    </div>
                 </div>
 
                 <button class="btn btn-primary w-100" type="submit">

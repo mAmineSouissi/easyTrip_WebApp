@@ -2,37 +2,38 @@
 
 namespace App\Entity;
 
+use App\Repository\Verification_codesRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: Verification_codesRepository::class)]
+#[ORM\Table(name: "verification_codes")]
 class Verification_codes
 {
 
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
-    private int $id;
+    #[ORM\GeneratedValue(strategy: 'AUTO')]  // Ensures auto-increment is applied
+    #[ORM\Column(type: 'integer')]
+    private $id;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $email;
+    #[ORM\Column(type: 'string', length: 255)]
+    private $email;
 
-    #[ORM\Column(type: "string", length: 10)]
-    private string $code;
+    #[ORM\Column(type: 'string', length: 255)]
+    private $code;
 
-    #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $created_at;
+    #[ORM\Column(type: 'datetime')]
+    private $created_at;
 
-    #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $expires_at;
+    #[ORM\Column(type: 'datetime')]
+    private $expires_at;
 
-    #[ORM\Column(type: "boolean")]
-    private bool $used;
+    #[ORM\Column(type: 'integer', options: ["default" => 0])]
+    private $used;
 
     public function getId()
     {
         return $this->id;
     }
-
     public function setId($value)
     {
         $this->id = $value;
