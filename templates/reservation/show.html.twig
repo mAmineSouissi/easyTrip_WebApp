@@ -8,9 +8,8 @@
 <form id="search-form" method="get" action="{{ path('app_reservations') }}" data-turbo="false"  style="margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
     <input type="text" name="nom" placeholder="Nom" value="{{ app.request.get('nom') }}" style="padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px;">
     <input type="text" name="prenom" placeholder="Prénom" value="{{ app.request.get('prenom') }}" style="padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px;">
-</form>
-
-<div style="text-align: end; margin-bottom: 20px;">
+   
+   <div style="text-align: end; margin-bottom: 20px; right;padding-left: 200px;">
     <a href="{{ path('app_reservations', app.request.query.all | merge({
         sort: 'r.nom',
         direction: currentSort == 'r.nom' and currentDirection == 'asc' ? 'desc' : 'asc'
@@ -22,6 +21,7 @@
     </a>
 </div>
 
+</form>
 
 <div style="text-align: end; margin-bottom: 20px;">
     <a href="{{ path('app_reservation_add') }}" style="padding: 8px 15px; background-color: #28a745; color: white; border-radius: 4px; text-decoration: none;">
@@ -78,8 +78,12 @@
     {{ knp_pagination_render(pagination, 'pagination/bootstrap5.html.twig') }}
 </div>
 
+<div style="text-align: right;padding-right: 120px; margin-bottom: 20px;">
+    <a href="{{ path('stripe_checkout') }}" style="padding: 8px 15px; background-color: #28a745; color: white; border-radius: 4px; text-decoration: none;">
+        <i class="bi bi-plus-circle me-1"></i> Payer
+    </a>
+</div>
 <br><br>
-
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const form = document.getElementById("search-form");
@@ -107,4 +111,3 @@
     });
 </script>
 {% endblock %}
-
