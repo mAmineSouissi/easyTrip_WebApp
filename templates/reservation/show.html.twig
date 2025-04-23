@@ -5,17 +5,12 @@
 {% set currentDirection = app.request.get('direction') %}
 <br><br><br>
 
-<form method="get" action="{{ path('app_reservations') }}" data-turbo="false"  style="margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
+<form id="search-form" method="get" action="{{ path('app_reservations') }}" data-turbo="false"  style="margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
     <input type="text" name="nom" placeholder="Nom" value="{{ app.request.get('nom') }}" style="padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px;">
     <input type="text" name="prenom" placeholder="Prénom" value="{{ app.request.get('prenom') }}" style="padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px;">
-    <input type="date" name="date" value="{{ app.request.get('orderDate') }}" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-    
-    <button type="submit" style="padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px;">🔍 Rechercher</button>
+</form>
 
-    <a href="{{ path('app_reservations') }}" style="padding: 8px 15px; background-color: #0d6efd; color: white; text-decoration: none; border-radius: 4px;">
-        <i class="bi bi-plus-circle me-1"></i> ↺ Réinitialiser
-    </a>
-
+<div style="text-align: end; margin-bottom: 20px;">
     <a href="{{ path('app_reservations', app.request.query.all | merge({
         sort: 'r.nom',
         direction: currentSort == 'r.nom' and currentDirection == 'asc' ? 'desc' : 'asc'
@@ -25,7 +20,8 @@
             {{ currentDirection == 'asc' ? '🔼' : '🔽' }}
         {% endif %}
     </a>
-</form>
+</div>
+
 
 <div style="text-align: end; margin-bottom: 20px;">
     <a href="{{ path('app_reservation_add') }}" style="padding: 8px 15px; background-color: #28a745; color: white; border-radius: 4px; text-decoration: none;">
@@ -83,4 +79,31 @@
 </div>
 
 <br><br>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("search-form");
+
+        // Déclenche la soumission du formulaire quand un champ change
+        ["nom", "prenom", "date"].forEach(id => {
+            const input = form.querySelector(`[name="${id}"]`);
+            if (input) {
+                input.addEventListener("input", () => {
+                    clearTimeout(input._timeout);
+                    input._timeout = setTimeout(() => {
+                        form.submit();
+                    }, 500); // délai pour éviter trop de requêtes
+                });
+            }
+        });
+
+        // Pour les dates (événement 'change' car 'input' ne fonctionne pas toujours sur les dates)
+        const dateInput = form.querySelector('[name="date"]');
+        if (dateInput) {
+            dateInput.addEventListener("change", () => {
+                form.submit();
+            });
+        }
+    });
+</script>
 {% endblock %}
