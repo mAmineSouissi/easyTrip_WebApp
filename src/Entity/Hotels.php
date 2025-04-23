@@ -48,6 +48,8 @@ class Hotels
 
     #[ORM\Column(type: "integer")]
     private int $agency_id;
+    #[ORM\Column(type: "integer")]
+    private int $user_id;
 
     public function getId_hotel()
     {

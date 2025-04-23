@@ -11,12 +11,10 @@ class LoginController extends AbstractController
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        // Get login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
 
-        // Get last entered username (email)
         $lastUsername = $authenticationUtils->getLastUsername();
-        // If the user is already logged in, redirect to the appropriate dashboard
+        
         if ($this->isGranted('ROLE_ADMIN')) {
             return $this->redirectToRoute('admin_dashboard');
         } elseif ($this->isGranted('ROLE_AGENT')) {

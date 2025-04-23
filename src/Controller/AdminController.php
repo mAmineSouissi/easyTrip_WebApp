@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -80,8 +81,16 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/users/{id}/delete/confirm', 'admin_user_delete_confirm', methods: ['POST'])]
-    public function deleteUserConfirm(Request $request, User $user, EntityManagerInterface $em): Response
+    public function deleteUserConfirm(Request $request, User $user, EntityManagerInterface $em,Security $security): Response
     {
+        /** @var User $currentUser */
+
+        $currentUser = $security->getUser();
+
+        if ($user->getId() === $currentUser->getId()) {
+            return new JsonResponse(['status' => 'You cannot delete yourself'], 403);
+        }
+        
         $em->remove($user);
         $em->flush();
 
