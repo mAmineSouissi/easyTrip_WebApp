@@ -21,6 +21,43 @@ final class AdminController extends AbstractController
         return $this->render('admin/dashboard.html.twig');
     }
 
+    // In AdminController.php
+    #[Route('/chart/users-by-role', 'admin_chart_users_by_role')]
+    public function getUsersByRoleChart(UserRepository $userRepo): JsonResponse
+    {
+        $users = $userRepo->findAll();
+        $roleStats = [];
+
+        foreach ($users as $user) {
+            $role = $user->getRole();
+            if (!isset($roleStats[$role])) {
+                $roleStats[$role] = 0;
+            }
+            $roleStats[$role]++;
+        }
+
+        // Format for chart data
+        $labels = array_keys($roleStats);
+        $data = array_values($roleStats);
+
+        return $this->json([
+            'labels' => $labels,
+            'datasets' => [
+                [
+                    'label' => 'Users by Role',
+                    'data' => $data,
+                    'backgroundColor' => [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF'
+                    ]
+                ]
+            ]
+        ]);
+    }
+
     #[Route('/users', 'admin_users')]
     public function users(UserRepository $userRepo): Response
     {
@@ -48,7 +85,7 @@ final class AdminController extends AbstractController
     {
         $defaultPassword = 'record';
         $request->request->set('password', password_hash($defaultPassword, PASSWORD_BCRYPT));
-    
+
         $user = new User();
         $user->setName($request->request->get('name'));
         $user->setSurname($request->request->get('surname'));
@@ -58,10 +95,10 @@ final class AdminController extends AbstractController
         $user->setPassword($request->request->get('password'));
         $user->setEmail($request->request->get('email'));
         $user->setRole($request->request->get('role'));
-    
+
         $em->persist($user);
         $em->flush();
-    
+
         return new JsonResponse(['status' => 'User created'], 201);
     }
 
@@ -72,7 +109,7 @@ final class AdminController extends AbstractController
         $user->setEmail($request->request->get('email'));
         $user->setPhone($request->request->get('phone'));
         $user->setSurname($request->request->get('surname'));
-        $user->setAddresse($request->request->get('address')); 
+        $user->setAddresse($request->request->get('address'));
         $user->setRole($request->request->get('role'));
 
         $em->flush();
@@ -81,7 +118,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/users/{id}/delete/confirm', 'admin_user_delete_confirm', methods: ['POST'])]
-    public function deleteUserConfirm(Request $request, User $user, EntityManagerInterface $em,Security $security): Response
+    public function deleteUserConfirm(Request $request, User $user, EntityManagerInterface $em, Security $security): Response
     {
         /** @var User $currentUser */
 
@@ -90,7 +127,7 @@ final class AdminController extends AbstractController
         if ($user->getId() === $currentUser->getId()) {
             return new JsonResponse(['status' => 'You cannot delete yourself'], 403);
         }
-        
+
         $em->remove($user);
         $em->flush();
 

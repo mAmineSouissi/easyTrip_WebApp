@@ -93,8 +93,8 @@ class ResetPasswordController extends AbstractController
 
             $this->codeRepo->removeUsedCode($code);
             $session = $request->getSession();
-            $session->set('can_reset_' . $email, true); // Allow password reset for this email
-            $session->set('email', $email); // Store email in session
+            $session->set('can_reset_' . $email, true); 
+            $session->set('email', $email);
             $this->addFlash('success', 'Code verified! You can now reset your password.');
 
             return $this->redirectToRoute('app_reset_password', ['email' => $email]);
