@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvelle promotion</title>
+</head>
+<body>
+    <h1 style="color: #2dce89;">Nouvelle promotion disponible</h1>
+    
+    <p>Bonjour {{ agency.name }},</p>
+    
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px;">
+        <h2>{{ promotion.title }}</h2>
+        <p>{{ promotion.description }}</p>
+        <p><strong>Réduction :</strong> {{ promotion.discountPercentage }}%</p>
+        <p><strong>Valide jusqu'au :</strong> {{ promotion.validUntil|date('d/m/Y') }}</p>
+    </div>
+    
+    <p>
+        <a href="{{ url('app_promotion_public') }}" 
+           style="background: #2dce89; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">
+            Voir toutes les promotions
+        </a>
+    </p>
+</body>
+</html> 

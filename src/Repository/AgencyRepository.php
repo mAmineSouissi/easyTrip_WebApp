@@ -13,5 +13,15 @@ class AgencyRepository extends ServiceEntityRepository
         parent::__construct($registry, Agency::class);
     }
 
-    // Add custom methods as needed
+    public function findAllWithValidEmail(): array
+    {
+        return $this->createQueryBuilder('a')
+            ->where('a.email IS NOT NULL')
+            ->andWhere('a.email != :empty')
+            ->andWhere('a.email LIKE :pattern')
+            ->setParameter('empty', '')
+            ->setParameter('pattern', '%@%.%')
+            ->getQuery()
+            ->getResult();
+    }
 }

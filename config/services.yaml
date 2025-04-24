@@ -8,6 +8,7 @@ parameters:
     base_image_url: 'http://localhost/img/agency/' # À ajuster en production
     offers_images_directory: '%kernel.project_dir%/public/img/offers'
 services:
+
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.

@@ -248,4 +248,47 @@ public function publicList(EntityManagerInterface $em, Request $request): Respon
             'offer_travel' => $offer,
         ]);
     }
-}
+    #[Route('/admin/statistics', name: 'app_offer_travel_statistics', methods: ['GET'])]
+public function statistics(EntityManagerInterface $em): Response
+{
+    // 1. Nombre d'offres par agence
+    $offersByAgency = $em->createQuery(
+        "SELECT a.name as agencyName, COUNT(o.id) as offersCount
+         FROM App\Entity\OfferTravel o
+         JOIN o.agency a
+         GROUP BY a.id
+         ORDER BY offersCount DESC"
+    )->getResult();
+
+    // 2. Chiffre d'affaires par agence
+    $revenueByAgency = $em->createQuery(
+        "SELECT a.name as agencyName, SUM(o.price) as totalRevenue
+         FROM App\Entity\OfferTravel o
+         JOIN o.agency a
+         GROUP BY a.id
+         ORDER BY totalRevenue DESC"
+    )->getResult();
+
+    // 3. Nombre d'offres par catégorie
+    $offersByCategory = $em->createQuery(
+        "SELECT o.category as categoryName, COUNT(o.id) as offersCount
+         FROM App\Entity\OfferTravel o
+         GROUP BY o.category
+         ORDER BY offersCount DESC"
+    )->getResult();
+
+    return $this->render('offer_travel/statistics.html.twig', [
+        'offersByAgency' => [
+            'labels' => array_column($offersByAgency, 'agencyName'),
+            'data' => array_column($offersByAgency, 'offersCount')
+        ],
+        'revenueByAgency' => [
+            'labels' => array_column($revenueByAgency, 'agencyName'),
+            'data' => array_column($revenueByAgency, 'totalRevenue')
+        ],
+        'offersByCategory' => [
+            'labels' => array_column($offersByCategory, 'categoryName'),
+            'data' => array_column($offersByCategory, 'offersCount')
+        ]
+    ]);
+}}
