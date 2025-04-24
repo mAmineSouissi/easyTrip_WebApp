@@ -1,10 +1,5 @@
 <?php
 
-namespace App\Repository;
-
-use App\Entity\Promotion;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
 
 // src/Repository/PromotionRepository.php
 namespace App\Repository;

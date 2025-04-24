@@ -8,14 +8,15 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
+#[ORM\Table(name: 'promotion')]
 class Promotion
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
-    private int $id;
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank(message: "Le titre est obligatoire")]
     #[Assert\Length(
         min: 3,
@@ -25,7 +26,7 @@ class Promotion
     )]
     private string $title;
 
-    #[ORM\Column(type: "text")]
+    #[ORM\Column(type: 'text')]
     #[Assert\NotBlank(message: "La description est obligatoire")]
     #[Assert\Length(
         min: 10,
@@ -33,7 +34,7 @@ class Promotion
     )]
     private string $description;
 
-    #[ORM\Column(type: "float")]
+    #[ORM\Column(type: 'float')]
     #[Assert\NotBlank(message: "Le pourcentage de réduction est obligatoire")]
     #[Assert\Range(
         min: 1,
@@ -42,7 +43,7 @@ class Promotion
     )]
     private float $discount_percentage;
 
-    #[ORM\Column(type: "date")]
+    #[ORM\Column(type: 'date')]
     #[Assert\NotBlank(message: "La date de validité est obligatoire")]
     #[Assert\GreaterThan(
         "today",
@@ -50,7 +51,7 @@ class Promotion
     )]
     private \DateTimeInterface $valid_until;
 
-    #[ORM\OneToMany(targetEntity: OfferTravel::class, mappedBy: "promotion")]
+    #[ORM\OneToMany(targetEntity: OfferTravel::class, mappedBy: 'promotion')]
     private Collection $offerTravels;
 
     public function __construct()
@@ -58,7 +59,7 @@ class Promotion
         $this->offerTravels = new ArrayCollection();
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

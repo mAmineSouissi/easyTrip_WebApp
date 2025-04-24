@@ -232,6 +232,10 @@
                 {% endfor %}
             {% endfor %}
 
+            // Variables globales
+            const API_KEY = '02a8cb89e2a0961ee3fbcf04c7d962880b91e1cd';
+            let isEmailVerified = false;
+
             // Preview de l'image
             document.getElementById('agency_imageFile').addEventListener('change', function(event) {
                 const file = event.target.files[0];
@@ -246,6 +250,59 @@
                     reader.readAsDataURL(file);
                 } else {
                     preview.style.display = 'none';
+                }
+            });
+
+            // Vérification de l'email via API Hunter.io
+            const emailInput = document.querySelector('input[name="{{ form.email.vars.full_name }}"]');
+            
+            emailInput.addEventListener('blur', async function() {
+                const email = this.value.trim();
+                isEmailVerified = false;
+                
+                // Vérification basique du format avant d'appeler l'API
+                if (!email.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) {
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                    const feedback = this.parentElement.querySelector('.invalid-feedback');
+                    feedback.textContent = 'Format d\'email invalide';
+                    feedback.style.display = 'block';
+                    return;
+                }
+                
+                try {
+                    // Afficher un indicateur de chargement
+                    const feedback = this.parentElement.querySelector('.invalid-feedback');
+                    feedback.textContent = 'Vérification de l\'email en cours...';
+                    feedback.style.display = 'block';
+                    this.classList.add('is-invalid');
+                    
+                    const response = await fetch(`https://api.hunter.io/v2/email-verifier?email=${email}&api_key=${API_KEY}`);
+                    const data = await response.json();
+                    
+                    if (data.data && data.data.result === 'deliverable') {
+                        this.classList.remove('is-invalid');
+                        this.classList.add('is-valid');
+                        feedback.style.display = 'none';
+                        const validFeedback = this.parentElement.querySelector('.valid-feedback');
+                        validFeedback.textContent = 'Email vérifié et valide';
+                        validFeedback.style.display = 'block';
+                        isEmailVerified = true;
+                    } else {
+                        this.classList.remove('is-valid');
+                        this.classList.add('is-invalid');
+                        feedback.textContent = 'Cet email n\'existe pas ou n\'est pas valide (vérification API)';
+                        feedback.style.display = 'block';
+                        isEmailVerified = false;
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la vérification de l\'email:', error);
+                    // En cas d'erreur API, on bloque la soumission
+                    const feedback = this.parentElement.querySelector('.invalid-feedback');
+                    feedback.textContent = 'Service de vérification indisponible - impossible de créer l\'agence';
+                    feedback.style.display = 'block';
+                    this.classList.add('is-invalid');
+                    isEmailVerified = false;
                 }
             });
 
@@ -290,9 +347,12 @@
 
             // Validation avant soumission
             form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
                 let isValid = true;
                 const invalidFields = [];
                 
+                // Vérification des champs requis
                 inputs.forEach(input => {
                     validateField(input);
                     if (!input.checkValidity()) {
@@ -301,15 +361,30 @@
                     }
                 });
 
+                // Vérification spécifique pour l'email
+                const emailField = document.querySelector('input[name="{{ form.email.vars.full_name }}"]');
+                if (!isEmailVerified || emailField.classList.contains('is-invalid')) {
+                    isValid = false;
+                    if (!invalidFields.includes(emailField)) {
+                        invalidFields.push(emailField);
+                        const feedback = emailField.parentElement.querySelector('.invalid-feedback');
+                        if (!feedback.textContent.includes('API')) {
+                            feedback.textContent = 'Veuillez vérifier cet email avant soumission';
+                        }
+                        feedback.style.display = 'block';
+                        emailField.classList.add('is-invalid');
+                    }
+                }
+
                 if (!isValid) {
-                    e.preventDefault();
                     Swal.fire({
                         icon: 'error',
                         title: 'Erreur',
                         html: 'Veuillez corriger les erreurs suivantes :<br><br>' + 
                               invalidFields.map(field => {
                                   const label = field.parentElement.querySelector('label').textContent;
-                                  return `• ${label}`;
+                                  const errorMsg = field.parentElement.querySelector('.invalid-feedback').textContent;
+                                  return `• ${label}: ${errorMsg}`;
                               }).join('<br>'),
                         confirmButtonColor: '#4361ee'
                     });
@@ -320,7 +395,6 @@
                         block: 'center'
                     });
                 } else {
-                    e.preventDefault();
                     Swal.fire({
                         title: 'Confirmer la création',
                         text: 'Voulez-vous créer cette nouvelle agence ?',

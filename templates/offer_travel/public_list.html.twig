@@ -128,6 +128,115 @@
         .btn-back:hover {
             background-color: #e9ecef;
             color: #495057;
+            }
+        .search-filter-container {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .search-box {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        .search-box input {
+            padding-left: 40px;
+            border-radius: 20px;
+        }
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #6c757d;
+        }
+        .filter-section {
+            margin-top: 1rem;
+        }
+        .filter-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+        .category-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .category-checkbox {
+            display: none;
+        }
+        .category-label {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: 1px solid #dee2e6;
+            transition: all 0.2s;
+        }
+        .category-checkbox:checked + .category-label {
+            border-color: transparent;
+            color: white;
+        }
+        .promotion-switch {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2dce89;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .highlight-promo {
+            position: relative;
+        }
+        .highlight-promo:after {
+            content: "PROMO";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #e74a3b;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
         }
     </style>
 {% endblock %}
@@ -141,54 +250,108 @@
         </h1>
     </div>
 
-    <div class="row">
-        {% for offer in offer_travels %}
-            <div class="col-md-4 mb-4">
-                <div class="card offer-card">
-                    {% if offer.image %}
-                        <img src="{{ offer.image }}" alt="{{ offer.destination }}" class="offer-image">
-                    {% else %}
-                        <div class="offer-image bg-light d-flex align-items-center justify-content-center">
-                            <i class="fas fa-image fa-3x text-muted"></i>
-                        </div>
-                    {% endif %}
-                    <div class="card-body">
-                        <span class="badge-category {{ offer.category|lower }}">{{ offer.category }}</span>
-                        <h5 class="offer-title">{{ offer.destination }}</h5>
-                        <div class="offer-price">{{ offer.price }} €</div>
-                        <p class="offer-date">
-                            <i class="fas fa-calendar-alt"></i> 
-                            {{ offer.departureDate|date('d/m/Y') }} - {{ offer.arrivalDate|date('d/m/Y') }}
-                        </p>
-                        <p>{{ offer.discription|slice(0, 100) }}...</p>
-                        
-                        <div class="action-buttons">
-                            <a href="{{ path('app_offer_travel_public_show', {'id': offer.id}) }}" class="btn btn-detail">
-                                <i class="fas fa-eye"></i> Détails
-                            </a>
-                            <button class="btn btn-reserve" disabled>
-                                <i class="fas fa-ticket-alt"></i> Réserver
-                            </button>
-                            <button class="btn btn-review" disabled>
-                                <i class="fas fa-star"></i> Avis
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {% else %}
-            <div class="col-12">
-                <div class="no-offers">
-                    <i class="fas fa-plane-slash fa-3x mb-3"></i>
-                    <h4>Aucune offre disponible actuellement</h4>
-                    <p>Veuillez revenir plus tard</p>
-                </div>
-            </div>
-        {% endfor %}
+    <div class="search-filter-container">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" class="form-control" placeholder="Rechercher par destination..." 
+                   value="{{ search|default('') }}">
+        </div>
+        
+        <div class="filter-section">
+            <div class="filter-title">Filtrer par catégorie:</div>
+            {# public_list.html.twig #}
+<div class="category-filter">
+    {% for category in ['Sportive', 'Romantique', 'Religieuse', 'Touristique'] %}
+        <input type="checkbox" class="category-checkbox" id="cat-{{ category }}" 
+               value="{{ category }}"
+               {% if category in selected_categories %}checked{% endif %}>
+        <label for="cat-{{ category }}" class="category-label {{ category|lower }}">
+            {{ category }}
+        </label>
+    {% endfor %}
+</div>
+            
+            <div class="filter-title">Promotions:</div>
+            <div class="promotion-switch">
+    <label class="switch">
+        <input type="checkbox" id="promotionSwitch" {% if has_promotion is same as(true) %}checked{% endif %}>
+        <span class="slider"></span>
+    </label>
+    <span>Filtrer seulement les offres en promotion</span> {# Texte modifié pour plus de clarté #}
+</div>
+        </div>
+    </div>
+
+    <div id="offersContainer">
+        {% include 'offer_travel/_offers_list.html.twig' %}
     </div>
 
     <a href="{{ path('app_offer_travel_index') }}" class="btn-back">
         <i class="fas fa-arrow-left"></i> Retour (version agent)
     </a>
 </div>
+
+<script>
+// Dans public_list.html.twig
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+    const promotionSwitch = document.getElementById('promotionSwitch');
+    const offersContainer = document.getElementById('offersContainer');
+    const badgeCount = document.querySelector('.badge-count');
+
+    // Fonction pour charger les résultats
+    // Dans public_list.html.twig
+function loadResults() {
+    const search = searchInput.value;
+    const categories = Array.from(document.querySelectorAll('.category-checkbox:checked')).map(cb => cb.value);
+    const hasPromotion = promotionSwitch.checked;
+
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    categories.forEach(cat => params.append('categories[]', cat));
+    
+    // Modification ici - n'envoie le paramètre que si true
+    if (hasPromotion) {
+        params.append('hasPromotion', 'true');
+    }
+
+    fetch(`{{ path('app_offer_travel_public_list') }}?${params.toString()}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'text/html'
+        }
+    })
+    .then(response => response.text())
+    .then(html => {
+        offersContainer.innerHTML = html;
+        updateOfferCount();
+    });
+}
+
+    // Mise à jour du compteur
+    function updateOfferCount() {
+        const offerCount = document.querySelectorAll('#offersContainer .col-md-4').length;
+        badgeCount.textContent = offerCount;
+    }
+
+    // Écouteurs d'événements
+    searchInput.addEventListener('input', function() {
+        clearTimeout(this.timer);
+        this.timer = setTimeout(loadResults, 300);
+    });
+
+    categoryCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', loadResults);
+    });
+
+    promotionSwitch.addEventListener('change', loadResults);
+
+    // Chargement initial si filtres présents dans l'URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('search') || urlParams.has('categories') || urlParams.has('hasPromotion')) {
+        loadResults();
+    }
+});
+</script>
 {% endblock %}

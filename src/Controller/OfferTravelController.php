@@ -201,15 +201,38 @@ public function edit(Request $request, OfferTravel $offerTravel, EntityManagerIn
         return $this->redirectToRoute('app_offer_travel_index');
     }
 
-    #[Route('/client/listoffers', name: 'app_offer_travel_public_list', methods: ['GET'])]
-    public function publicList(EntityManagerInterface $em): Response
-    {
-        $this->updateExpiredPromotions($em);
-        $offers = $em->getRepository(OfferTravel::class)->findAll();
-        return $this->render('offer_travel/public_list.html.twig', [
-            'offer_travels' => $offers,
+    // OfferTravelController.php
+#[Route('/client/listoffers', name: 'app_offer_travel_public_list', methods: ['GET'])]
+public function publicList(EntityManagerInterface $em, Request $request): Response
+{
+    $this->updateExpiredPromotions($em);
+    
+    $search = $request->query->get('search', '');
+    $categories = $request->query->all()['categories'] ?? [];
+    $hasPromotion = $request->query->get('hasPromotion');
+
+    // Modification ici - ne filtre que si hasPromotion est true
+    $filterPromotion = ($hasPromotion === 'true');
+
+    $offers = $em->getRepository(OfferTravel::class)->searchAndFilter(
+        $search, 
+        $categories, 
+        $filterPromotion ? true : null // Envoie null si false pour désactiver le filtre
+    );
+
+    if ($request->isXmlHttpRequest()) {
+        return $this->render('offer_travel/_offers_list.html.twig', [
+            'offer_travels' => $offers
         ]);
     }
+
+    return $this->render('offer_travel/public_list.html.twig', [
+        'offer_travels' => $offers,
+        'search' => $search,
+        'selected_categories' => $categories,
+        'has_promotion' => $hasPromotion === 'true',
+    ]);
+}
 
     #[Route('/client/offer/{id}', name: 'app_offer_travel_public_show', methods: ['GET'], requirements: ['id' => '\d+'])]    
     public function publicShow(int $id, EntityManagerInterface $em): Response
