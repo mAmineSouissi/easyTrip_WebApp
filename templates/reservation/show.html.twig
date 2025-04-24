@@ -9,7 +9,7 @@
     <input type="text" name="nom" placeholder="Nom" value="{{ app.request.get('nom') }}" style="padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px;">
     <input type="text" name="prenom" placeholder="Prénom" value="{{ app.request.get('prenom') }}" style="padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px;">
    
-   <div style="text-align: end; margin-bottom: 20px; right;padding-left: 200px;">
+   <div style="text-align: end; margin-bottom: 20px; right;padding-left: 150px;">
     <a href="{{ path('app_reservations', app.request.query.all | merge({
         sort: 'r.nom',
         direction: currentSort == 'r.nom' and currentDirection == 'asc' ? 'desc' : 'asc'
