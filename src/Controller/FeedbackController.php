@@ -14,6 +14,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 #[Route('/feedback')]
 class FeedbackController extends AbstractController
@@ -25,16 +27,14 @@ class FeedbackController extends AbstractController
     }
 
     #[Route('/admin/dashboard', name: 'admin_dashboard')]
-public function dashboard(): Response
-{
-    return $this->render('admin/dashboard.html.twig');
-}
-
+    public function dashboard(): Response
+    {
+        return $this->render('admin/dashboard.html.twig');
+    }
 
     #[Route('/', name: 'feedback_index', methods: ['GET'])]
     public function index(Request $request, FeedbackRepository $feedbackRepository, EntityManagerInterface $em): Response
     {
-        /** @var User $user */
         $user = $this->getUser();
         $role = $this->getUserRole($user);
 
@@ -197,7 +197,113 @@ public function dashboard(): Response
         ]);
     }
 
-    // 🔐 Utilitaire pour récupérer le rôle réel
+    #[Route('/admin/pdf/evaluation', name: 'feedback_pdf_evaluation')]
+    public function exportEvaluationPdf(FeedbackRepository $repo): Response
+    {
+        $stats = $repo->getEvaluationStats();
+        $feedbacks = $repo->findAll();
+        $negatifs = $repo->findNegativeFeedbacks();
+
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $dompdf = new Dompdf($options);
+
+        $html = $this->renderView('feedback/admin/pdf_base.html.twig', [
+            'total' => $stats['total_feedbacks'],
+            'moyenne' => $stats['average_rating'],
+            'feedbacks' => $feedbacks,
+            'negatifs' => $negatifs,
+        ]);
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return new Response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="rapport_feedbacks.pdf"',
+        ]);
+        
+    }
+
+    #[Route('/admin/pdf/evolution', name: 'feedback_pdf_evolution')]
+public function exportEvolutionPdf(FeedbackRepository $repo): Response
+{
+    $data = $repo->getFeedbackCountByDate();
+
+    $options = new Options();
+    $options->set('defaultFont', 'DejaVu Sans');
+    $dompdf = new Dompdf($options);
+
+    $html = $this->renderView('feedback/admin/pdf_base.html.twig', [
+        'type' => 'evolution',
+        'data' => $data,
+    ]);
+
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    return new Response($dompdf->output(), 200, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'inline; filename="evolution_feedbacks.pdf"',
+    ]);
+}
+
+#[Route('/admin/pdf/comparison', name: 'feedback_pdf_comparison')]
+public function exportComparisonPdf(FeedbackRepository $repo): Response
+{
+    $data = $repo->getMonthlyComparison();
+    $current = $data[0] ?? null;
+    $previous = $data[1] ?? null;
+
+    $options = new Options();
+    $options->set('defaultFont', 'DejaVu Sans');
+    $dompdf = new Dompdf($options);
+
+    $html = $this->renderView('feedback/admin/pdf_base.html.twig', [
+        'type' => 'comparison',
+        'current' => $current,
+        'previous' => $previous,
+    ]);
+
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    return new Response($dompdf->output(), 200, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'inline; filename="comparaison_feedbacks.pdf"',
+    ]);
+}
+
+#[Route('/admin/pdf/negative', name: 'feedback_pdf_negative')]
+public function exportNegativeFeedbacksPdf(FeedbackRepository $repo): Response
+{
+    $feedbacks = $repo->findNegativeFeedbacks();
+
+    $options = new Options();
+    $options->set('defaultFont', 'DejaVu Sans');
+    $dompdf = new Dompdf($options);
+
+    $html = $this->renderView('feedback/admin/pdf_base.html.twig', [
+        'type' => 'negative',
+        'feedbacks' => $feedbacks,
+    ]);
+
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    return new Response($dompdf->output(), 200, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'inline; filename="feedbacks_negatifs.pdf"',
+    ]);
+}
+
+
+
+
     private function getUserRole(User $user): string
     {
         if (in_array('ROLE_ADMIN', $user->getRoles(), true)) return 'admin';

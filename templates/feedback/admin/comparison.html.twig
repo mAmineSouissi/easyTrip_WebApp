@@ -7,9 +7,14 @@
   <div class="container">
 
     <!-- 🔙 Retour -->
-    <div class="mb-4">
+    <div class="mb-4 d-flex justify-content-between align-items-center">
       <a href="{{ path('feedback_home_admin') }}" class="btn btn-outline-dark rounded-pill">
         ⬅ Retour à l'accueil
+      </a>
+
+      <!-- 🧾 PDF -->
+      <a href="{{ path('feedback_pdf_comparison') }}" class="btn btn-dark rounded-pill">
+        🧾 Télécharger le PDF
       </a>
     </div>
 
@@ -28,13 +33,13 @@
         <div class="card-body">
           <div class="row">
             <div class="col-md-6 mb-3">
-              <h5 class="text-dark">📅 Mois en cours : 
+              <h5 class="text-dark">📅 Mois en cours :
                 <span class="badge bg-primary">{{ current.month }}</span>
               </h5>
               <p class="mb-0">Nombre de feedbacks : <strong>{{ current.total }}</strong></p>
             </div>
             <div class="col-md-6 mb-3">
-              <h5 class="text-dark">📅 Mois précédent : 
+              <h5 class="text-dark">📅 Mois précédent :
                 <span class="badge bg-secondary">{{ previous.month }}</span>
               </h5>
               <p class="mb-0">Nombre de feedbacks : <strong>{{ previous.total }}</strong></p>

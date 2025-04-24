@@ -55,10 +55,16 @@
                         <p>+1 1234 55488 55</p>
                     </div>
 
+                    <div class="mt-4 text-center">
+                        <a href="{{ path('chatbot') }}" class="btn btn-outline-dark btn-lg rounded-pill w-100">
+                            🤖 Discuter avec EasyBot
+                        </a>
+                    </div>
+
                 </div>
             </div>
             <div class="col-lg-8" data-aos="fade-up" data-aos-delay="200">
-                {{ form_start(form) }}
+                {{ form_start(form, { 'action': path('reclamation_contact') }) }}
                 <div class="row">
                     <div class="col-12 mb-3">
                         {{ form_row(form.category, {'attr': {'class': 'form-control'}}) }}
@@ -75,4 +81,31 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      {% for message in app.flashes('success') %}
+        Swal.fire({
+          icon: 'success',
+          title: 'Succès !',
+          text: '{{ message }}',
+          confirmButtonColor: '#3085d6'
+        });
+      {% endfor %}
+
+      {% for message in app.flashes('error') %}
+        Swal.fire({
+          icon: 'error',
+          title: 'Erreur !',
+          text: '{{ message }}',
+          confirmButtonColor: '#d33'
+        });
+      {% endfor %}
+    });
+  </script>
 {% endblock %}

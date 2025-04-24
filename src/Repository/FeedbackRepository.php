@@ -303,5 +303,23 @@ public function findNegativeFeedbacks(): array
               ->getResult();
 }
 
+        public function getEvaluationStats(): array
+        {
+            $conn = $this->getEntityManager()->getConnection();
+
+            $sql = "
+                SELECT
+                    COUNT(*) AS total_feedbacks,
+                    ROUND(AVG(rating), 2) AS average_rating
+                FROM feedback
+            ";
+
+            return $conn->fetchAssociative($sql);
+        }
+
+
+        
+        
+
 
 }

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Rapport Feedback</title>
+  <style>
+    body {
+      font-family: DejaVu Sans, sans-serif;
+      font-size: 12px;
+      margin: 40px;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 20px;
+      margin-bottom: 30px;
+      color: #222;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #999;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f0f0f0;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+
+    .footer {
+      margin-top: 40px;
+      text-align: right;
+      font-style: italic;
+      font-size: 11px;
+      color: #666;
+    }
+
+    .negatif {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>
+    {% if type == 'evolution' %}
+      📈 Évolution des Feedbacks par Jour
+    {% elseif type == 'comparison' %}
+      📊 Comparaison des Feedbacks (Mois courant vs précédent)
+    {% elseif type == 'negative' %}
+      🚫 Feedbacks Négatifs Détectés
+    {% endif %}
+  </h1>
+
+  {% if type == 'evolution' %}
+    <table>
+      <thead><tr><th>Date</th><th>Nombre de feedbacks</th></tr></thead>
+      <tbody>
+        {% for item in data %}
+          <tr><td>{{ item.feedback_date }}</td><td>{{ item.total }}</td></tr>
+        {% else %}
+          <tr><td colspan="2">Aucune donnée disponible.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  {% elseif type == 'comparison' %}
+    <table>
+      <thead><tr><th>Mois</th><th>Total</th><th>Évolution</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>{{ current.month }}</td>
+          <td>{{ current.total }}</td>
+          <td rowspan="2">
+            {% if previous is not empty and current.total > previous.total %}
+              📈 Hausse
+            {% elseif previous is not empty and current.total < previous.total %}
+              📉 Baisse
+            {% elseif previous is not empty %}
+              ➖ Stable
+            {% else %}
+              ❓ Inconnu
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>{{ previous.month }}</td>
+          <td>{{ previous.total }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+  {% elseif type == 'negative' %}
+    <ul>
+      {% for f in feedbacks %}
+        <li class="negatif">[{{ f.rating }}/5] {{ f.message }} - {{ f.user.email }}</li>
+      {% else %}
+        <li>Aucun feedback négatif détecté.</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <div class="footer">
+    Généré automatiquement le {{ "now"|date("d/m/Y à H:i") }}
+  </div>
+
+</body>
+</html>

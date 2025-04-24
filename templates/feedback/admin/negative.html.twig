@@ -14,6 +14,9 @@
       <a href="{{ path('feedback_home_admin') }}" class="btn btn-outline-dark rounded-pill">
         ⬅ Retour à l'accueil
       </a>
+
+    
+
     </div>
 
     {% if feedbacks is not empty %}
@@ -68,4 +71,7 @@
 
   </div>
 </div>
+  <a href="{{ path('feedback_pdf_negative') }}" class="btn btn-dark rounded-pill mb-4">
+  🧾 Télécharger les Feedbacks Négatifs en PDF
+</a>
 {% endblock %}

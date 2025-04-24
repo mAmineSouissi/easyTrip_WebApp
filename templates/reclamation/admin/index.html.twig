@@ -42,6 +42,7 @@
 				<div class="col-md-1">
 					<a href="{{ path('reclamation_index') }}" class="btn btn-outline-secondary rounded-pill w-40">♻ Réinitialiser</a>
 				</div>
+
 			</form>
 
 			<!-- 📋 Réclamations -->
@@ -91,6 +92,15 @@
 			<!-- 🔁 Pagination -->
 			<div class="text-center mt-4" id="pagination-controls"></div>
 		</div>
+		
+				<a href="{{ path('reclamation_export_excel') }}" class="btn btn-success mb-3">
+  📥 Exporter en Excel
+</a>
+
+<a href="{{ path('reclamation_stats') }}" class="btn btn-outline-info rounded-pill mb-3">
+  📊 Voir les statistiques
+</a>
+
 	</div>
 
 	<!-- ✅ SweetAlert2 CDN -->

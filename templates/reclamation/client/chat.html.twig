@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Assistant IA - EasyTrip{% endblock %}
+
+{% block body %}
+<div class="section bg-light py-5">
+  <div class="container">
+    <h2 class="text-center mb-4 fw-bold"><i class="fa fa-robot text-primary"></i> Assistance IA EasyTrip</h2>
+
+    <div class="card p-4 shadow-sm border">
+      <div id="chat-box" class="mb-3" style="height: 400px; overflow-y: auto; background-color: #f8f9fa; padding: 10px; border-radius: 8px;">
+        <div class="text-muted small">💬 Posez votre question, je suis là pour vous aider.</div>
+      </div>
+
+      <div class="input-group">
+        <input type="text" id="user-input" class="form-control" placeholder="Écrivez votre message...">
+        <button class="btn btn-primary" id="send-btn">Envoyer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('send-btn').addEventListener('click', sendMessage);
+  document.getElementById('user-input').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  function sendMessage() {
+    const input = document.getElementById('user-input');
+    const message = input.value.trim();
+    if (!message) return;
+
+    const chatBox = document.getElementById('chat-box');
+    chatBox.innerHTML += `<div class="mb-2"><strong>👤 Vous :</strong> ${message}</div>`;
+    input.value = '';
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // Affiche un loader temporaire
+    chatBox.innerHTML += `<div id="loading" class="text-muted mb-2">⏳ EasyBot réfléchit...</div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    fetch('{{ path("chatbot_message") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+      const loader = document.getElementById('loading');
+      if (loader) loader.remove();
+
+      chatBox.innerHTML += `<div class="mb-3"><strong>🤖 EasyBot :</strong> ${data.reply}</div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+    })
+    .catch(error => {
+      const loader = document.getElementById('loading');
+      if (loader) loader.remove();
+
+      chatBox.innerHTML += `<div class="text-danger">❌ Erreur de connexion avec l’assistant.</div>`;
+    });
+  }
+</script>
+{% endblock %}
