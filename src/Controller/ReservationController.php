@@ -10,6 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Form\ReservationType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 
 class ReservationController extends AbstractController
@@ -122,6 +123,27 @@ public function adminshow(ReservationRepository $reservationRepository, Request 
         'reservations' => $reservations
     ]);
 }
+
+
+#[Route('/admin/statistiques/reservations', name: 'admin_statistiques_reservations')]
+public function statistiques(ReservationRepository $reservationRepository): Response
+{
+    $stats = $reservationRepository->countReservationsByDate();
+    $labels = [];
+    $totals = [];
+
+    foreach ($stats as $row) {
+        $labels[] = $row['date']->format('Y-m-d'); // ou direct $row['date'] si string
+        $totals[] = $row['total'];
+    }
+
+    return $this->render('statistique/index.html.twig', [
+        'labels' => $labels,
+        'totals' => $totals,
+    ]);
+}
+
+
 
     
 }
