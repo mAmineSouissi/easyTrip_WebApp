@@ -1,0 +1,35 @@
+{% for reclamation in reclamations %}
+    <div class="col-md-6 col-lg-4 mb-4 reclamation-card">
+        <div class="card shadow-sm h-100 border border-light">
+            <div class="card-body">
+                <h6 class="text-secondary mb-2">{{ reclamation.category }}</h6>
+                <p><strong>📄 Problème :</strong> <span class="text-dark">{{ reclamation.issue }}</span></p>
+                <p><strong>⏳ Statut :</strong>
+                    {% if reclamation.status == 'En attente' %}
+                        <span class="badge bg-warning text-dark">En attente</span>
+                    {% elseif reclamation.status == 'En cours' %}
+                        <span class="badge bg-info text-white">En cours</span>
+                    {% elseif reclamation.status == 'Fermée' %}
+                        <span class="badge bg-success text-white">Fermée</span>
+                    {% endif %}
+                </p>
+                <p><strong>📅 Date :</strong> {{ reclamation.date ? reclamation.date|date('Y-m-d') : '—' }}</p>
+            </div>
+
+            <div class="card-footer bg-white d-flex justify-content-between gap-2">
+                <a href="{{ path('reclamation_show', {id: reclamation.id}) }}" class="btn btn-sm rounded-pill text-white" style="background-color: #60a5fa;">👁 Voir</a>
+
+                <a href="{{ path('reclamation_edit', {id: reclamation.id, category: reclamation.category}) }}" class="btn btn-sm rounded-pill text-white" style="background-color: #f59e0b;">✏ Modifier</a>
+
+                <form method="post" action="{{ path('reclamation_delete', {id: reclamation.id}) }}" class="d-inline delete-form" data-id="{{ reclamation.id }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
+                    <button type="submit" class="btn btn-sm rounded-pill text-white" style="background-color: #ef4444;">🗑 Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="text-center mt-4">
+        <p class="alert alert-info">Aucune réclamation trouvée.</p>
+    </div>
+{% endfor %}

@@ -19,6 +19,17 @@
     <!-- 🧾 Titre -->
     <h2 class="text-center mb-4">📊 Statistiques des réclamations</h2>
 
+    <!-- 🧩 Sélecteur de type de graphique -->
+    <div class="mb-4 text-center">
+        <label for="chartType" class="form-label fw-bold mb-2">Choisir le type de graphique :</label>
+        <select id="chartType" class="form-select w-auto mx-auto rounded-pill">
+            <option value="bar" selected>Barres</option>
+            <option value="pie">Camembert</option>
+            <option value="doughnut">Donut</option>
+            <option value="line">Lignes</option>
+        </select>
+    </div>
+
     <!-- 📈 Graphique -->
     <canvas id="reclamationChart" height="100"></canvas>
 
@@ -28,42 +39,60 @@
 {% block javascripts %}
 {{ parent() }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
     const ctx = document.getElementById('reclamationChart').getContext('2d');
-    const chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['En attente', 'En cours', 'Fermée'],
-            datasets: [{
-                label: 'Nombre de réclamations',
-                data: [
-                    {{ counts['En attente'] }},
-                    {{ counts['En cours'] }},
-                    {{ counts['Fermée'] }}
-                ],
-                backgroundColor: ['#f1c40f', '#3498db', '#2ecc71']
-            }]
+
+    // 📊 Données de base
+    const data = {
+        labels: ['En attente', 'En cours', 'Fermée'],
+        datasets: [{
+            label: 'Nombre de réclamations',
+            data: [
+                {{ counts['En attente'] }},
+                {{ counts['En cours'] }},
+                {{ counts['Fermée'] }}
+            ],
+            backgroundColor: ['#f1c40f', '#3498db', '#2ecc71']
+        }]
+    };
+
+    // 🧩 Options de base
+    const options = {
+        responsive: true,
+        plugins: {
+            legend: { display: true },
+            title: {
+                display: true,
+                text: 'Répartition des statuts',
+                color: '#333',
+                font: { size: 18 }
+            }
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false },
-                title: {
-                    display: true,
-                    text: 'Répartition des statuts',
-                    color: '#333',
-                    font: { size: 18 }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0
-                    }
-                }
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { precision: 0 }
             }
         }
+    };
+
+    // 📈 Initialisation du graphique
+    let chart = new Chart(ctx, {
+        type: 'bar', // par défaut
+        data: data,
+        options: options
+    });
+
+    // 🔥 Quand on change le type de graphique
+    document.getElementById('chartType').addEventListener('change', function() {
+        const selectedType = this.value;
+        chart.destroy(); // Détruire l'ancien graphique
+        chart = new Chart(ctx, {
+            type: selectedType,
+            data: data,
+            options: options
+        });
     });
 </script>
 {% endblock %}

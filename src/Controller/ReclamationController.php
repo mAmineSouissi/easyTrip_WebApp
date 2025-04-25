@@ -53,6 +53,28 @@ class ReclamationController extends AbstractController
         ]);
     }
 
+    #[Route('/search', name: 'reclamation_search', methods: ['GET'])]
+public function search(Request $request, ReclamationRepository $reclamationRepository): Response
+{
+    /** @var User $user */
+    $user = $this->getUser();
+    $role = $this->getUserRole($user);
+
+    $keyword = $request->query->get('search');
+    $sort = $request->query->get('sort', 'date');
+    $order = $request->query->get('order', 'DESC');
+
+    $query = $role === 'admin'
+        ? $reclamationRepository->searchAndSortQuery($keyword, $sort, $order)
+        : $reclamationRepository->searchAndSortByUserQuery($user, $keyword, $sort, $order);
+
+    $reclamations = $query->getResult();
+
+    return $this->render("reclamation/{$role}/_reclamations_list.html.twig", [
+        'reclamations' => $reclamations,
+    ]);
+}
+
 
     #[Route('/contact', name: 'reclamation_contact', methods: ['GET', 'POST'])]
 public function contact(Request $request, EntityManagerInterface $em): Response
@@ -176,31 +198,34 @@ public function contact(Request $request, EntityManagerInterface $em): Response
     }
 
     #[Route('/{id}/edit', name: 'reclamation_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Reclamation $reclamation, EntityManagerInterface $em, SmsService $smsService): Response
-    {
-        $form = $this->createForm(ReclamationType::class, $reclamation, [
-            'is_edit' => true,
-        ]);
+public function edit(Request $request, Reclamation $reclamation, EntityManagerInterface $em, SmsService $smsService): Response
+{
+    $form = $this->createForm(ReclamationType::class, $reclamation, [
+        'is_edit' => true,
+    ]);
 
-        $form->handleRequest($request);
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
+    if ($form->isSubmitted() && $form->isValid()) {
+        $em->flush();
 
-            $user = $reclamation->getUser();
-            if ($user && method_exists($user, 'getPhone')) {
-                $smsService->send($user->getPhone(), "📢 Votre réclamation #{$reclamation->getId()} a été mise à jour. Nouveau statut : {$reclamation->getStatus()}");
-            }
-
-            $this->addFlash('success', '✅ Le statut a été mis à jour avec succès !');
-            return $this->redirectToRoute('reclamation_index');
+        $user = $reclamation->getUser();
+        if ($user && method_exists($user, 'getPhone')) {
+            $smsService->send($user->getPhone(), "📢 Votre réclamation #{$reclamation->getId()} a été mise à jour. Nouveau statut : {$reclamation->getStatus()}");
         }
 
-        return $this->render('reclamation/admin/edit.html.twig', [
-            'form' => $form,
-            'reclamation' => $reclamation,
+        $this->addFlash('success', '✅ Le statut a été mis à jour avec succès !');
+        return $this->redirectToRoute('reclamation_edit', [
+            'id' => $reclamation->getId(),
         ]);
     }
+
+    return $this->render('reclamation/admin/edit.html.twig', [
+        'form' => $form->createView(),
+        'reclamation' => $reclamation,
+    ]);
+}
+
 
     #[Route('/{id}', name: 'reclamation_delete', methods: ['POST'])]
     public function delete(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
@@ -212,8 +237,10 @@ public function contact(Request $request, EntityManagerInterface $em): Response
             $this->addFlash('danger', '🗑️ Réclamation supprimée avec succès.');
         }
 
-        return $this->redirectToRoute('reclamation_index');
-    }
+        return $this->redirectToRoute('reclamation_edit', [
+            'id' => $reclamation->getId(),
+        ]);
+            }
 
     #[Route('/{id}/send-sms', name: 'reclamation_send_sms', methods: ['GET'])]
     public function sendSmsManual(int $id, ReclamationRepository $repo, SmsService $smsService): Response

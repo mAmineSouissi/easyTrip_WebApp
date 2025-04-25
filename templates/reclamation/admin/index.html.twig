@@ -1,177 +1,146 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Réclamations - Administration
-{% endblock %}
+{% block title %}Réclamations - Administration{% endblock %}
 
 {% block body %}
-	<div class="section bg-light py-5">
-		<div
-			class="container">
+<div class="section bg-light py-5">
+    <div class="container">
 
-			<!-- 🔙 Bouton retour -->
-			<div class="mb-4">
-				<a href="{{ path('admin_dashboard') }}" class="btn btn-outline-dark rounded-pill">
-					⬅ Retour à l'accueil
-				</a>
-			</div>
+        <!-- 🔙 Bouton retour -->
+        <div class="mb-4">
+            <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-dark rounded-pill">
+                ⬅ Retour à l'accueil
+            </a>
+        </div>
 
-			<!-- 🧾 Titre -->
-			<h2 class="mb-4 fw-bold text-dark">Réclamations - Administration</h2>
+        <!-- 🧾 Titre -->
+        <h2 class="mb-4 fw-bold text-dark">Réclamations - Administration</h2>
 
-			<!-- 🔍 Filtres -->
-			<form method="get" class="row g-2 align-items-center mb-4">
-				<div class="col-md-4">
-					<input type="text" name="search" value="{{ search }}" placeholder="🔍 Rechercher un problème..." class="form-control rounded-pill">
-				</div>
-				<div class="col-md-3">
-					<select name="sort" class="form-select rounded-pill">
-						<option value="category" {% if sort == 'category' %} selected {% endif %}>Trier par catégorie</option>
-						<option value="status" {% if sort == 'status' %} selected {% endif %}>Trier par statut</option>
-						<option value="date" {% if sort == 'date' %} selected {% endif %}>Trier par date</option>
-					</select>
-				</div>
-				<div class="col-md-3">
-					<select name="order" class="form-select rounded-pill">
-						<option value="ASC" {% if order == 'ASC' %} selected {% endif %}>Croissant</option>
-						<option value="DESC" {% if order == 'DESC' %} selected {% endif %}>Décroissant</option>
-					</select>
-				</div>
-				<div class="col-md-1">
-					<button type="submit" class="btn btn-outline-primary rounded-pill w-40">🔍 Filtrer</button>
-				</div>
-				<div class="col-md-1">
-					<a href="{{ path('reclamation_index') }}" class="btn btn-outline-secondary rounded-pill w-40">♻ Réinitialiser</a>
-				</div>
+        <!-- 🔍 Filtres (recherche + tri) -->
+        <div class="row g-2 align-items-center mb-4">
+            <div class="col-md-4">
+                <input type="text" id="search" value="{{ search }}" placeholder="🔍 Rechercher un problème..." class="form-control rounded-pill">
+            </div>
+            <div class="col-md-3">
+                <select id="sort" class="form-select rounded-pill">
+                    <option value="category" {% if sort == 'category' %} selected {% endif %}>Trier par catégorie</option>
+                    <option value="status" {% if sort == 'status' %} selected {% endif %}>Trier par statut</option>
+                    <option value="date" {% if sort == 'date' %} selected {% endif %}>Trier par date</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="order" class="form-select rounded-pill">
+                    <option value="ASC" {% if order == 'ASC' %} selected {% endif %}>Croissant</option>
+                    <option value="DESC" {% if order == 'DESC' %} selected {% endif %}>Décroissant</option>
+                </select>
+            </div>
+        </div>
 
-			</form>
+        <!-- 📋 Réclamations -->
+        <div class="row" id="reclamations-list">
+            {% include 'reclamation/admin/_reclamations_list.html.twig' with { 'reclamations': reclamations } %}
+        </div>
 
-			<!-- 📋 Réclamations -->
-			<div class="row" id="reclamations-list">
-				{% for reclamation in reclamations %}
-					<div class="col-md-6 col-lg-4 mb-4 reclamation-card">
-						<div class="card shadow-sm h-100 border border-light">
-							<div class="card-body">
-								<h6 class="text-secondary mb-2">{{ reclamation.category }}</h6>
-								<p>
-									<strong>📄 Problème :</strong>
-									<span class="text-dark">{{ reclamation.issue }}</span>
-								</p>
-								<p>
-									<strong>⏳ Statut :</strong>
-									{% if reclamation.status == 'En attente' %}
-										<span class="badge bg-warning text-dark">En attente</span>
-									{% elseif reclamation.status == 'En cours' %}
-										<span class="badge bg-info text-white">En cours</span>
-									{% elseif reclamation.status == 'Fermée' %}
-										<span class="badge bg-success text-white">Fermée</span>
-									{% endif %}
-								</p>
-								<p>
-									<strong>📅 Date :</strong>
-									{{ reclamation.date ? reclamation.date|date('Y-m-d') : '—' }}</p>
-							</div>
-							<div class="card-footer bg-white d-flex justify-content-between gap-2">
-								<a href="{{ path('reclamation_show', {id: reclamation.id}) }}" class="btn btn-sm rounded-pill text-white" style="background-color: #60a5fa;">👁 Voir</a>
+        <!-- 🔁 Pagination -->
+        <div class="text-center mt-4" id="pagination-controls"></div>
 
-								<a href="{{ path('reclamation_edit', {id: reclamation.id,category: reclamation.category}) }}" class="btn btn-sm rounded-pill text-white" style="background-color: #f59e0b;">✏ Modifier</a>
+        <!-- 📥 Actions -->
+        <div class="mt-4 d-flex gap-2">
+            <a href="{{ path('reclamation_export_excel') }}" class="btn btn-success">
+                📥 Exporter en Excel
+            </a>
 
-								<form method="post" action="{{ path('reclamation_delete', {id: reclamation.id}) }}" class="d-inline delete-form" data-id="{{ reclamation.id }}">
-									<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
-									<button type="submit" class="btn btn-sm rounded-pill text-white" style="background-color: #ef4444;">🗑 Supprimer</button>
-								</form>
-							</div>
-						</div>
-					</div>
-				{% else %}
-					<div class="text-center mt-4">
-						<p class="alert alert-info">Aucune réclamation trouvée.</p>
-					</div>
-				{% endfor %}
-			</div>
+            <a href="{{ path('reclamation_stats') }}" class="btn btn-outline-info rounded-pill">
+                📊 Voir les statistiques
+            </a>
+        </div>
 
-			<!-- 🔁 Pagination -->
-			<div class="text-center mt-4" id="pagination-controls"></div>
-		</div>
-		
-				<a href="{{ path('reclamation_export_excel') }}" class="btn btn-success mb-3">
-  📥 Exporter en Excel
-</a>
+    </div>
 
-<a href="{{ path('reclamation_stats') }}" class="btn btn-outline-info rounded-pill mb-3">
-  📊 Voir les statistiques
-</a>
+    <!-- ✅ SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-	</div>
+    <!-- 🧠 Script Recherche Dynamique + Pagination -->
+    <script>
+    const cards = document.querySelectorAll('.reclamation-card');
+    const itemsPerPage = 6;
+    let currentPage = 1;
 
-	<!-- ✅ SweetAlert2 CDN -->
-	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    function displayPage(page) {
+        const start = (page - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        cards.forEach((card, index) => {
+            card.style.display = (index >= start && index < end) ? 'block' : 'none';
+        });
+        renderPagination(page);
+    }
 
-	<script>
-		const cards = document.querySelectorAll('.reclamation-card');
-const itemsPerPage = 6;
-let currentPage = 1;
+    function renderPagination(current) {
+        const totalPages = Math.ceil(cards.length / itemsPerPage);
+        let html = '';
+        if (totalPages > 1) {
+            html += `<button class="btn btn-outline-secondary mx-1" ${current === 1 ? 'disabled' : ''} onclick="changePage(${current - 1})">⬅</button>`;
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button class="btn ${i === current ? 'btn-primary text-white' : 'btn-outline-primary'} mx-1" onclick="changePage(${i})">${i}</button>`;
+            }
+            html += `<button class="btn btn-outline-secondary mx-1" ${current === totalPages ? 'disabled' : ''} onclick="changePage(${current + 1})">➡</button>`;
+        }
+        document.getElementById('pagination-controls').innerHTML = html;
+    }
 
-function displayPage(page) {
-const start = (page - 1) * itemsPerPage;
-const end = start + itemsPerPage;
-cards.forEach((card, index) => {
-card.style.display = (index >= start && index < end) ? 'block' : 'none';
-});
-renderPagination(page);
-}
+    function changePage(page) {
+        currentPage = page;
+        displayPage(currentPage);
+    }
 
-function renderPagination(current) {
-const totalPages = Math.ceil(cards.length / itemsPerPage);
-let html = '';
-if (totalPages > 1) {
-html += `<button class="btn btn-outline-secondary mx-1" ${
-current === 1 ? 'disabled' : ''
-} onclick="changePage(${
-current - 1
-})">⬅</button>`;
-for (let i = 1; i <= totalPages; i++) {
-html += `<button class="btn ${
-i === current ? 'btn-primary text-white' : 'btn-outline-primary'
-} mx-1" onclick="changePage(${i})">${i}</button>`;
-}
-html += `<button class="btn btn-outline-secondary mx-1" ${
-current === totalPages ? 'disabled' : ''
-} onclick="changePage(${
-current + 1
-})">➡</button>`;
-}
-document.getElementById('pagination-controls').innerHTML = html;
-}
+    document.querySelectorAll('.delete-form').forEach(form => {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Êtes-vous sûr ?',
+                text: "Rak bech tfasakh.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Oui, supprimer',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
 
-function changePage(page) {
-currentPage = page;
-displayPage(currentPage);
-}
+    document.addEventListener('DOMContentLoaded', () => {
+        displayPage(currentPage);
+    });
 
-// ✅ SweetAlert2 confirmation
-document.querySelectorAll('.delete-form').forEach(form => {
-form.addEventListener('submit', function (e) {
-e.preventDefault();
+    // 🔥 Script Fetch pour Recherche Dynamique
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('search');
+        const sortSelect = document.getElementById('sort');
+        const orderSelect = document.getElementById('order');
+        const reclamationsList = document.getElementById('reclamations-list');
 
-Swal.fire({
-title: 'Êtes-vous sûr ?',
-text: "Rak bech tfasakh.",
-icon: 'warning',
-showCancelButton: true,
-confirmButtonColor: '#ef4444',
-cancelButtonColor: '#6b7280',
-confirmButtonText: 'Oui, supprimer',
-cancelButtonText: 'Annuler'
-}).then((result) => {
-if (result.isConfirmed) {
-form.submit();
-}
-});
-});
-});
+        function fetchReclamations() {
+            const search = searchInput.value;
+            const sort = sortSelect.value;
+            const order = orderSelect.value;
 
-document.addEventListener('DOMContentLoaded', () => {
-displayPage(currentPage);
-});
-	</script>
+            fetch(`/reclamation/search?search=${encodeURIComponent(search)}&sort=${sort}&order=${order}`)
+                .then(response => response.text())
+                .then(html => {
+                    reclamationsList.innerHTML = html;
+                    displayPage(currentPage); // Recharge pagination après fetch
+                });
+        }
+
+        searchInput.addEventListener('input', fetchReclamations);
+        sortSelect.addEventListener('change', fetchReclamations);
+        orderSelect.addEventListener('change', fetchReclamations);
+    });
+    </script>
+
 {% endblock %}
