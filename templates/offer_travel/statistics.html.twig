@@ -29,7 +29,10 @@
 
 {% block body %}
 <div class="container py-4">
-    <h1 class="mb-4">Statistiques des offres</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Statistiques des offres</h1>
+        <button id="exportPdfBtn" class="btn btn-primary">Exporter en PDF</button>
+    </div>
 
     <div class="row">
         <!-- Graphique 1: Nombre d'offres par agence (Bar) -->
@@ -68,8 +71,19 @@
 {% block javascripts %}
     {{ parent() }}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Vérifier si jsPDF est chargé
+            if (!window.jspdf) {
+                console.error("jsPDF n'est pas chargé. Vérifiez le CDN.");
+                alert("Erreur : Impossible de charger la bibliothèque PDF.");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+
             // Couleurs personnalisées
             const colors = [
                 '#3B82F6', '#10B981', '#F59E0B', '#EF4444', 
@@ -189,6 +203,91 @@
                     }
                 }
             );
+
+            // Exportation en PDF
+            const exportBtn = document.getElementById('exportPdfBtn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function() {
+                    try {
+                        const doc = new jsPDF();
+
+                        // Date d'aujourd'hui
+                        const today = new Date().toLocaleDateString('fr-FR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+
+                        // En-tête
+                        doc.setFontSize(16);
+                        doc.text('Statistiques des Offres de Voyage', 20, 20);
+                        doc.setFontSize(12);
+                        doc.text(`Date: ${today}`, 20, 30);
+                        doc.setLineWidth(0.5);
+                        doc.line(20, 35, 190, 35);
+
+                        let yPosition = 45;
+
+                        // Tableau 1: Offres par agence
+                        doc.setFontSize(14);
+                        doc.text('Nombre d\'offres par agence', 20, yPosition);
+                        yPosition += 10;
+
+                        doc.autoTable({
+                            startY: yPosition,
+                            head: [['Agence', 'Nombre d\'offres']],
+                            body: {{ offersByAgency.labels|json_encode|raw }}.map((label, index) => [
+                                label, {{ offersByAgency.data|json_encode|raw }}[index]
+                            ]),
+                            theme: 'grid',
+                            headStyles: { fillColor: [59, 130, 246] },
+                            styles: { fontSize: 10 }
+                        });
+                        yPosition = doc.lastAutoTable.finalY + 20;
+
+                        // Tableau 2: Chiffre d'affaires par agence
+                        doc.setFontSize(14);
+                        doc.text('Chiffre d\'affaires par agence', 20, yPosition);
+                        yPosition += 10;
+
+                        doc.autoTable({
+                            startY: yPosition,
+                            head: [['Agence', 'Chiffre d\'affaires (€)']],
+                            body: {{ revenueByAgency.labels|json_encode|raw }}.map((label, index) => [
+                                label, Number({{ revenueByAgency.data|json_encode|raw }}[index]).toLocaleString('fr-FR')
+                            ]),
+                            theme: 'grid',
+                            headStyles: { fillColor: [59, 130, 246] },
+                            styles: { fontSize: 10 }
+                        });
+                        yPosition = doc.lastAutoTable.finalY + 20;
+
+                        // Tableau 3: Offres par catégorie
+                        doc.setFontSize(14);
+                        doc.text('Nombre d\'offres par catégorie', 20, yPosition);
+                        yPosition += 10;
+
+                        doc.autoTable({
+                            startY: yPosition,
+                            head: [['Catégorie', 'Nombre d\'offres']],
+                            body: {{ offersByCategory.labels|json_encode|raw }}.map((label, index) => [
+                                label, {{ offersByCategory.data|json_encode|raw }}[index]
+                            ]),
+                            theme: 'grid',
+                            headStyles: { fillColor: [59, 130, 246] },
+                            styles: { fontSize: 10 }
+                        });
+
+                        // Téléchargement du PDF
+                        doc.save(`Statistiques_Offres_${new Date().toISOString().slice(0, 10)}.pdf`);
+                    } catch (error) {
+                        console.error('Erreur lors de la génération du PDF:', error);
+                        alert('Erreur lors de la génération du PDF. Vérifiez la console pour plus de détails.');
+                    }
+                });
+            } else {
+                console.error("Bouton d'exportation non trouvé.");
+            }
         });
     </script>
 {% endblock %}
