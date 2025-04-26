@@ -17,6 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
+
 #[Route('/feedback')]
 class FeedbackController extends AbstractController
 {
@@ -65,6 +66,24 @@ class FeedbackController extends AbstractController
             'feedbacks' => $feedbacks,
         ]);
     }
+
+    #[Route('/search', name: 'feedback_search', methods: ['GET'])]
+    public function search(Request $request, FeedbackRepository $feedbackRepository): Response
+{
+    $search = $request->query->get('q'); 
+    $sort = $request->query->get('sort', 'date');
+    $dir = $request->query->get('dir', 'DESC');
+    $type = $request->query->get('type');
+
+    $feedbacks = $feedbackRepository->findBySearchSortAndType($search, $sort, $dir, $type)->getResult();
+
+    return $this->render('feedback/admin/_feedbacks_list.html.twig', [
+        'feedbacks' => $feedbacks
+    ]);
+}
+
+    
+
 
     #[Route('/new/{type}/{id}', name: 'feedback_new', methods: ['GET', 'POST'])]
     public function new(string $type, int $id, Request $request, EntityManagerInterface $em): Response

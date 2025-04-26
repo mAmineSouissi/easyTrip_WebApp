@@ -1,0 +1,50 @@
+{% for feedback in feedbacks %}
+  <tr>
+    <td>{{ feedback.message }}</td>
+    <td>{{ feedback.rating }}/5</td>
+    <td>{{ feedback.date ? feedback.date|date('Y-m-d') : '—' }}</td>
+    <td class="text-start">
+      {% set feedbackCount = feedback.user.feedbacks|length %}
+      {% set badge = '' %}
+      {% set color = '' %}
+      {% if feedbackCount >= 10 %}
+        {% set badge = '🏅 Super Actif' %}
+        {% set color = 'success' %}
+      {% elseif feedbackCount >= 5 %}
+        {% set badge = '👍 Actif' %}
+        {% set color = 'primary' %}
+      {% elseif feedbackCount >= 2 %}
+        {% set badge = '🙂 Débutant' %}
+        {% set color = 'warning' %}
+      {% else %}
+        {% set badge = '💤 Inactif' %}
+        {% set color = 'secondary' %}
+      {% endif %}
+      <div>{{ feedback.user.email }}</div>
+      <span class="badge bg-{{ color }}">{{ badge }}</span>
+    </td>
+    <td>
+      {% if feedback.ticket %}
+        Vol {{ feedback.ticket.getFlight_number() }}<br>
+        {{ feedback.ticket.getDeparture_city() }} ➡ {{ feedback.ticket.getArrival_city() }}
+      {% else %} — {% endif %}
+    </td>
+    <td>{{ feedback.hotel ? feedback.hotel.name : '—' }}</td>
+    <td>{{ feedback.travel ? feedback.travel.destination : '—' }}</td>
+    <td class="d-flex gap-1 justify-content-center">
+      <a href="{{ path('feedback_show', {'id': feedback.id}) }}" class="btn btn-sm btn-outline-warning rounded-pill px-3">
+        <i class="bi bi-eye"></i> Voir
+      </a>
+      <form method="post" action="{{ path('feedback_delete', {'id': feedback.id}) }}" onsubmit="return confirm('Confirmer la suppression ?');">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ feedback.id) }}">
+        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+          <i class="bi bi-trash"></i> Supprimer
+        </button>
+      </form>
+    </td>
+  </tr>
+{% else %}
+  <tr>
+    <td colspan="8" class="text-center">🚫 Aucun feedback trouvé.</td>
+  </tr>
+{% endfor %}
