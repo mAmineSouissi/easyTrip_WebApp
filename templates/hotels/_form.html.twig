@@ -1,4 +1,101 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
+    <div class="row g-3">
+        <div class="col-md-6">
+            {{ form_row(form.name, {
+                'attr': {
+                    'class': 'form-control',
+                    'required': 'required',
+                    'pattern': '.{3,}',
+                    'title': 'Le nom doit contenir au moins 3 caractères'
+                }
+            }) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.rating, {
+                'attr': {
+                    'class': 'form-control',
+                    'min': 1,
+                    'max': 5,
+                    'required': 'required'
+                }
+            }) }}
+        </div>
+        <div class="col-12">
+            {{ form_row(form.adresse, {
+                'attr': {
+                    'class': 'form-control',
+                    'required': 'required',
+                    'pattern': '.{10,}',
+                    'title': 'L\'adresse doit contenir au moins 10 caractères'
+                }
+            }) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.city, {
+                'attr': {
+                    'class': 'form-control',
+                    'required': 'required',
+                    'pattern': '[A-Za-zÀ-ÿ -]{3,}',
+                    'title': 'La ville doit contenir uniquement des lettres (minimum 3)'
+                }
+            }) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.price, {
+                'attr': {
+                    'class': 'form-control',
+                    'type': 'number',
+                    'min': 0.01,
+                    'step': 0.01,
+                    'required': 'required',
+                    'pattern': '[0-9]+(\.[0-9]{1,2})?',
+                    'title': 'Veuillez entrer une valeur numérique (ex. 99.99)'
+                }
+            }) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.num_room, {
+                'attr': {
+                    'class': 'form-control',
+                    'min': 1,
+                    'required': 'required'
+                }
+            }) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.type_room, {
+                'attr': {
+                    'class': 'form-control',
+                    'required': 'required',
+                    'pattern': '.{3,}',
+                    'title': 'Le type de chambre doit contenir au moins 3 caractères'
+                }
+            }) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.image, {
+                'attr': {
+                    'class': 'form-control',
+                    'accept': 'image/*'
+                }
+            }) }}
+        </div>
+        <div class="col-12">
+            {{ form_row(form.description, {
+                'attr': {
+                    'class': 'form-control',
+                    'rows': 5,
+                    'required': 'required',
+                    'minlength': 20,
+                    'title': 'La description doit contenir au moins 20 caractères'
+                }
+            }) }}
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-2"></i>{{ button_label|default('Enregistrer') }}
+        </button>
+    </div>
 {{ form_end(form) }}

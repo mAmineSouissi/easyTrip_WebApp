@@ -3,65 +3,142 @@
 {% block title %}Liste des Hôtels{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
+<div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="fas fa-hotel me-2"></i>Liste des Hôtels</h1>
-        <a href="{{ path('app_hotels_new') }}" class="btn btn-success">
-            <i class="fas fa-plus me-1"></i> Nouvel Hôtel
+        <h1 class="display-4">
+            <i class="fas fa-hotel text-primary me-2"></i>Liste des Hôtels
+        </h1>
+        <a href="{{ path('app_hotels_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> Ajouter un hôtel
         </a>
     </div>
 
-    <div class="card shadow-sm">
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    <!-- Formulaire de recherche -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-search me-2"></i>Rechercher des hôtels
+            </h5>
+        </div>
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Nom</th>
-                            <th>Adresse</th>
-                            <th>Ville</th>
-                            <th>Note</th>
-                            <th>Prix</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for hotel in hotels %}
-                        <tr>
-                            <td>{{ hotel.idHotel }}</td>
-                            <td>{{ hotel.name }}</td>
-                            <td>{{ hotel.adresse }}</td>
-                            <td>{{ hotel.city }}</td>
-                            <td>
-                                {% for i in 1..5 %}
-                                    <i class="fas fa-star{{ i > hotel.rating ? '-alt' : '' }} text-warning"></i>
-                                {% endfor %}
-                            </td>
-                            <td>{{ hotel.price}}</td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <a href="{{ path('app_hotels_show', {'id_hotel': hotel.idHotel}) }}" 
-                                       class="btn btn-sm btn-primary" title="Voir">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ path('app_hotels_edit', {'id_hotel': hotel.idHotel}) }}" 
-                                       class="btn btn-sm btn-warning" title="Modifier">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    {{ include('hotels/_delete_form.html.twig') }}
-                                </div>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="7" class="text-center text-muted">Aucun hôtel trouvé</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+            {{ form_start(form, {'attr': {'class': 'row g-3'}}) }}
+                <div class="col-md-4">
+                    {{ form_row(form.name, {'attr': {'class': 'form-control', 'placeholder': 'Nom de l\'hôtel'}}) }}
+                </div>
+                <div class="col-md-4">
+                    {{ form_row(form.city, {
+                        'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Ville',
+                            'list': 'cityOptions'
+                        }
+                    }) }}
+                    <datalist id="cityOptions">
+                        {% for city in cities %}
+                            <option value="{{ city }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+                <div class="col-md-4">
+                    {{ form_row(form.rating, {
+                        'attr': {
+                            'class': 'form-select',
+                            'min': 1,
+                            'max': 5
+                        }
+                    }) }}
+                </div>
+                <div class="col-md-4">
+                    {{ form_row(form.maxPrice, {
+                        'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Prix maximum',
+                            'min': 0,
+                            'step': 0.01
+                        }
+                    }) }}
+                </div>
+                <div class="col-md-4">
+                    {{ form_row(form.typeRoom, {
+                        'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Type de chambre',
+                            'list': 'roomTypeOptions'
+                        }
+                    }) }}
+                    <datalist id="roomTypeOptions">
+                        {% for type in roomTypes %}
+                            <option value="{{ type }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-1"></i> Rechercher
+                    </button>
+                    <a href="{{ path('app_hotels_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-sync-alt me-1"></i> Réinitialiser
+                    </a>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for hotel in hotels %}
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0">
+                {% if hotel.image %}
+                <img src="{{ asset('uploads/hotels/' ~ hotel.image) }}" class="card-img-top" alt="{{ hotel.name }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-hotel fa-4x text-muted"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ hotel.name }}</h5>
+                        <span class="badge bg-primary">{{ hotel.price }} €</span>
+                    </div>
+                    <p class="text-muted small mb-2">
+                        <i class="fas fa-map-marker-alt me-1"></i>{{ hotel.city }}
+                    </p>
+                    <div class="mb-3">
+                        {% for i in 1..5 %}
+                            <i class="fas fa-star{{ i > hotel.rating ? '-alt' : '' }} {{ i <= hotel.rating ? 'text-warning' : 'text-muted' }}"></i>
+                        {% endfor %}
+                    </div>
+                    <p class="card-text text-truncate">{{ hotel.description }}</p>
+                </div>
+                <div class="card-footer bg-white border-0 d-flex justify-content-between">
+                    <a href="{{ path('app_hotels_show', {'id_hotel': hotel.idHotel}) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye me-1"></i> Voir
+                    </a>
+                    <a href="{{ path('app_hotels_edit', {'id_hotel': hotel.idHotel}) }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-edit me-1"></i> Modifier
+                    </a>
+                </div>
             </div>
         </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info text-center py-4">
+                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                <h4>Aucun hôtel disponible</h4>
+                <p class="mb-0">Commencez par ajouter un nouvel hôtel ou ajustez vos filtres</p>
+                <a href="{{ path('app_hotels_new') }}" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus me-1"></i> Ajouter un hôtel
+                </a>
+            </div>
+        </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}

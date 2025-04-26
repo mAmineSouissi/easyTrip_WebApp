@@ -2,180 +2,279 @@
 
 namespace App\Entity;
 
+use App\Repository\Offer_travelRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\File;
 
-
-#[ORM\Entity]
-class Offer_travel
+#[ORM\Entity(repositoryClass: Offer_TravelRepository::class)]
+class OfferTravel
 {
-
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
-    private int $id;
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $departure;
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le champ Départ est obligatoire")]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: "Le départ doit contenir au moins {{ limit }} caractères",
+        maxMessage: "Le départ ne peut pas dépasser {{ limit }} caractères"
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-Z\s\-]+$/',
+        message: "Le départ ne doit contenir que des lettres, espaces et tirets"
+    )]
+    private ?string $departure = null;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $destination;
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le champ Destination est obligatoire")]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: "La destination doit contenir au moins {{ limit }} caractères",
+        maxMessage: "La destination ne peut pas dépasser {{ limit }} caractères"
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-Z\s\-]+$/',
+        message: "La destination ne doit contenir que des lettres, espaces et tirets"
+    )]
+    private ?string $destination = null;
 
-    #[ORM\Column(type: "date")]
-    private \DateTimeInterface $departure_date;
+    #[ORM\Column(type: 'date')]
+    #[Assert\NotBlank(message: "La date de départ est obligatoire")]
+    #[Assert\GreaterThanOrEqual(
+        value: "today",
+        message: "La date de départ doit être aujourd'hui ou dans le futur"
+    )]
+    private ?\DateTimeInterface $departure_date = null;
 
-    #[ORM\Column(type: "date")]
-    private \DateTimeInterface $arrival_date;
+    #[ORM\Column(type: 'date')]
+    #[Assert\NotBlank(message: "La date d'arrivée est obligatoire")]
+    #[Assert\GreaterThan(
+        propertyPath: "departure_date",
+        message: "La date d'arrivée doit être après la date de départ"
+    )]
+    private ?\DateTimeInterface $arrival_date = null;
 
-    #[ORM\Column(type: "string", length: 50)]
-    private string $hotelName;
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom de l'hôtel est obligatoire")]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: "Le nom de l'hôtel doit contenir au moins {{ limit }} caractères",
+        maxMessage: "Le nom de l'hôtel ne peut pas dépasser {{ limit }} caractères"
+    )]
+    private ?string $hotel_name = null;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $flightName;
+    #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank(message: "La description est obligatoire")]
+    #[Assert\Length(
+        min: 10,
+        max: 2000,
+        minMessage: "La description doit contenir au moins {{ limit }} caractères",
+        maxMessage: "La description ne peut pas dépasser {{ limit }} caractères"
+    )]
+    private ?string $discription = null;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $discription;
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "La catégorie est obligatoire")]
+    #[Assert\Choice(
+        choices: ["Sportive", "Romantique", "Religieuse", "Touristique"],
+        message: "Choisissez une catégorie valide"
+    )]
+    private ?string $category = null;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $category;
+    #[ORM\Column(type: 'float')]
+    #[Assert\NotBlank(message: "Le prix est obligatoire")]
+    #[Assert\GreaterThan(
+        value: 0,
+        message: "Le prix doit être supérieur à 0"
+    )]
+    #[Assert\LessThan(
+        value: 100000,
+        message: "Le prix doit être inférieur à 100000"
+    )]
+    private ?float $price = null;
 
-    #[ORM\Column(type: "float")]
-    private float $price;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $image;
+    #[Assert\NotBlank(message: "L'image est obligatoire", groups: ['create'])]
+    #[Assert\Image([
+        'maxSize' => '2M',
+        'mimeTypes' => ['image/jpeg', 'image/png'],
+        'mimeTypesMessage' => 'Veuillez uploader une image valide (JPEG ou PNG)',
+        'groups' => ['create', 'update']
+    ])]
+    private ?File $imageFile = null;
 
-    #[ORM\Column(type: "integer")]
-    private int $agency_id;
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom du vol est obligatoire")]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: "Le nom du vol doit contenir au moins {{ limit }} caractères",
+        maxMessage: "Le nom du vol ne peut pas dépasser {{ limit }} caractères"
+    )]
+    private ?string $flight_name = null;
 
-    #[ORM\Column(type: "integer")]
-    private int $promotion_id;
+    #[ORM\ManyToOne(targetEntity: Agency::class)]
+    #[Assert\NotBlank(message: "L'agence est obligatoire")]
+    private ?Agency $agency = null;
 
-    public function getId()
+    #[ORM\ManyToOne(targetEntity: Promotion::class)]
+    private ?Promotion $promotion = null;
+    
+
+    // Getters et setters
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId($value)
-    {
-        $this->id = $value;
-    }
-
-    public function getDeparture()
+    public function getDeparture(): ?string
     {
         return $this->departure;
     }
 
-    public function setDeparture($value)
+    public function setDeparture(string $departure): self
     {
-        $this->departure = $value;
+        $this->departure = $departure;
+        return $this;
     }
 
-    public function getDestination()
+    public function getDestination(): ?string
     {
         return $this->destination;
     }
 
-    public function setDestination($value)
+    public function setDestination(string $destination): self
     {
-        $this->destination = $value;
+        $this->destination = $destination;
+        return $this;
     }
 
-    public function getDeparture_date()
+    public function getDepartureDate(): ?\DateTimeInterface
     {
         return $this->departure_date;
     }
 
-    public function setDeparture_date($value)
+    public function setDepartureDate(\DateTimeInterface $departure_date): self
     {
-        $this->departure_date = $value;
+        $this->departure_date = $departure_date;
+        return $this;
     }
 
-    public function getArrival_date()
+    public function getArrivalDate(): ?\DateTimeInterface
     {
         return $this->arrival_date;
     }
 
-    public function setArrival_date($value)
+    public function setArrivalDate(\DateTimeInterface $arrival_date): self
     {
-        $this->arrival_date = $value;
+        $this->arrival_date = $arrival_date;
+        return $this;
     }
 
-    public function getHotelName()
+    public function getHotelName(): ?string
     {
-        return $this->hotelName;
+        return $this->hotel_name;
     }
 
-    public function setHotelName($value)
+    public function setHotelName(string $hotel_name): self
     {
-        $this->hotelName = $value;
+        $this->hotel_name = $hotel_name;
+        return $this;
     }
 
-    public function getFlightName()
-    {
-        return $this->flightName;
-    }
-
-    public function setFlightName($value)
-    {
-        $this->flightName = $value;
-    }
-
-    public function getDiscription()
+    public function getDiscription(): ?string
     {
         return $this->discription;
     }
 
-    public function setDiscription($value)
+    public function setDiscription(string $discription): self
     {
-        $this->discription = $value;
+        $this->discription = $discription;
+        return $this;
     }
 
-    public function getCategory()
+    public function getCategory(): ?string
     {
         return $this->category;
     }
 
-    public function setCategory($value)
+    public function setCategory(string $category): self
     {
-        $this->category = $value;
+        $this->category = $category;
+        return $this;
     }
 
-    public function getPrice()
+    public function getPrice(): ?float
     {
         return $this->price;
     }
 
-    public function setPrice($value)
+    public function setPrice(float $price): self
     {
-        $this->price = $value;
+        $this->price = $price;
+        return $this;
     }
 
-    public function getImage()
+    public function getImage(): ?string
     {
         return $this->image;
     }
 
-    public function setImage($value)
+    public function setImage(?string $image): self
     {
-        $this->image = $value;
+        $this->image = $image;
+        return $this;
     }
 
-    public function getAgency_id()
+    public function getImageFile(): ?File
     {
-        return $this->agency_id;
+        return $this->imageFile;
     }
 
-    public function setAgency_id($value)
+    public function setImageFile(?File $imageFile = null): self
     {
-        $this->agency_id = $value;
+        $this->imageFile = $imageFile;
+        return $this;
     }
 
-    public function getPromotion_id()
+    public function getFlightName(): ?string
     {
-        return $this->promotion_id;
+        return $this->flight_name;
     }
 
-    public function setPromotion_id($value)
+    public function setFlightName(string $flight_name): self
     {
-        $this->promotion_id = $value;
+        $this->flight_name = $flight_name;
+        return $this;
+    }
+
+    public function getAgency(): ?Agency
+    {
+        return $this->agency;
+    }
+
+    public function setAgency(?Agency $agency): self
+    {
+        $this->agency = $agency;
+        return $this;
+    }
+
+    public function getPromotion(): ?Promotion
+    {
+        return $this->promotion;
+    }
+
+    public function setPromotion(?Promotion $promotion): self
+    {
+        $this->promotion = $promotion;
+        return $this;
     }
 }

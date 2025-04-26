@@ -1,13 +1,177 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Hotels{% endblock %}
+{% block title %}Modifier {{ hotel.name }}{% endblock %}
 
 {% block body %}
-    <h1>Edit Hotels</h1>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">
+                            <i class="fas fa-edit me-2"></i>Modifier {{ hotel.name }}
+                        </h2>
+                        <a href="{{ path('app_hotels_index') }}" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-left me-1"></i> Retour
+                        </a>
+                    </div>
+                </div>
 
-    {{ include('hotels/_form.html.twig', {'button_label': 'Update'}) }}
+                <div class="card-body p-4">
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger alert-dismissible fade show alert-error">
+                            <i class="fas fa-exclamation-circle me-2"></i>{{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
 
-    <a href="{{ path('app_hotels_index') }}">back to list</a>
+                    {{ form_start(form, {
+                        'attr': {
+                            'class': 'needs-validation',
+                            'novalidate': 'novalidate',
+                            'enctype': 'multipart/form-data',
+                            'id': 'hotel-form'
+                        }
+                    }) }}
+                    
+                    {% if hotel.image %}
+                        <div class="text-center mb-4">
+                            <img src="{{ asset('uploads/hotels/' ~ hotel.image) }}" 
+                                 class="img-fluid rounded" 
+                                 style="max-height: 200px;" 
+                                 alt="Image actuelle">
+                            <p class="text-muted small mt-2">Image actuelle</p>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.name, 'Nom de l\'hôtel', {
+                                    'label_attr': {
+                                        'class': 'form-label'
+                                    }
+                                }) }}
+                                {{ form_widget(form.name, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'required': 'required',
+                                        'pattern': '.{3,}',
+                                        'title': 'Le nom doit contenir au moins 3 caractères'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    Veuillez fournir un nom valide (minimum 3 caractères).
+                                </div>
+                            </div>
+                        </div>
 
-    {{ include('hotels/_delete_form.html.twig') }}
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.rating, 'Note (1-5 étoiles)', {
+                                    'label_attr': {
+                                        'class': 'form-label'
+                                    }
+                                }) }}
+                                {{ form_widget(form.rating, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'min': 1,
+                                        'max': 5,
+                                        'required': 'required'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    La note doit être entre 1 et 5.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form_label(form.price, 'Prix par nuit (€)', {
+                                    'label_attr': {
+                                        'class': 'form-label'
+                                    }
+                                }) }}
+                                {{ form_widget(form.price, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'type': 'number',
+                                        'min': 0.01,
+                                        'step': 0.01,
+                                        'required': 'required',
+                                        'pattern': '[0-9]+(\.[0-9]{1,2})?',
+                                        'title': 'Veuillez entrer une valeur numérique (ex. 99.99)',
+                                        'id': 'price-input'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    Veuillez fournir un prix valide (ex: 99.99).
+                                </div>
+                                <input type="hidden" id="original-price" value="{{ original_price }}">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.promotion, 'Promotion', {
+                                    'label_attr': {
+                                        'class': 'form-label'
+                                    }
+                                }) }}
+                                {{ form_widget(form.promotion, {
+                                    'attr': {
+                                        'class': 'form-select',
+                                        'id': 'promotion-select'
+                                    }
+                                }) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Mettre à jour
+                        </button>
+                    </div>
+                    
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const promotionSelect = document.getElementById('promotion-select');
+    const priceInput = document.getElementById('price-input');
+    const originalPrice = parseFloat(document.getElementById('original-price').value);
+
+    promotionSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const discountPercentage = selectedOption.getAttribute('data-discount');
+        
+        if (discountPercentage) {
+            const discount = originalPrice * (parseFloat(discountPercentage) / 100);
+            const discountedPrice = originalPrice - discount;
+            priceInput.value = discountedPrice.toFixed(2);
+        } else {
+            priceInput.value = originalPrice.toFixed(2);
+        }
+    });
+
+    if (promotionSelect.value) {
+        const selectedOption = promotionSelect.options[promotionSelect.selectedIndex];
+        const discountPercentage = selectedOption.getAttribute('data-discount');
+        if (discountPercentage) {
+            const discount = originalPrice * (parseFloat(discountPercentage) / 100);
+            const discountedPrice = originalPrice - discount;
+            priceInput.value = discountedPrice.toFixed(2);
+        }
+    }
+});
+</script>
 {% endblock %}

@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 class Hotels
@@ -15,36 +16,53 @@ class Hotels
     private ?int $id_hotel = null;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "Le nom de l'hôtel est requis")]
+    #[Assert\Length(max: 255, maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères")]
     private ?string $name = null;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "L'adresse est requise")]
+    #[Assert\Length(max: 255, maxMessage: "L'adresse ne peut pas dépasser {{ limit }} caractères")]
     private ?string $adresse = null;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "La ville est requise")]
+    #[Assert\Length(max: 255, maxMessage: "La ville ne peut pas dépasser {{ limit }} caractères")]
     private ?string $city = null;
 
     #[ORM\Column(type: "integer")]
+    #[Assert\NotBlank(message: "La note est requise")]
+    #[Assert\Range(min: 1, max: 5, notInRangeMessage: "La note doit être entre {{ min }} et {{ max }}")]
     private ?int $rating = null;
 
     #[ORM\Column(type: "text")]
+    #[Assert\NotBlank(message: "La description est requise")]
     private ?string $description = null;
 
     #[ORM\Column(type: "float")]
+    #[Assert\NotBlank(message: "Le prix est requis")]
+    #[Assert\GreaterThan(value: 0, message: "Le prix doit être supérieur à 0")]
+    #[Assert\Type(type: "numeric", message: "Le prix doit être une valeur numérique")]
     private ?float $price = null;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "Le type de chambre est requis")]
+    #[Assert\Length(max: 255, maxMessage: "Le type de chambre ne peut pas dépasser {{ limit }} caractères")]
     private ?string $type_room = null;
 
     #[ORM\Column(type: "integer")]
+    #[Assert\NotBlank(message: "Le nombre de chambres est requis")]
+    #[Assert\GreaterThan(value: 0, message: "Le nombre de chambres doit être supérieur à 0")]
     private ?int $num_room = null;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $image = null;
 
-    #[ORM\Column(type: "integer")]
-    private ?int $promotion_id = null;
+    #[ORM\ManyToOne(targetEntity: Promotion::class)]
+    #[ORM\JoinColumn(name: "promotion_id", referencedColumnName: "id", nullable: true)]
+    private ?Promotion $promotion = null;
 
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: "integer", nullable: true)]
     private ?int $agency_id = null;
 
     #[ORM\OneToMany(mappedBy: "hotel", targetEntity: Webinaire::class)]
@@ -126,6 +144,14 @@ class Hotels
         return $this;
     }
 
+    public function getOriginalPrice(): float
+    {
+        if ($this->promotion) {
+            return $this->price / (1 - ($this->promotion->getDiscountPercentage() / 100));
+        }
+        return $this->price;
+    }
+
     public function getTypeRoom(): ?string
     {
         return $this->type_room;
@@ -153,20 +179,20 @@ class Hotels
         return $this->image;
     }
 
-    public function setImage(string $image): self
+    public function setImage(?string $image): self
     {
         $this->image = $image;
         return $this;
     }
 
-    public function getPromotionId(): ?int
+    public function getPromotion(): ?Promotion
     {
-        return $this->promotion_id;
+        return $this->promotion;
     }
 
-    public function setPromotionId(int $promotion_id): self
+    public function setPromotion(?Promotion $promotion): self
     {
-        $this->promotion_id = $promotion_id;
+        $this->promotion = $promotion;
         return $this;
     }
 
@@ -175,15 +201,12 @@ class Hotels
         return $this->agency_id;
     }
 
-    public function setAgencyId(int $agency_id): self
+    public function setAgencyId(?int $agency_id): self
     {
         $this->agency_id = $agency_id;
         return $this;
     }
 
-    /**
-     * @return Collection<int, Webinaire>
-     */
     public function getWebinaires(): Collection
     {
         return $this->webinaires;
@@ -195,19 +218,16 @@ class Hotels
             $this->webinaires->add($webinaire);
             $webinaire->setHotel($this);
         }
-
         return $this;
     }
 
     public function removeWebinaire(Webinaire $webinaire): self
     {
         if ($this->webinaires->removeElement($webinaire)) {
-            // set the owning side to null (unless already changed)
             if ($webinaire->getHotel() === $this) {
                 $webinaire->setHotel(null);
             }
         }
-
         return $this;
     }
 }

@@ -3,3 +3,22 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+app_client_hotels_index:
+    path: /Chotels
+    controller: App\Controller\ClientHotelsController::index
+    methods: [GET, POST]
+
+app_client_hotels_show:
+    path: /Chotels/{id_hotel}
+    controller: App\Controller\ClientHotelsController::show
+    methods: [GET]
+    
+app_client_tickets_index:
+    path: /voyages
+    controller: App\Controller\ClientTicketsController::index
+    methods: [GET, POST]
+
+app_client_tickets_show:
+    path: /voyages/{idTicket}
+    controller: App\Controller\ClientTicketsController::show
+    methods: [GET]
