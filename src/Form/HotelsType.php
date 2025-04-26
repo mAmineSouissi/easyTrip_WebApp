@@ -95,14 +95,30 @@ class HotelsType extends AbstractType
                 'label' => 'Promotion (optionnel)',
                 'class' => Promotion::class,
                 'choice_label' => function(Promotion $promotion) {
-                    return sprintf('%s (-%d%%)', $promotion->getTitle(), $promotion->getDiscountPercentage());
+                    return sprintf('🔥 %s - %d%% OFF (jusqu\'au %s)', 
+                        $promotion->getTitle(), 
+                        $promotion->getDiscountPercentage(),
+                        $promotion->getValidUntil()->format('d/m/Y')
+                    );
                 },
                 'choice_attr' => function(Promotion $promotion) {
-                    return ['data-discount' => $promotion->getDiscountPercentage()];
+                    return [
+                        'data-discount' => $promotion->getDiscountPercentage(),
+                        'class' => 'text-danger fw-bold',
+                        'title' => sprintf('%d%% de réduction - %s', 
+                            $promotion->getDiscountPercentage(),
+                            $promotion->getDescription()
+                        ),
+                        'data-bs-toggle' => 'tooltip',
+                        'data-bs-placement' => 'right'
+                    ];
                 },
                 'placeholder' => 'Aucune promotion',
                 'required' => false,
-                'attr' => ['class' => 'form-select'],
+                'attr' => [
+                    'class' => 'form-select',
+                    'data-live-search' => 'true'
+                ],
             ])
             ->add('image', FileType::class, [
                 'label' => 'Image de l\'hôtel',

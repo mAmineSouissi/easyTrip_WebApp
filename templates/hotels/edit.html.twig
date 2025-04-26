@@ -11,6 +11,12 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h2 class="h5 mb-0">
                             <i class="fas fa-edit me-2"></i>Modifier {{ hotel.name }}
+                            {% if hotel.promotion %}
+                                <span class="badge bg-danger rounded-pill fs-5 ms-2 p-2 shadow">
+                                    <i class="fas fa-bolt me-1"></i>-{{ hotel.promotion.discountPercentage }}%
+                                    <span class="fw-light ms-1">PROMO</span>
+                                </span>
+                            {% endif %}
                         </h2>
                         <a href="{{ path('app_hotels_index') }}" class="btn btn-sm btn-light">
                             <i class="fas fa-arrow-left me-1"></i> Retour
@@ -36,7 +42,7 @@
                     }) }}
                     
                     {% if hotel.image %}
-                        <div class="text-center mb-4">
+                        <div class="text-center mb-4 position-relative">
                             <img src="{{ asset('uploads/hotels/' ~ hotel.image) }}" 
                                  class="img-fluid rounded" 
                                  style="max-height: 200px;" 
@@ -114,7 +120,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-8">
                             <div class="form-group">
                                 {{ form_label(form.promotion, 'Promotion', {
                                     'label_attr': {
@@ -127,6 +133,29 @@
                                         'id': 'promotion-select'
                                     }
                                 }) }}
+                                <small class="text-muted">Sélectionnez une promotion pour appliquer une réduction automatique</small>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="alert alert-info p-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-info-circle me-3 fs-4"></i>
+                                    <div>
+                                        <div class="d-flex flex-wrap align-items-center">
+                                            <span class="me-3"><strong>Prix original:</strong> 
+                                            <span id="original-price-display" class="fs-5">{{ original_price|number_format(2, ',', ' ') }} €</span></span>
+                                            
+                                            {% if hotel.promotion %}
+                                            <span class="me-3"><strong>Réduction:</strong> 
+                                            <span id="discount-display" class="fs-5 text-danger fw-bold">{{ hotel.promotion.discountPercentage }}%</span></span>
+                                            
+                                            <span><strong>Nouveau prix:</strong> 
+                                            <span id="discounted-price-display" class="fs-5 fw-bold">{{ hotel.price|number_format(2, ',', ' ') }} €</span></span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -149,29 +178,60 @@ document.addEventListener('DOMContentLoaded', function() {
     const promotionSelect = document.getElementById('promotion-select');
     const priceInput = document.getElementById('price-input');
     const originalPrice = parseFloat(document.getElementById('original-price').value);
+    const originalPriceDisplay = document.getElementById('original-price-display');
+    const discountDisplay = document.getElementById('discount-display');
+    const discountedPriceDisplay = document.getElementById('discounted-price-display');
 
-    promotionSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const discountPercentage = selectedOption.getAttribute('data-discount');
-        
+    function updatePriceDisplay(discountPercentage) {
         if (discountPercentage) {
             const discount = originalPrice * (parseFloat(discountPercentage) / 100);
             const discountedPrice = originalPrice - discount;
             priceInput.value = discountedPrice.toFixed(2);
+            
+            if (discountDisplay) {
+                discountDisplay.textContent = discountPercentage + '%';
+                discountDisplay.classList.add('text-danger', 'fw-bold');
+                discountDisplay.style.fontSize = '1.5rem';
+            }
+            if (discountedPriceDisplay) {
+                discountedPriceDisplay.textContent = discountedPrice.toFixed(2).replace('.', ',') + ' €';
+                discountedPriceDisplay.classList.add('text-success', 'fw-bold');
+            }
         } else {
             priceInput.value = originalPrice.toFixed(2);
+            if (discountDisplay) {
+                discountDisplay.textContent = '0%';
+                discountDisplay.classList.remove('text-danger', 'fw-bold');
+                discountDisplay.style.fontSize = '';
+            }
+            if (discountedPriceDisplay) {
+                discountedPriceDisplay.textContent = originalPrice.toFixed(2).replace('.', ',') + ' €';
+                discountedPriceDisplay.classList.remove('text-success', 'fw-bold');
+            }
         }
+    }
+
+    promotionSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const discountPercentage = selectedOption.getAttribute('data-discount');
+        updatePriceDisplay(discountPercentage);
     });
 
     if (promotionSelect.value) {
         const selectedOption = promotionSelect.options[promotionSelect.selectedIndex];
         const discountPercentage = selectedOption.getAttribute('data-discount');
-        if (discountPercentage) {
-            const discount = originalPrice * (parseFloat(discountPercentage) / 100);
-            const discountedPrice = originalPrice - discount;
-            priceInput.value = discountedPrice.toFixed(2);
-        }
+        updatePriceDisplay(discountPercentage);
     }
 });
 </script>
+
+<style>
+    .text-danger.fw-bold {
+        animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse {
+        from { transform: scale(1); }
+        to { transform: scale(1.1); }
+    }
+</style>
 {% endblock %}

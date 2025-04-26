@@ -20,7 +20,6 @@
         </div>
     {% endfor %}
 
-    <!-- Formulaire de recherche -->
     <div class="card shadow mb-4">
         <div class="card-header bg-light">
             <h5 class="mb-0">
@@ -94,7 +93,16 @@
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% for hotel in hotels %}
         <div class="col">
-            <div class="card h-100 shadow-sm border-0">
+            <div class="card h-100 shadow-sm border-0 position-relative">
+                {% if hotel.promotion %}
+                    <div class="promotion-badge position-absolute top-0 start-0 m-2">
+                        <span class="badge bg-danger rounded-pill fs-5 p-2 shadow">
+                            <i class="fas fa-bolt me-1"></i>-{{ hotel.promotion.discountPercentage }}%
+                            <span class="fw-light ms-1">OFF</span>
+                        </span>
+                    </div>
+                {% endif %}
+                
                 {% if hotel.image %}
                 <img src="{{ asset('uploads/hotels/' ~ hotel.image) }}" class="card-img-top" alt="{{ hotel.name }}" style="height: 200px; object-fit: cover;">
                 {% else %}
@@ -102,10 +110,16 @@
                     <i class="fas fa-hotel fa-4x text-muted"></i>
                 </div>
                 {% endif %}
+                
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <h5 class="card-title mb-0">{{ hotel.name }}</h5>
-                        <span class="badge bg-primary">{{ hotel.price }} €</span>
+                        <div class="text-end">
+                            {% if hotel.promotion %}
+                                <span class="text-decoration-line-through text-muted small d-block">{{ hotel.getOriginalPrice()|number_format(2, ',', ' ') }} €</span>
+                            {% endif %}
+                            <span class="badge bg-primary fs-6">{{ hotel.price|number_format(2, ',', ' ') }} €</span>
+                        </div>
                     </div>
                     <p class="text-muted small mb-2">
                         <i class="fas fa-map-marker-alt me-1"></i>{{ hotel.city }}
@@ -141,4 +155,26 @@
         {% endfor %}
     </div>
 </div>
+
+<style>
+    .promotion-badge {
+        z-index: 10;
+        animation: pulse 2s infinite;
+    }
+    .promotion-badge .badge {
+        font-size: 1.1rem;
+        padding: 0.5rem 1rem;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    .promotion-badge .badge:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+</style>
 {% endblock %}
