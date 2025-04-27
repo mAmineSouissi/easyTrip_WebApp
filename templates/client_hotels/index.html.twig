@@ -3,7 +3,9 @@
 {% block title %}Nos Hôtels{% endblock %}
 
 {% block stylesheets %}
+{{ parent() }}
 <style>
+    /* Styles généraux */
     .promo-badge {
         position: absolute;
         top: 10px;
@@ -13,103 +15,166 @@
         border-radius: 50px;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         animation: pulse 1.5s infinite;
+        background-color: #dc3545;
+        color: white;
     }
+
     @keyframes pulse {
         0% { transform: scale(1); }
         50% { transform: scale(1.05); }
         100% { transform: scale(1); }
     }
-    .original-price {
-        text-decoration: line-through;
-        color: #6c757d;
-        font-size: 0.9em;
-    }
-    .search-container {
-        position: relative;
-    }
-    .search-results {
-        position: absolute;
-        z-index: 1000;
-        width: 100%;
-        max-height: 300px;
-        overflow-y: auto;
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 0 0 4px 4px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        display: none;
-    }
-    .filter-badge {
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    .filter-badge:hover {
-        transform: scale(1.05);
-    }
-    .loading-spinner {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 9999;
-    }
+
+    /* Styles pour le sélecteur de devise amélioré */
     .currency-selector {
         position: relative;
         display: inline-block;
-        margin-left: 12px;
+        margin-left: 15px;
     }
+    
     .currency-selector-btn {
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 6px;
-        padding: 6px 12px;
+        border-radius: 20px;
+        padding: 8px 15px;
         cursor: pointer;
         font-size: 0.9rem;
         font-weight: 500;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
-        gap: 6px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        gap: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        color: #2d3748;
     }
+    
     .currency-selector-btn:hover {
         background: #f7fafc;
         border-color: #cbd5e1;
         transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
+    
+    .currency-selector-btn i {
+        transition: transform 0.2s ease;
+    }
+    
+    .currency-selector.active .currency-selector-btn i.fa-caret-down {
+        transform: rotate(180deg);
+    }
+    
     .currency-dropdown {
-        display: none;
         position: absolute;
         right: 0;
+        top: 100%;
         background-color: white;
-        width: 120px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        min-width: 160px;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
         z-index: 1000;
-        border-radius: 6px;
+        border-radius: 8px;
         border: 1px solid #e2e8f0;
-        margin-top: 4px;
+        margin-top: 5px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.2s ease;
     }
+    
+    .currency-selector.active .currency-dropdown {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    
     .currency-option {
-        color: #2d3748;
-        padding: 8px 12px;
+        color: #4a5568;
+        padding: 10px 15px;
         text-decoration: none;
         display: flex;
         align-items: center;
-        gap: 6px;
-        font-size: 0.85rem;
-        transition: background-color 0.2s ease;
+        gap: 10px;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #edf2f7;
     }
+    
+    .currency-option:last-child {
+        border-bottom: none;
+    }
+    
     .currency-option:hover {
-        background-color: #edf2f7;
+        background-color: #f8fafc;
+        color: #2b6cb0;
     }
+    
+    .currency-option i {
+        width: 16px;
+        text-align: center;
+    }
+    
     .currency-active {
         background-color: #ebf8ff;
         color: #2b6cb0;
         font-weight: 600;
     }
-    .currency-selector:hover .currency-dropdown {
-        display: block;
+
+    /* Styles pour la pagination */
+    .pagination-container {
+        margin: 2rem 0;
+        padding: 1rem 0;
+        border-top: 1px solid #eee;
+    }
+    
+    .pagination {
+        gap: 0.3rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .page-item .page-link {
+        min-width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+        color: #0d6efd;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+    
+    .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: white;
+        box-shadow: 0 2px 5px rgba(13, 110, 253, 0.3);
+    }
+    
+    .page-item:not(.active):not(.disabled) .page-link:hover {
+        background-color: #e9ecef;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .page-item.disabled .page-link {
+        color: #adb5bd;
+        background-color: #f8f9fa;
+    }
+    
+    .pagination-info {
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    /* Styles pour les cartes d'hôtel */
+    .card-hotel {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card-hotel:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
 </style>
 {% endblock %}
@@ -120,17 +185,32 @@
         <h1 class="display-4 fw-bold text-primary">
             <i class="fas fa-hotel me-2"></i>Nos Hôtels
             <div class="currency-selector">
-                <button class="currency-selector-btn">
+                <button class="currency-selector-btn" id="currencyToggle">
                     <i class="fas fa-exchange-alt"></i>
                     <span id="currentCurrency">EUR</span>
                     <i class="fas fa-caret-down"></i>
                 </button>
                 <div class="currency-dropdown">
-                    <a href="#" class="currency-option" data-currency="EUR"><i class="fas fa-euro-sign"></i> EUR (€)</a>
-                    <a href="#" class="currency-option" data-currency="USD"><i class="fas fa-dollar-sign"></i> USD ($)</a>
-                    <a href="#" class="currency-option" data-currency="GBP"><i class="fas fa-pound-sign"></i> GBP (£)</a>
-                    <a href="#" class="currency-option" data-currency="TND"><i class="fas fa-coins"></i> TND (د.ت)</a>
-                    <a href="#" class="currency-option" data-currency="CAD"><i class="fas fa-dollar-sign"></i> CAD (C$)</a>
+                    <a href="#" class="currency-option" data-currency="EUR">
+                        <i class="fas fa-euro-sign"></i>
+                        <span>Euro (€)</span>
+                    </a>
+                    <a href="#" class="currency-option" data-currency="USD">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>Dollar ($)</span>
+                    </a>
+                    <a href="#" class="currency-option" data-currency="GBP">
+                        <i class="fas fa-pound-sign"></i>
+                        <span>Livre (£)</span>
+                    </a>
+                    <a href="#" class="currency-option" data-currency="TND">
+                        <i class="fas fa-dinar-sign"></i>
+                        <span>Dinar (د.ت)</span>
+                    </a>
+                    <a href="#" class="currency-option" data-currency="CAD">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>Dollar CA (C$)</span>
+                    </a>
                 </div>
             </div>
         </h1>
@@ -205,6 +285,11 @@
             </div>
         </div>
     </div>
+
+    {# Pagination améliorée #}
+    {% if hotels is defined and hotels is not empty %}
+        {{ knp_pagination_render(hotels) }}
+    {% endif %}
 </div>
 
 <div id="loadingSpinner" class="loading-spinner">
@@ -217,55 +302,52 @@
 {% endblock %}
 
 {% block javascripts %}
+{{ parent() }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('hotelSearch');
-    const searchResults = document.getElementById('searchResults');
-    const ratingFilter = document.getElementById('ratingFilter');
-    const priceFilter = document.getElementById('priceFilter');
-    const promoFilter = document.getElementById('promoFilter');
-    const sortOptions = document.querySelectorAll('.sort-option');
-    const activeFiltersContainer = document.getElementById('activeFilters');
-    const hotelsContainer = document.getElementById('hotelsContainer');
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    const exchangeRates = JSON.parse(document.getElementById('exchangeRates').value);
+    // Gestion du toggle de la dropdown devise
+    document.getElementById('currencyToggle').addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.querySelector('.currency-selector').classList.toggle('active');
+    });
 
-    let currentSort = 'default';
-    let currentCurrency = 'EUR';
-    let currentFilters = {};
-    let searchTimeout;
+    // Fermer la dropdown quand on clique ailleurs
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.currency-selector')) {
+            document.querySelector('.currency-selector').classList.remove('active');
+        }
+    });
 
-    // Currency conversion functionality
-    const currencyOptions = document.querySelectorAll('.currency-option');
-    const currentCurrencyDisplay = document.getElementById('currentCurrency');
-
-    // Initialize currency display
-    updateCurrencyDisplay();
-
-    // Currency selector functionality
-    currencyOptions.forEach(option => {
+    // Sélection d'une devise
+    document.querySelectorAll('.currency-option').forEach(option => {
         option.addEventListener('click', function(e) {
             e.preventDefault();
-            currentCurrency = this.dataset.currency;
-            currentCurrencyDisplay.textContent = currentCurrency;
-            updateCurrencyDisplay();
-            updateActiveFilters();
+            const currency = this.dataset.currency;
+            document.getElementById('currentCurrency').textContent = currency;
+            document.querySelector('.currency-selector').classList.remove('active');
+            
+            // Mettre à jour l'affichage des prix
+            updateCurrencyDisplay(currency);
+            
+            // Enregistrer la préférence
+            localStorage.setItem('preferredCurrency', currency);
+            
+            // Recharger les hôtels avec la nouvelle devise
+            currentCurrency = currency;
             loadHotels();
         });
     });
 
-    function updateCurrencyDisplay() {
-        // Highlight active currency
-        currencyOptions.forEach(option => {
-            option.classList.toggle('currency-active', option.dataset.currency === currentCurrency);
-        });
-
-        // Convert all prices on the page
+    // Fonction pour mettre à jour l'affichage des prix
+    function updateCurrencyDisplay(currency) {
+        const exchangeRates = JSON.parse(document.getElementById('exchangeRates').value);
+        
         document.querySelectorAll('[data-price-eur]').forEach(element => {
             const priceEur = parseFloat(element.dataset.priceEur);
             let convertedPrice, symbol;
             
-            switch(currentCurrency) {
+            switch(currency) {
                 case 'USD':
                     convertedPrice = priceEur * exchangeRates.USD;
                     symbol = '$';
@@ -295,7 +377,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 element.textContent = `${formattedPrice} ${symbol}/nuit`;
             }
         });
+        
+        // Mettre à jour les options actives
+        document.querySelectorAll('.currency-option').forEach(opt => {
+            opt.classList.toggle('currency-active', opt.dataset.currency === currency);
+        });
     }
+
+    // Au chargement de la page, récupérer la devise préférée
+    const preferredCurrency = localStorage.getItem('preferredCurrency') || 'EUR';
+    document.getElementById('currentCurrency').textContent = preferredCurrency;
+    updateCurrencyDisplay(preferredCurrency);
+
+    // ... (le reste de votre code JavaScript existant pour les filtres, tri, etc.)
+    const searchInput = document.getElementById('hotelSearch');
+    const searchResults = document.getElementById('searchResults');
+    const ratingFilter = document.getElementById('ratingFilter');
+    const priceFilter = document.getElementById('priceFilter');
+    const promoFilter = document.getElementById('promoFilter');
+    const sortOptions = document.querySelectorAll('.sort-option');
+    const activeFiltersContainer = document.getElementById('activeFilters');
+    const hotelsContainer = document.getElementById('hotelsContainer');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const exchangeRates = JSON.parse(document.getElementById('exchangeRates').value);
+
+    let currentSort = 'default';
+    let currentCurrency = preferredCurrency;
+    let currentFilters = {};
+    let searchTimeout;
+    let currentPage = 1;
 
     // Recherche dynamique
     searchInput.addEventListener('input', function() {
@@ -461,6 +571,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 search: currentFilters.search,
                 sort: currentSort,
                 currency: currentCurrency,
+                page: currentPage,
                 filters: {
                     rating: currentFilters.rating,
                     maxPrice: currentFilters.maxPrice,
@@ -471,8 +582,34 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             hotelsContainer.innerHTML = data.html;
+            
+            // Gestion de la pagination AJAX
+            if (data.pagination) {
+                const oldPagination = hotelsContainer.querySelector('.pagination-container');
+                if (oldPagination) {
+                    oldPagination.remove();
+                }
+                
+                const paginationContainer = document.createElement('div');
+                paginationContainer.className = 'pagination-container';
+                paginationContainer.innerHTML = data.pagination;
+                hotelsContainer.appendChild(paginationContainer);
+                
+                // Interception des clics sur la pagination
+                paginationContainer.addEventListener('click', function(e) {
+                    const link = e.target.closest('a.page-link');
+                    if (link && !link.parentElement.classList.contains('disabled')) {
+                        e.preventDefault();
+                        const url = new URL(link.href);
+                        currentPage = url.searchParams.get('page') || 1;
+                        loadHotels();
+                        window.scrollTo({top: 0, behavior: 'smooth'});
+                    }
+                });
+            }
+            
             loadingSpinner.style.display = 'none';
-            updateCurrencyDisplay();
+            updateCurrencyDisplay(currentCurrency);
         })
         .catch(() => {
             loadingSpinner.style.display = 'none';

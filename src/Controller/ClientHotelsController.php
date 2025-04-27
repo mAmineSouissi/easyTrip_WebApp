@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Hotels;
 use App\Form\HotelSearchType;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,10 +18,12 @@ class ClientHotelsController extends AbstractController
 {
     private $httpClient;
     private $apiKey = '4f42e896858ac41e68bfa889b1082219';
+    private $paginator;
 
-    public function __construct(HttpClientInterface $httpClient)
+    public function __construct(HttpClientInterface $httpClient, PaginatorInterface $paginator)
     {
         $this->httpClient = $httpClient;
+        $this->paginator = $paginator;
     }
 
     #[Route('/', name: 'app_client_hotels_index', methods: ['GET', 'POST'])]
@@ -39,7 +42,12 @@ class ClientHotelsController extends AbstractController
         }
 
         $this->applyFilters($form, $queryBuilder);
-        $hotels = $queryBuilder->getQuery()->getResult();
+        
+        $hotels = $this->paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            6
+        );
 
         $exchangeRates = $this->getExchangeRates();
 
@@ -47,6 +55,7 @@ class ClientHotelsController extends AbstractController
             'hotels' => $hotels,
             'form' => $form->createView(),
             'exchangeRates' => $exchangeRates,
+            'totalCount' => $hotels->getTotalItemCount() // Ajout du totalCount
         ]);
     }
 
@@ -67,33 +76,6 @@ class ClientHotelsController extends AbstractController
         ]);
     }
 
-    private function getExchangeRates(): array
-    {
-        try {
-            $response = $this->httpClient->request(
-                'GET',
-                "http://api.exchangeratesapi.io/v1/latest?access_key={$this->apiKey}&base=EUR&symbols=USD,GBP,TND,CAD"
-            );
-
-            $data = $response->toArray();
-            return [
-                'USD' => $data['rates']['USD'] ?? 1.18,
-                'GBP' => $data['rates']['GBP'] ?? 0.85,
-                'TND' => $data['rates']['TND'] ?? 3.30, // Fallback rate for TND
-                'CAD' => $data['rates']['CAD'] ?? 1.47, // Fallback rate for CAD
-                'lastUpdate' => date('Y-m-d H:i:s', $data['timestamp'] ?? time())
-            ];
-        } catch (\Exception $e) {
-            return [
-                'USD' => 1.18,
-                'GBP' => 0.85,
-                'TND' => 3.30,
-                'CAD' => 1.47,
-                'lastUpdate' => date('Y-m-d H:i:s')
-            ];
-        }
-    }
-
     private function handleAjaxRequest(Request $request, $queryBuilder): JsonResponse
     {
         $data = $request->request->all();
@@ -101,6 +83,7 @@ class ClientHotelsController extends AbstractController
         $sortBy = $data['sort'] ?? 'default';
         $currency = $data['currency'] ?? 'EUR';
         $filters = $data['filters'] ?? [];
+        $page = $data['page'] ?? 1;
 
         if ($searchTerm) {
             $queryBuilder->andWhere('h.name LIKE :search OR h.city LIKE :search OR h.description LIKE :search')
@@ -127,16 +110,54 @@ class ClientHotelsController extends AbstractController
 
         $this->applySorting($sortBy, $queryBuilder);
 
-        $hotels = $queryBuilder->getQuery()->getResult();
-        $hotelsArray = $this->convertHotelsToArray($hotels);
-        $convertedHotels = $this->convertPrices($hotelsArray, $currency);
-        
-        $html = $this->renderView('client_hotels/_hotels_list.html.twig', [
-            'hotels' => $convertedHotels,
-            'currency' => $currency
-        ]);
+        $hotels = $this->paginator->paginate(
+            $queryBuilder,
+            $page,
+            6
+        );
 
-        return new JsonResponse(['html' => $html]);
+        $hotelsItems = $hotels->getItems();
+        $hotelsArray = is_array($hotelsItems) ? $hotelsItems : iterator_to_array($hotelsItems);
+
+        $convertedHotels = $this->convertPrices($this->convertHotelsToArray($hotelsArray), $currency);
+        
+        return new JsonResponse([
+            'html' => $this->renderView('client_hotels/_hotels_list.html.twig', [
+                'hotels' => $convertedHotels,
+                'currency' => $currency
+            ]),
+            'pagination' => $this->renderView('@KnpPaginator/Pagination/custom_pagination.html.twig', [
+                'pagination' => $hotels
+            ]),
+            'totalCount' => $hotels->getTotalItemCount() // Ajout du totalCount pour AJAX
+        ]);
+    }
+
+    private function getExchangeRates(): array
+    {
+        try {
+            $response = $this->httpClient->request(
+                'GET',
+                "http://api.exchangeratesapi.io/v1/latest?access_key={$this->apiKey}&base=EUR&symbols=USD,GBP,TND,CAD"
+            );
+
+            $data = $response->toArray();
+            return [
+                'USD' => $data['rates']['USD'] ?? 1.18,
+                'GBP' => $data['rates']['GBP'] ?? 0.85,
+                'TND' => $data['rates']['TND'] ?? 3.30,
+                'CAD' => $data['rates']['CAD'] ?? 1.47,
+                'lastUpdate' => date('Y-m-d H:i:s', $data['timestamp'] ?? time())
+            ];
+        } catch (\Exception $e) {
+            return [
+                'USD' => 1.18,
+                'GBP' => 0.85,
+                'TND' => 3.30,
+                'CAD' => 1.47,
+                'lastUpdate' => date('Y-m-d H:i:s')
+            ];
+        }
     }
 
     private function convertHotelsToArray(array $hotels): array
