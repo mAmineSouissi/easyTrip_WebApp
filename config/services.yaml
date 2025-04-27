@@ -5,9 +5,10 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     uploads_directory: '%kernel.project_dir%/public/uploads'
-    airlines_directory: '%kernel.project_dir%/airlines'
-    cities_directory: '%kernel.project_dir%/cities'
+    airlines_directory: '%kernel.project_dir%/public/Uploads/airlines'
+    cities_directory: '%kernel.project_dir%/public/Uploads/cities'
     hotels_images_directory: '%uploads_directory%/hotels'
+    openweathermap_api_key: '%env(OPENWEATHERMAP_API_KEY)%'
 services:
     # default configuration for services in *this* file
     _defaults:

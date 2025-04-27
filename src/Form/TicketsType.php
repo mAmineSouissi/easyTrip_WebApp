@@ -8,6 +8,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -19,19 +20,22 @@ class TicketsType extends AbstractType
             ->add('flightNumber', NumberType::class, [
                 'label' => 'Numéro de vol',
                 'required' => true,
-                'attr' => ['min' => 1],
+                'attr' => ['min' => 1, 'class' => 'form-control'],
             ])
             ->add('airline', TextType::class, [
                 'label' => 'Compagnie aérienne',
                 'required' => true,
+                'attr' => ['class' => 'form-control'],
             ])
             ->add('departureCity', TextType::class, [
                 'label' => 'Ville de départ',
                 'required' => true,
+                'attr' => ['class' => 'form-control'],
             ])
             ->add('arrivalCity', TextType::class, [
                 'label' => 'Ville d\'arrivée',
                 'required' => true,
+                'attr' => ['class' => 'form-control'],
             ])
             ->add('departureDate', DateType::class, [
                 'label' => 'Date de départ',
@@ -40,6 +44,7 @@ class TicketsType extends AbstractType
                 'attr' => [
                     'type' => 'date',
                     'min' => (new \DateTime())->format('Y-m-d'),
+                    'class' => 'form-control',
                 ],
                 'invalid_message' => 'Veuillez entrer une date de départ valide.',
             ])
@@ -49,6 +54,7 @@ class TicketsType extends AbstractType
                 'attr' => [
                     'placeholder' => 'HH:MM',
                     'pattern' => '[0-2][0-9]:[0-5][0-9]',
+                    'class' => 'form-control',
                 ],
             ])
             ->add('arrivalDate', DateType::class, [
@@ -58,6 +64,7 @@ class TicketsType extends AbstractType
                 'attr' => [
                     'type' => 'date',
                     'min' => (new \DateTime())->format('Y-m-d'),
+                    'class' => 'form-control',
                 ],
                 'invalid_message' => 'Veuillez entrer une date d\'arrivée valide.',
             ])
@@ -67,6 +74,7 @@ class TicketsType extends AbstractType
                 'attr' => [
                     'placeholder' => 'HH:MM',
                     'pattern' => '[0-2][0-9]:[0-5][0-9]',
+                    'class' => 'form-control',
                 ],
             ])
             ->add('ticketClass', ChoiceType::class, [
@@ -77,12 +85,13 @@ class TicketsType extends AbstractType
                     'First' => 'First',
                 ],
                 'required' => true,
+                'attr' => ['class' => 'form-select'],
             ])
             ->add('price', NumberType::class, [
                 'label' => 'Prix (€)',
                 'scale' => 2,
                 'required' => true,
-                'attr' => ['step' => '0.01', 'min' => '0.01'],
+                'attr' => ['step' => '0.01', 'min' => '0.01', 'class' => 'form-control'],
             ])
             ->add('ticketType', ChoiceType::class, [
                 'label' => 'Type de ticket',
@@ -91,24 +100,19 @@ class TicketsType extends AbstractType
                     'Round-trip' => 'Round-trip',
                 ],
                 'required' => true,
+                'attr' => ['class' => 'form-select'],
             ])
-            ->add('imageAirline', TextType::class, [
+            ->add('imageAirline', FileType::class, [
                 'label' => 'Logo compagnie',
-                'required' => true,
+                'required' => false,
+                'mapped' => false,
+                'attr' => ['class' => 'form-control-file', 'accept' => 'image/*'],
             ])
-            ->add('cityImage', TextType::class, [
+            ->add('cityImage', FileType::class, [
                 'label' => 'Image de la ville',
-                'required' => true,
-            ])
-            ->add('agencyId', NumberType::class, [
-                'label' => 'ID Agence',
-                'required' => true,
-                'attr' => ['min' => 1],
-            ])
-            ->add('promotionId', NumberType::class, [
-                'label' => 'ID Promotion',
-                'required' => true,
-                'attr' => ['min' => 0],
+                'required' => false,
+                'mapped' => false,
+                'attr' => ['class' => 'form-control-file', 'accept' => 'image/*'],
             ]);
     }
 

@@ -1,0 +1,63 @@
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for hotel in hotels %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 overflow-hidden card-hotel">
+            <div class="position-relative">
+                {% if hotel.image %}
+                <img src="{{ asset('Uploads/hotels/' ~ hotel.image) }}" class="card-img-top" alt="{{ hotel.name }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-hotel fa-4x text-muted"></i>
+                </div>
+                {% endif %}
+                
+                {% if hotel.promotion %}
+                <span class="promo-badge bg-danger text-white">
+                    <i class="fas fa-bolt me-1"></i>-{{ hotel.promotion.discountPercentage }}%
+                </span>
+                {% endif %}
+            </div>
+            
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title mb-0">{{ hotel.name }}</h5>
+                    <div class="text-end">
+                        {% if hotel.promotion %}
+                        <span class="original-price" data-price-eur="{{ hotel.originalPrice }}">{{ hotel.originalPrice|number_format(2, ',', ' ') }} €</span><br>
+                        <span class="badge bg-success rounded-pill fs-6" data-price-eur="{{ hotel.price }}">{{ hotel.price|number_format(2, ',', ' ') }} €/nuit</span>
+                        {% else %}
+                        <span class="badge bg-primary rounded-pill" data-price-eur="{{ hotel.price }}">{{ hotel.price|number_format(2, ',', ' ') }} €/nuit</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <p class="text-muted small mb-2">
+                    <i class="fas fa-map-marker-alt me-1"></i>{{ hotel.city }}
+                </p>
+                <div class="mb-3">
+                    {% for i in 1..5 %}
+                        <i class="fas fa-star{{ i > hotel.rating ? '-alt' : '' }} {{ i <= hotel.rating ? 'text-warning' : 'text-muted' }}"></i>
+                    {% endfor %}
+                    <span class="ms-1 small">({{ hotel.rating }}/5)</span>
+                </div>
+                <p class="card-text text-truncate">{{ hotel.description }}</p>
+            </div>
+            <div class="card-footer bg-white border-0 d-flex justify-content-between">
+                <a href="{{ path('app_client_hotels_show', {'id_hotel': hotel.id}) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-eye me-1"></i> Voir détails
+                </a>
+                <a href="{{ path('app_client_hotels_show', {'id_hotel': hotel.id}) }}#reservation" class="btn btn-sm btn-primary">
+                    <i class="fas fa-calendar-check me-1"></i> Réserver
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info text-center py-4">
+            <i class="fas fa-info-circle fa-2x mb-3"></i>
+            <h4>Aucun hôtel trouvé</h4>
+            <p class="mb-0">Ajustez vos critères de recherche ou revenez plus tard</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>

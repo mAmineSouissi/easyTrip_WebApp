@@ -78,6 +78,12 @@ class Hotels
         return $this->id_hotel;
     }
 
+    // Alias pour compatibilité avec les templates utilisant hotel.id
+    public function getId(): ?int
+    {
+        return $this->id_hotel;
+    }
+
     public function getName(): ?string
     {
         return $this->name;

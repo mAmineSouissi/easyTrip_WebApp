@@ -1,94 +1,487 @@
-{# templates/client_hotels/index.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Nos Hôtels{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .promo-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 1.2rem;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    .original-price {
+        text-decoration: line-through;
+        color: #6c757d;
+        font-size: 0.9em;
+    }
+    .search-container {
+        position: relative;
+    }
+    .search-results {
+        position: absolute;
+        z-index: 1000;
+        width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 0 0 4px 4px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        display: none;
+    }
+    .filter-badge {
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .filter-badge:hover {
+        transform: scale(1.05);
+    }
+    .loading-spinner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+    }
+    .currency-selector {
+        position: relative;
+        display: inline-block;
+        margin-left: 12px;
+    }
+    .currency-selector-btn {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .currency-selector-btn:hover {
+        background: #f7fafc;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+    }
+    .currency-dropdown {
+        display: none;
+        position: absolute;
+        right: 0;
+        background-color: white;
+        width: 120px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 1000;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        margin-top: 4px;
+    }
+    .currency-option {
+        color: #2d3748;
+        padding: 8px 12px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+        transition: background-color 0.2s ease;
+    }
+    .currency-option:hover {
+        background-color: #edf2f7;
+    }
+    .currency-active {
+        background-color: #ebf8ff;
+        color: #2b6cb0;
+        font-weight: 600;
+    }
+    .currency-selector:hover .currency-dropdown {
+        display: block;
+    }
+</style>
+{% endblock %}
 
 {% block body %}
 <div class="container py-5">
     <div class="text-center mb-5">
         <h1 class="display-4 fw-bold text-primary">
             <i class="fas fa-hotel me-2"></i>Nos Hôtels
+            <div class="currency-selector">
+                <button class="currency-selector-btn">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span id="currentCurrency">EUR</span>
+                    <i class="fas fa-caret-down"></i>
+                </button>
+                <div class="currency-dropdown">
+                    <a href="#" class="currency-option" data-currency="EUR"><i class="fas fa-euro-sign"></i> EUR (€)</a>
+                    <a href="#" class="currency-option" data-currency="USD"><i class="fas fa-dollar-sign"></i> USD ($)</a>
+                    <a href="#" class="currency-option" data-currency="GBP"><i class="fas fa-pound-sign"></i> GBP (£)</a>
+                    <a href="#" class="currency-option" data-currency="TND"><i class="fas fa-coins"></i> TND (د.ت)</a>
+                    <a href="#" class="currency-option" data-currency="CAD"><i class="fas fa-dollar-sign"></i> CAD (C$)</a>
+                </div>
+            </div>
         </h1>
         <p class="lead">Découvrez nos meilleures offres d'hébergement</p>
     </div>
 
-    <!-- Formulaire de recherche -->
     <div class="card shadow mb-5">
         <div class="card-header bg-light">
-            <h5 class="mb-0">
-                <i class="fas fa-search me-2"></i>Rechercher un hôtel
-            </h5>
-        </div>
-        <div class="card-body">
-            {{ form_start(form, {'attr': {'class': 'row g-3'}}) }}
-                <div class="col-md-3">
-                    {{ form_row(form.name, {'attr': {'class': 'form-control', 'placeholder': 'Nom de l\'hôtel'}}) }}
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="search-container">
+                        <input type="text" id="hotelSearch" class="form-control" placeholder="Rechercher un hôtel..." autocomplete="off">
+                        <div id="searchResults" class="search-results"></div>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    {{ form_row(form.city, {'attr': {'class': 'form-control', 'placeholder': 'Ville'}}) }}
-                </div>
-                <div class="col-md-2">
-                    {{ form_row(form.rating, {'attr': {'class': 'form-select'}}) }}
-                </div>
-                <div class="col-md-2">
-                    {{ form_row(form.maxPrice, {'attr': {'class': 'form-control', 'placeholder': 'Prix max'}}) }}
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-search me-1"></i> Rechercher
-                    </button>
-                </div>
-            {{ form_end(form) }}
-        </div>
-    </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-filter me-1"></i>Filtrer
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 300px;">
+                            <div class="mb-3">
+                                <label class="form-label">Note minimale</label>
+                                <select id="ratingFilter" class="form-select">
+                                    <option value="">Toutes les notes</option>
+                                    <option value="5">5 étoiles</option>
+                                    <option value="4">4 étoiles et plus</option>
+                                    <option value="3">3 étoiles et plus</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Prix maximum</label>
+                                <input type="number" id="priceFilter" class="form-control" placeholder="Prix max (€)" min="0">
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="promoFilter">
+                                <label class="form-check-label" for="promoFilter">
+                                    Uniquement les promotions
+                                </label>
+                            </div>
+                        </div>
+                    </div>
 
-    <!-- Liste des hôtels -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        {% for hotel in hotels %}
-        <div class="col">
-            <div class="card h-100 shadow-sm border-0 overflow-hidden">
-                {% if hotel.image %}
-                <img src="{{ asset('uploads/hotels/' ~ hotel.image) }}" class="card-img-top" alt="{{ hotel.name }}" style="height: 200px; object-fit: cover;">
-                {% else %}
-                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                    <i class="fas fa-hotel fa-4x text-muted"></i>
-                </div>
-                {% endif %}
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="card-title mb-0">{{ hotel.name }}</h5>
-                        <span class="badge bg-primary rounded-pill">{{ hotel.price }} €/nuit</span>
+                    <div class="btn-group ms-2">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-sort me-1"></i>Trier
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="default">Par défaut</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="promo_desc">Promotion (décroissant)</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="promo_asc">Promotion (croissant)</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="price_desc">Prix (décroissant)</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="price_asc">Prix (croissant)</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="rating_desc">Note (décroissant)</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="rating_asc">Note (croissant)</a></li>
+                        </ul>
                     </div>
-                    <p class="text-muted small mb-2">
-                        <i class="fas fa-map-marker-alt me-1"></i>{{ hotel.city }}
-                    </p>
-                    <div class="mb-3">
-                        {% for i in 1..5 %}
-                            <i class="fas fa-star{{ i > hotel.rating ? '-alt' : '' }} {{ i <= hotel.rating ? 'text-warning' : 'text-muted' }}"></i>
-                        {% endfor %}
-                        <span class="ms-1 small">({{ hotel.rating }}/5)</span>
-                    </div>
-                    <p class="card-text text-truncate">{{ hotel.description }}</p>
-                </div>
-                <div class="card-footer bg-white border-0 d-flex justify-content-between">
-                    <a href="{{ path('app_client_hotels_show', {'id_hotel': hotel.idHotel}) }}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-eye me-1"></i> Voir détails
-                    </a>
-                    <a href="{{ path('app_client_hotels_show', {'id_hotel': hotel.idHotel}) }}#reservation" class="btn btn-sm btn-primary">
-                        <i class="fas fa-calendar-check me-1"></i> Réserver
-                    </a>
                 </div>
             </div>
         </div>
-        {% else %}
-        <div class="col-12">
-            <div class="alert alert-info text-center py-4">
-                <i class="fas fa-info-circle fa-2x mb-3"></i>
-                <h4>Aucun hôtel trouvé</h4>
-                <p class="mb-0">Ajustez vos critères de recherche ou revenez plus tard</p>
+
+        <div class="card-body">
+            <div id="activeFilters" class="d-flex flex-wrap align-items-center mb-3">
+                <span class="me-3 fw-bold">Filtres actifs :</span>
+            </div>
+
+            <div id="hotelsContainer">
+                {% include 'client_hotels/_hotels_list.html.twig' with {'hotels': hotels} %}
             </div>
         </div>
-        {% endfor %}
     </div>
 </div>
+
+<div id="loadingSpinner" class="loading-spinner">
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Chargement...</span>
+    </div>
+</div>
+
+<input type="hidden" id="exchangeRates" value="{{ exchangeRates|json_encode }}">
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('hotelSearch');
+    const searchResults = document.getElementById('searchResults');
+    const ratingFilter = document.getElementById('ratingFilter');
+    const priceFilter = document.getElementById('priceFilter');
+    const promoFilter = document.getElementById('promoFilter');
+    const sortOptions = document.querySelectorAll('.sort-option');
+    const activeFiltersContainer = document.getElementById('activeFilters');
+    const hotelsContainer = document.getElementById('hotelsContainer');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const exchangeRates = JSON.parse(document.getElementById('exchangeRates').value);
+
+    let currentSort = 'default';
+    let currentCurrency = 'EUR';
+    let currentFilters = {};
+    let searchTimeout;
+
+    // Currency conversion functionality
+    const currencyOptions = document.querySelectorAll('.currency-option');
+    const currentCurrencyDisplay = document.getElementById('currentCurrency');
+
+    // Initialize currency display
+    updateCurrencyDisplay();
+
+    // Currency selector functionality
+    currencyOptions.forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentCurrency = this.dataset.currency;
+            currentCurrencyDisplay.textContent = currentCurrency;
+            updateCurrencyDisplay();
+            updateActiveFilters();
+            loadHotels();
+        });
+    });
+
+    function updateCurrencyDisplay() {
+        // Highlight active currency
+        currencyOptions.forEach(option => {
+            option.classList.toggle('currency-active', option.dataset.currency === currentCurrency);
+        });
+
+        // Convert all prices on the page
+        document.querySelectorAll('[data-price-eur]').forEach(element => {
+            const priceEur = parseFloat(element.dataset.priceEur);
+            let convertedPrice, symbol;
+            
+            switch(currentCurrency) {
+                case 'USD':
+                    convertedPrice = priceEur * exchangeRates.USD;
+                    symbol = '$';
+                    break;
+                case 'GBP':
+                    convertedPrice = priceEur * exchangeRates.GBP;
+                    symbol = '£';
+                    break;
+                case 'TND':
+                    convertedPrice = priceEur * exchangeRates.TND;
+                    symbol = 'د.ت';
+                    break;
+                case 'CAD':
+                    convertedPrice = priceEur * exchangeRates.CAD;
+                    symbol = 'C$';
+                    break;
+                default:
+                    convertedPrice = priceEur;
+                    symbol = '€';
+            }
+            
+            const formattedPrice = convertedPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+            
+            if (element.classList.contains('original-price')) {
+                element.textContent = `${formattedPrice} ${symbol}`;
+            } else {
+                element.textContent = `${formattedPrice} ${symbol}/nuit`;
+            }
+        });
+    }
+
+    // Recherche dynamique
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const searchTerm = this.value.trim();
+            if (searchTerm.length > 2) {
+                fetchSearchResults(searchTerm);
+            } else {
+                searchResults.style.display = 'none';
+                currentFilters.search = '';
+                updateActiveFilters();
+                loadHotels();
+            }
+        }, 300);
+    });
+
+    // Filtres
+    [ratingFilter, priceFilter, promoFilter].forEach(filter => {
+        filter.addEventListener('change', function() {
+            updateFilters();
+        });
+    });
+
+    // Tri
+    sortOptions.forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentSort = this.dataset.sort;
+            updateSortUI();
+            loadHotels();
+        });
+    });
+
+    function fetchSearchResults(term) {
+        fetch(`/Chotels/search?q=${encodeURIComponent(term)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    searchResults.innerHTML = data.map(hotel => `
+                        <div class="p-2 border-bottom search-item" data-id="${hotel.id}" data-name="${hotel.name}">
+                            ${hotel.name} - ${hotel.city}
+                        </div>
+                    `).join('');
+                    searchResults.style.display = 'block';
+                    
+                    document.querySelectorAll('.search-item').forEach(item => {
+                        item.addEventListener('click', function() {
+                            searchInput.value = this.dataset.name;
+                            searchResults.style.display = 'none';
+                            currentFilters.search = this.dataset.name;
+                            updateActiveFilters();
+                            loadHotels();
+                        });
+                    });
+                } else {
+                    searchResults.innerHTML = '<div class="p-2 text-muted">Aucun résultat</div>';
+                    searchResults.style.display = 'block';
+                }
+            });
+    }
+
+    function updateFilters() {
+        currentFilters = {
+            rating: ratingFilter.value,
+            maxPrice: priceFilter.value,
+            hasPromo: promoFilter.checked
+        };
+        updateActiveFilters();
+        loadHotels();
+    }
+
+    function updateSortUI() {
+        sortOptions.forEach(option => {
+            if (option.dataset.sort === currentSort) {
+                option.classList.add('active');
+                option.innerHTML = `${option.textContent} <i class="fas fa-check ms-2"></i>`;
+            } else {
+                option.classList.remove('active');
+                option.innerHTML = option.textContent;
+            }
+        });
+    }
+
+    function updateActiveFilters() {
+        let filtersHtml = '<span class="me-3 fw-bold">Filtres actifs :</span>';
+        let hasFilters = false;
+
+        if (currentFilters.search) {
+            filtersHtml += `
+                <span class="badge bg-primary me-2 mb-2 filter-badge" data-filter="search">
+                    Recherche: ${currentFilters.search}
+                    <i class="fas fa-times ms-2"></i>
+                </span>`;
+            hasFilters = true;
+        }
+
+        if (currentFilters.rating) {
+            filtersHtml += `
+                <span class="badge bg-primary me-2 mb-2 filter-badge" data-filter="rating">
+                    Note min: ${currentFilters.rating}
+                    <i class="fas fa-times ms-2"></i>
+                </span>`;
+            hasFilters = true;
+        }
+
+        if (currentFilters.maxPrice) {
+            filtersHtml += `
+                <span class="badge bg-primary me-2 mb-2 filter-badge" data-filter="maxPrice">
+                    Prix max: ${currentFilters.maxPrice}€
+                    <i class="fas fa-times ms-2"></i>
+                </span>`;
+            hasFilters = true;
+        }
+
+        if (currentFilters.hasPromo) {
+            filtersHtml += `
+                <span class="badge bg-danger me-2 mb-2 filter-badge" data-filter="hasPromo">
+                    Promotions
+                    <i class="fas fa-times ms-2"></i>
+                </span>`;
+            hasFilters = true;
+        }
+
+        if (!hasFilters) {
+            filtersHtml = '<span class="text-muted">Aucun filtre actif</span>';
+        }
+
+        activeFiltersContainer.innerHTML = filtersHtml;
+
+        document.querySelectorAll('.filter-badge').forEach(badge => {
+            badge.addEventListener('click', function() {
+                const filter = this.dataset.filter;
+                if (filter === 'search') {
+                    searchInput.value = '';
+                    currentFilters.search = '';
+                } else if (filter === 'rating') {
+                    ratingFilter.value = '';
+                    currentFilters.rating = '';
+                } else if (filter === 'maxPrice') {
+                    priceFilter.value = '';
+                    currentFilters.maxPrice = '';
+                } else if (filter === 'hasPromo') {
+                    promoFilter.checked = false;
+                    currentFilters.hasPromo = false;
+                }
+                updateActiveFilters();
+                loadHotels();
+            });
+        });
+    }
+
+    function loadHotels() {
+        loadingSpinner.style.display = 'block';
+        
+        fetch('/Chotels/filter', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                search: currentFilters.search,
+                sort: currentSort,
+                currency: currentCurrency,
+                filters: {
+                    rating: currentFilters.rating,
+                    maxPrice: currentFilters.maxPrice,
+                    hasPromo: currentFilters.hasPromo
+                }
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hotelsContainer.innerHTML = data.html;
+            loadingSpinner.style.display = 'none';
+            updateCurrencyDisplay();
+        })
+        .catch(() => {
+            loadingSpinner.style.display = 'none';
+        });
+    }
+
+    // Initialisation
+    updateActiveFilters();
+    updateSortUI();
+});
+</script>
 {% endblock %}

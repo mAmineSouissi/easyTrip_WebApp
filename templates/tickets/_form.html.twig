@@ -1,9 +1,9 @@
 <div class="container mt-4">
-    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': ''}}) }}
-    <div class="card shadow-sm">
-        <div class="card-header bg-white">
+    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': '', 'enctype': 'multipart/form-data'}}) }}
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
             <h3 class="h5 mb-0">
-                <i class="fas fa-{{ button_label|default('Save') == 'Update' ? 'edit' : 'plus' }}"></i>
+                <i class="fas fa-{{ button_label|default('Save') == 'Update' ? 'edit' : 'plus' }} me-2"></i>
                 {{ button_label|default('Créer') }} un Ticket
             </h3>
         </div>
@@ -140,43 +140,24 @@
                     
                     <div class="mb-3">
                         {{ form_label(form.imageAirline, 'Logo compagnie', {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.imageAirline, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                        <div class="input-group">
+                            {{ form_widget(form.imageAirline, {'attr': {'class': 'form-control-file d-none', 'id': 'tickets_imageAirline', 'accept': 'image/*'}}) }}
+                            <label for="tickets_imageAirline" class="btn btn-outline-primary w-100 text-start" id="imageAirlineLabel">
+                                <i class="fas fa-upload me-2"></i> Choisir une image
+                            </label>
+                        </div>
                         {{ form_errors(form.imageAirline, {'attr': {'class': 'text-danger'}}) }}
                     </div>
                     
                     <div class="mb-3">
                         {{ form_label(form.cityImage, 'Image de la ville', {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.cityImage, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                        <div class="input-group">
+                            {{ form_widget(form.cityImage, {'attr': {'class': 'form-control-file d-none', 'id': 'tickets_cityImage', 'accept': 'image/*'}}) }}
+                            <label for="tickets_cityImage" class="btn btn-outline-primary w-100 text-start" id="cityImageLabel">
+                                <i class="fas fa-upload me-2"></i> Choisir une image
+                            </label>
+                        </div>
                         {{ form_errors(form.cityImage, {'attr': {'class': 'text-danger'}}) }}
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                {{ form_label(form.agencyId, 'ID Agence', {'label_attr': {'class': 'form-label'}}) }}
-                                {{ form_widget(form.agencyId, {
-                                    'attr': {
-                                        'class': 'form-control',
-                                        'required': 'required',
-                                        'min': '1'
-                                    }
-                                }) }}
-                                {{ form_errors(form.agencyId, {'attr': {'class': 'text-danger'}}) }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                {{ form_label(form.promotionId, 'ID Promotion', {'label_attr': {'class': 'form-label'}}) }}
-                                {{ form_widget(form.promotionId, {
-                                    'attr': {
-                                        'class': 'form-control',
-                                        'required': 'required',
-                                        'min': '0'
-                                    }
-                                }) }}
-                                {{ form_errors(form.promotionId, {'attr': {'class': 'text-danger'}}) }}
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -185,15 +166,51 @@
         <div class="card-footer bg-white">
             <div class="d-flex justify-content-between">
                 <a href="{{ path('app_tickets_index') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-times"></i> Annuler
+                    <i class="fas fa-times me-2"></i> Annuler
                 </a>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
+                    <i class="fas fa-save me-2"></i> {{ button_label|default('Enregistrer') }}
                 </button>
             </div>
         </div>
     </div>
     {{ form_end(form) }}
+
+    <style>
+        .form-control-file.d-none {
+            display: none;
+        }
+        .btn-outline-primary {
+            transition: all 0.2s ease;
+            border-radius: 6px;
+        }
+        .btn-outline-primary:hover {
+            background-color: #e3f2fd;
+            transform: translateY(-1px);
+        }
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            border-radius: 8px 8px 0 0;
+        }
+        .form-label {
+            font-weight: 500;
+            color: #2d3748;
+        }
+        .form-control, .form-select {
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .text-danger {
+            font-size: 0.85rem;
+        }
+    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -207,6 +224,24 @@
                     form.classList.add('was-validated');
                 }, false);
             }
+
+            // Update button text when file is selected
+            const imageInputs = [
+                { input: document.getElementById('tickets_imageAirline'), label: document.getElementById('imageAirlineLabel') },
+                { input: document.getElementById('tickets_cityImage'), label: document.getElementById('cityImageLabel') }
+            ];
+
+            imageInputs.forEach(({ input, label }) => {
+                if (input && label) {
+                    input.addEventListener('change', function() {
+                        if (this.files && this.files[0]) {
+                            label.textContent = `Image: ${this.files[0].name}`;
+                        } else {
+                            label.innerHTML = '<i class="fas fa-upload me-2"></i> Choisir une image';
+                        }
+                    });
+                }
+            });
         });
     </script>
 </div>

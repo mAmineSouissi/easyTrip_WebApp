@@ -92,31 +92,17 @@ class Tickets
     )]
     private string $ticketType;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    #[Assert\NotBlank(message: "L'image de la compagnie est requise.")]
-    #[Assert\Length(
-        max: 255,
-        maxMessage: "Le chemin de l'image de la compagnie ne peut pas dépasser {{ limit }} caractères."
-    )]
-    private string $imageAirline;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $imageAirline = null;
 
-    #[ORM\Column(type: 'string', length: 1000)]
-    #[Assert\NotBlank(message: "L'image de la ville est requise.")]
-    #[Assert\Length(
-        max: 1000,
-        maxMessage: "Le chemin de l'image de la ville ne peut pas dépasser {{ limit }} caractères."
-    )]
-    private string $cityImage;
+    #[ORM\Column(type: 'string', length: 1000, nullable: true)]
+    private ?string $cityImage = null;
 
-    #[ORM\Column(type: 'integer')]
-    #[Assert\NotBlank(message: "L'ID de l'agence est requis.")]
-    #[Assert\Positive(message: "L'ID de l'agence doit être positif.")]
-    private int $agencyId;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $agencyId = null;
 
-    #[ORM\Column(type: 'integer')]
-    #[Assert\NotBlank(message: "L'ID de la promotion est requis.")]
-    #[Assert\GreaterThanOrEqual(0, message: "L'ID de la promotion doit être zéro ou positif.")]
-    private int $promotionId;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $promotionId = null;
 
     #[Assert\Callback]
     public function validateDateTime(ExecutionContextInterface $context): void
@@ -278,45 +264,45 @@ class Tickets
         return $this;
     }
 
-    public function getImageAirline(): string
+    public function getImageAirline(): ?string
     {
         return $this->imageAirline;
     }
 
-    public function setImageAirline(string $imageAirline): self
+    public function setImageAirline(?string $imageAirline): self
     {
         $this->imageAirline = $imageAirline;
         return $this;
     }
 
-    public function getCityImage(): string
+    public function getCityImage(): ?string
     {
         return $this->cityImage;
     }
 
-    public function setCityImage(string $cityImage): self
+    public function setCityImage(?string $cityImage): self
     {
         $this->cityImage = $cityImage;
         return $this;
     }
 
-    public function getAgencyId(): int
+    public function getAgencyId(): ?int
     {
         return $this->agencyId;
     }
 
-    public function setAgencyId(int $agencyId): self
+    public function setAgencyId(?int $agencyId): self
     {
         $this->agencyId = $agencyId;
         return $this;
     }
 
-    public function getPromotionId(): int
+    public function getPromotionId(): ?int
     {
         return $this->promotionId;
     }
 
-    public function setPromotionId(int $promotionId): self
+    public function setPromotionId(?int $promotionId): self
     {
         $this->promotionId = $promotionId;
         return $this;

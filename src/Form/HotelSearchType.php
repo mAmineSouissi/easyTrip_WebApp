@@ -48,6 +48,20 @@ class HotelSearchType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-control', 'placeholder' => 'Type de chambre'],
             ])
+            ->add('sortBy', ChoiceType::class, [
+                'label' => 'Trier par',
+                'choices' => [
+                    'Par défaut' => 'default',
+                    'Promotion (décroissant)' => 'promo_desc',
+                    'Promotion (croissant)' => 'promo_asc',
+                    'Prix (décroissant)' => 'price_desc',
+                    'Prix (croissant)' => 'price_asc',
+                    'Note (décroissant)' => 'rating_desc',
+                    'Note (croissant)' => 'rating_asc',
+                ],
+                'required' => false,
+                'attr' => ['class' => 'form-select'],
+            ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Rechercher',
                 'attr' => ['class' => 'btn btn-primary'],

@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 #[Route('/tickets')]
 class TicketsController extends AbstractController
@@ -33,6 +34,42 @@ class TicketsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Handle imageAirline upload
+            $imageAirlineFile = $form->get('imageAirline')->getData();
+            if ($imageAirlineFile) {
+                $newFilename = uniqid().'.'.$imageAirlineFile->guessExtension();
+                try {
+                    $imageAirlineFile->move(
+                        $this->getParameter('airlines_directory'),
+                        $newFilename
+                    );
+                    $ticket->setImageAirline($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Erreur lors du téléchargement du logo de la compagnie.');
+                }
+            } else {
+                // Set default or null if no file is uploaded
+                $ticket->setImageAirline(null);
+            }
+
+            // Handle cityImage upload
+            $cityImageFile = $form->get('cityImage')->getData();
+            if ($cityImageFile) {
+                $newFilename = uniqid().'.'.$cityImageFile->guessExtension();
+                try {
+                    $cityImageFile->move(
+                        $this->getParameter('cities_directory'),
+                        $newFilename
+                    );
+                    $ticket->setCityImage($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Erreur lors du téléchargement de l\'image de la ville.');
+                }
+            } else {
+                // Set default or null if no file is uploaded
+                $ticket->setCityImage(null);
+            }
+
             $entityManager->persist($ticket);
             $entityManager->flush();
 
@@ -59,6 +96,36 @@ class TicketsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Handle imageAirline upload
+            $imageAirlineFile = $form->get('imageAirline')->getData();
+            if ($imageAirlineFile) {
+                $newFilename = uniqid().'.'.$imageAirlineFile->guessExtension();
+                try {
+                    $imageAirlineFile->move(
+                        $this->getParameter('airlines_directory'),
+                        $newFilename
+                    );
+                    $ticket->setImageAirline($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Erreur lors du téléchargement du logo de la compagnie.');
+                }
+            }
+
+            // Handle cityImage upload
+            $cityImageFile = $form->get('cityImage')->getData();
+            if ($cityImageFile) {
+                $newFilename = uniqid().'.'.$cityImageFile->guessExtension();
+                try {
+                    $cityImageFile->move(
+                        $this->getParameter('cities_directory'),
+                        $newFilename
+                    );
+                    $ticket->setCityImage($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Erreur lors du téléchargement de l\'image de la ville.');
+                }
+            }
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_tickets_index');

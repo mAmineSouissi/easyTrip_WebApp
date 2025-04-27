@@ -1,7 +1,98 @@
-{# templates/client_hotels/show.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}{{ hotel.name }} - Détails{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .promo-banner {
+        background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(255, 65, 108, 0.3);
+        animation: pulse 1.5s infinite;
+        margin-bottom: 2rem;
+    }
+    .promo-percentage {
+        font-size: 3rem;
+        font-weight: bold;
+        line-height: 1;
+    }
+    .price-display {
+        font-size: 1.8rem;
+    }
+    .original-price {
+        text-decoration: line-through;
+        opacity: 0.7;
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+    .sticky-booking {
+        position: sticky;
+        top: 20px;
+    }
+    .currency-selector {
+        position: relative;
+        display: inline-block;
+        margin-left: 12px;
+    }
+    .currency-selector-btn {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .currency-selector-btn:hover {
+        background: #f7fafc;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+    }
+    .currency-dropdown {
+        display: none;
+        position: absolute;
+        right: 0;
+        background-color: white;
+        width: 120px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 1000;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        margin-top: 4px;
+    }
+    .currency-option {
+        color: #2d3748;
+        padding: 8px 12px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+        transition: background-color 0.2s ease;
+    }
+    .currency-option:hover {
+        background-color: #edf2f7;
+    }
+    .currency-active {
+        background-color: #ebf8ff;
+        color: #2b6cb0;
+        font-weight: 600;
+    }
+    .currency-selector:hover .currency-dropdown {
+        display: block;
+    }
+</style>
+{% endblock %}
 
 {% block body %}
 <div class="container py-5">
@@ -10,6 +101,25 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h2 class="h4 mb-0">
                     <i class="fas fa-hotel me-2"></i>{{ hotel.name }}
+                    <div class="currency-selector">
+                        <button class="currency-selector-btn">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span id="currentCurrency">EUR</span>
+                            <i class="fas fa-caret-down"></i>
+                        </button>
+                        <div class="currency-dropdown">
+                            <a href="#" class="currency-option" data-currency="EUR"><i class="fas fa-euro-sign"></i> EUR (€)</a>
+                            <a href="#" class="currency-option" data-currency="USD"><i class="fas fa-dollar-sign"></i> USD ($)</a>
+                            <a href="#" class="currency-option" data-currency="GBP"><i class="fas fa-pound-sign"></i> GBP (£)</a>
+                            <a href="#" class="currency-option" data-currency="TND"><i class="fas fa-coins"></i> TND (د.ت)</a>
+                            <a href="#" class="currency-option" data-currency="CAD"><i class="fas fa-dollar-sign"></i> CAD (C$)</a>
+                        </div>
+                    </div>
+                    {% if hotel.promotion %}
+                    <span class="badge bg-danger rounded-pill ms-2">
+                        <i class="fas fa-bolt me-1"></i>PROMOTION
+                    </span>
+                    {% endif %}
                 </h2>
                 <div>
                     <a href="{{ path('app_client_hotels_index') }}" class="btn btn-sm btn-light">
@@ -20,11 +130,34 @@
         </div>
 
         <div class="card-body">
+            {% if hotel.promotion %}
+            <div class="promo-banner text-center">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <div class="promo-percentage">
+                            -{{ hotel.promotion.discountPercentage }}%
+                        </div>
+                        <div>Réduction exceptionnelle</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="fs-5">Valable jusqu'au {{ hotel.promotion.validUntil|date('d/m/Y') }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="price-display">
+                            <span class="original-price" data-price-eur="{{ hotel.getOriginalPrice() }}">{{ hotel.getOriginalPrice()|number_format(2, ',', ' ') }} €</span>
+                            <span class="fw-bold" data-price-eur="{{ hotel.price }}">{{ hotel.price|number_format(2, ',', ' ') }} €</span>
+                        </div>
+                        <div>par nuit</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="row">
                 <div class="col-md-8">
                     {% if hotel.image %}
                     <div class="ratio ratio-16x9 mb-4">
-                        <img src="{{ asset('uploads/hotels/' ~ hotel.image) }}" class="img-fluid rounded" alt="{{ hotel.name }}">
+                        <img src="{{ asset('Uploads/hotels/' ~ hotel.image) }}" class="img-fluid rounded" alt="{{ hotel.name }}">
                     </div>
                     {% endif %}
                     
@@ -55,7 +188,7 @@
                 </div>
                 
                 <div class="col-md-4">
-                    <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                    <div class="card border-0 shadow-sm sticky-booking">
                         <div class="card-header bg-light">
                             <h5 class="mb-0">
                                 <i class="fas fa-info-circle me-2"></i>Détails
@@ -71,17 +204,39 @@
                                     <span><i class="fas fa-door-open me-2 text-muted"></i>Nombre de chambres</span>
                                     <span class="fw-bold">{{ hotel.numRoom }}</span>
                                 </li>
+                                {% if hotel.promotion %}
+                                <li class="list-group-item bg-light">
+                                    <div class="d-flex justify-content-between">
+                                        <span><i class="fas fa-tag me-2 text-danger"></i>Promotion</span>
+                                        <span class="fw-bold text-danger">-{{ hotel.promotion.discountPercentage }}%</span>
+                                    </div>
+                                    <small class="text-muted">Valable jusqu'au {{ hotel.promotion.validUntil|date('d/m/Y') }}</small>
+                                </li>
+                                <li class="list-group-item bg-success text-white">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span><i class="fas fa-euro-sign me-2"></i>Prix promotionnel</span>
+                                        <span class="fw-bold fs-5" data-price-eur="{{ hotel.price }}">{{ hotel.price|number_format(2, ',', ' ') }} €</span>
+                                    </div>
+                                    <small>Au lieu de <s data-price-eur="{{ hotel.getOriginalPrice() }}">{{ hotel.getOriginalPrice()|number_format(2, ',', ' ') }} €</s></small>
+                                </li>
+                                {% else %}
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <span><i class="fas fa-euro-sign me-2 text-muted"></i>Prix par nuit</span>
-                                    <span class="fw-bold">{{ hotel.price }} €</span>
+                                    <span class="fw-bold" data-price-eur="{{ hotel.price }}">{{ hotel.price|number_format(2, ',', ' ') }} €</span>
                                 </li>
+                                {% endif %}
                             </ul>
+                            
+                            <div class="mt-4">
+                                <a href="#reservation" class="btn btn-success w-100">
+                                    <i class="fas fa-calendar-check me-2"></i>Réserver maintenant
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Section Réservation -->
             <div class="mt-5 pt-4 border-top" id="reservation">
                 <div class="row justify-content-center">
                     <div class="col-lg-8">
@@ -138,28 +293,99 @@
         </div>
     </div>
 </div>
+
+<input type="hidden" id="exchangeRates" value="{{ exchangeRates|json_encode }}">
+
 {% endblock %}
 
 {% block javascripts %}
 <script>
-    // Script pour gérer les dates de réservation
-    document.addEventListener('DOMContentLoaded', function() {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('checkIn').min = today;
-        
-        document.getElementById('checkIn').addEventListener('change', function() {
-            const checkInDate = this.value;
-            document.getElementById('checkOut').min = checkInDate;
-        });
-        
-        document.getElementById('reservationForm').addEventListener('submit', function(e) {
+document.addEventListener('DOMContentLoaded', function() {
+    const exchangeRates = JSON.parse(document.getElementById('exchangeRates').value);
+    let currentCurrency = 'EUR';
+    const currentCurrencyDisplay = document.getElementById('currentCurrency');
+    const currencyOptions = document.querySelectorAll('.currency-option');
+
+    // Initialize currency display
+    updateCurrencyDisplay();
+
+    // Currency selector functionality
+    currencyOptions.forEach(option => {
+        option.addEventListener('click', function(e) {
             e.preventDefault();
-            
-            // Ici, vous pouvez ajouter la logique pour traiter la réservation
-            // Par exemple, une requête AJAX vers votre backend
-            
-            alert('Votre réservation a été enregistrée avec succès !');
+            currentCurrency = this.dataset.currency;
+            currentCurrencyDisplay.textContent = currentCurrency;
+            updateCurrencyDisplay();
         });
     });
+
+    function updateCurrencyDisplay() {
+        // Highlight active currency
+        currencyOptions.forEach(option => {
+            option.classList.toggle('currency-active', option.dataset.currency === currentCurrency);
+        });
+
+        // Convert all prices on the page
+        document.querySelectorAll('[data-price-eur]').forEach(element => {
+            const priceEur = parseFloat(element.dataset.priceEur);
+            let convertedPrice, symbol;
+            
+            switch(currentCurrency) {
+                case 'USD':
+                    convertedPrice = priceEur * exchangeRates.USD;
+                    symbol = '$';
+                    break;
+                case 'GBP':
+                    convertedPrice = priceEur * exchangeRates.GBP;
+                    symbol = '£';
+                    break;
+                case 'TND':
+                    convertedPrice = priceEur * exchangeRates.TND;
+                    symbol = 'د.ت';
+                    break;
+                case 'CAD':
+                    convertedPrice = priceEur * exchangeRates.CAD;
+                    symbol = 'C$';
+                    break;
+                default:
+                    convertedPrice = priceEur;
+                    symbol = '€';
+            }
+            
+            const formattedPrice = convertedPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+            
+            if (element.tagName === 'S') {
+                element.textContent = `${formattedPrice} ${symbol}`;
+            } else if (element.classList.contains('original-price')) {
+                element.textContent = `${formattedPrice} ${symbol}`;
+            } else if (element.classList.contains('fw-bold') && element.classList.contains('fs-5')) {
+                element.textContent = `${formattedPrice} ${symbol}`;
+            } else {
+                element.textContent = `${formattedPrice} ${symbol}/nuit`;
+            }
+        });
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('checkIn').min = today;
+    
+    document.getElementById('checkIn').addEventListener('change', function() {
+        const checkInDate = this.value;
+        document.getElementById('checkOut').min = checkInDate;
+    });
+    
+    document.getElementById('reservationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const checkIn = new Date(document.getElementById('checkIn').value);
+        const checkOut = new Date(document.getElementById('checkOut').value);
+        const nights = Math.round((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+        
+        const pricePerNight = {{ hotel.price }};
+        const totalPrice = nights * pricePerNight;
+        
+        alert(`Réservation confirmée pour ${nights} nuit(s) !\nTotal: ${totalPrice.toFixed(2)} €`);
+    });
+});
 </script>
 {% endblock %}

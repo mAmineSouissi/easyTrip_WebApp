@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpClient\HttpClient;
 
 #[Route('/voyages')]
 class ClientTicketsController extends AbstractController
@@ -63,8 +64,32 @@ class ClientTicketsController extends AbstractController
     #[Route('/{idTicket}', name: 'app_client_tickets_show', methods: ['GET'])]
     public function show(Tickets $ticket): Response
     {
+        // Fetch weather data for the arrival city
+        $weatherData = null;
+        $apiKey = $this->getParameter('openweathermap_api_key'); // Retrieve from .env
+        $client = HttpClient::create();
+
+        try {
+            $response = $client->request('GET', 'https://api.openweathermap.org/data/2.5/weather', [
+                'query' => [
+                    'q' => $ticket->getArrivalCity(),
+                    'appid' => $apiKey,
+                    'units' => 'metric', // Use Celsius
+                    'lang' => 'fr', // French language
+                ],
+            ]);
+
+            if ($response->getStatusCode() === 200) {
+                $weatherData = $response->toArray();
+            }
+        } catch (\Exception $e) {
+            // Handle errors (e.g., API failure, city not found)
+            $weatherData = null;
+        }
+
         return $this->render('client_tickets/show.html.twig', [
             'ticket' => $ticket,
+            'weather' => $weatherData,
         ]);
     }
 }
