@@ -128,11 +128,11 @@
             function createChart(type, data) {
                 
                 const options = {
-                    responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             position: 'top',
+                            onClick:()=> {}
                         },
                         title: {
                             display: true,
@@ -144,8 +144,6 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                     const percentage = Math.round((value / total) * 100);
                                     return `${label}: ${value} users (${percentage}%)`;
