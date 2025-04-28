@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+	</head>
+	<body>
+		{{ form_start(form) }}
+		{{ form_row(form.recaptcha) }}
+		<button type="submit">Submit</button>
+		
+		{{ form_end(form) }}
+
+	</body>
+</html>

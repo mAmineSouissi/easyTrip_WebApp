@@ -1,0 +1,7 @@
+<h1>Forgot Password</h1>
+<form method="post">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token('forgot_password') }}">
+    <input type="email" name="email" required placeholder="Your email">
+    <button type="submit">Send Reset Link</button>
+</form>
+

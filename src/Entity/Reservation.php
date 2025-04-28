@@ -16,7 +16,7 @@ class Reservation
     #[ORM\Column(type: "integer")]
     private int $id_reservation;
 
-        #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "reservations")]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "reservations")]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private User $user_id;
 

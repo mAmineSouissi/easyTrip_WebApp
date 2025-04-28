@@ -1,36 +1,47 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Sign In{% endblock %}
+{% block title %}Sign In
+{% endblock %}
 
 {% block body %}
-<div class="d-flex justify-content-center align-items-center vh-100">
-    <div class="card p-4 shadow-sm" style="max-width: 400px; width: 100%;">
-        <h1 class="mb-4 text-center">Sign In</h1>
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="card p-4 shadow-sm" style="max-width: 400px; width: 100%;">
+            <h1 class="mb-4 text-center">Sign In</h1>
 
-        {% if error %}
-            <div class="alert alert-danger">
-                {{ error.messageKey|trans(error.messageData, 'security') }}
-            </div>
-        {% endif %}
+            {% if error %}
+                <div class="alert alert-danger">
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
 
-        <form method="post" action="{{ path('app_login') }}">
-            <!-- CSRF Token -->
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            <form method="post" action="{{ path('app_login') }}">
+                <!-- CSRF Token -->
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-            <div class="mb-3">
-                <label for="inputEmail">Email</label>
-                <input type="text" value="{{ last_username }}" name="_username" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
-                <small class="form-text text-muted">Enter your registered email address.</small>
-            </div>
+                <div class="mb-3">
+                    <label for="inputEmail">Email</label>
+                    <input type="text" value="{{ last_username }}" name="_username" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
+                    <small class="form-text text-muted">Enter your registered email address.</small>
+                </div>
 
-            <div class="mb-3">
-                <label for="inputPassword">Password</label>
-                <input type="password" name="_password" id="inputPassword" class="form-control" autocomplete="current-password" required>
-                <small class="form-text text-muted">Your password must be at least 8 characters long.</small>
-            </div>
+                <div class="mb-3">
+                    <label for="inputPassword">Password</label>
+                    <input type="password" name="_password" id="inputPassword" class="form-control" autocomplete="current-password" required>
+                    <small class="form-text text-muted">Your password must be at least 8 characters long.</small>
+                    <div class="mt-2">
+                        <a href="{{ path('app_forgot_password') }}" class="text-decoration-none small">
+                            <i class="fas fa-unlock-alt me-1"></i> Forgot your password?
+                        </a>
+                    </div>
+                </div>
 
-            <button class="btn btn-primary w-100" type="submit">Sign in</button>
-        </form>
+                <button class="btn btn-primary w-100" type="submit">
+                    <i class="fas fa-sign-in-alt"></i> Sign in
+                </button>
+                <a href="{{ path('connect_google') }}" class="btn btn-secondary w-100 mt-2">
+                    <i class="fab fa-google"></i> Sign in with Google
+                </a>
+            </form>
+        </div>
     </div>
-</div>
 {% endblock %}

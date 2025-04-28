@@ -28,6 +28,27 @@ class UserRepository extends ServiceEntityRepository
     {
         return $this->findAll();
     }
+    public function getUserByEmail(string $email): ?User
+    {
+        return $this->findOneBy(['email' => $email]);
+    }
+
+    public function countByRole(): array
+    {
+        $queryBuilder = $this->createQueryBuilder('u')
+            ->select('u.role, COUNT(u.id) as count')
+            ->groupBy('u.role');
+        
+        $results = $queryBuilder->getQuery()->getResult();
+        
+        // Format results into a simple array
+        $formattedResults = [];
+        foreach ($results as $result) {
+            $formattedResults[$result['role']] = (int)$result['count'];
+        }
+        
+        return $formattedResults;
+    }
 
   
 }
