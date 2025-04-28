@@ -1,0 +1,7 @@
+ewz_recaptcha:
+    public_key: '%env(EWZ_RECAPTCHA_SITE_KEY)%'
+    private_key: '%env(EWZ_RECAPTCHA_SECRET_KEY)%'
+    # Optional configurations
+    enabled: true
+    locale_key: '%kernel.default_locale%'
+    api_host: 'www.google.com'
