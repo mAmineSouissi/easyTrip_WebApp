@@ -9,6 +9,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+
 
 class StripeController extends AbstractController
 {
@@ -38,10 +41,26 @@ class StripeController extends AbstractController
     }
 
     #[Route('/payment-success', name: 'payment_success')]
-    function paymentSuccess(): Response
+    public function paymentSuccess(MailerInterface $mailer): Response
     {
-       return new Response('<h1>Paiement réussi !</h1>');
+    $email = (new Email())
+        ->from('boussaksonia@gmail.com') 
+        ->to('benbrahemabir@gmail.com')    
+        ->subject('Confirmation de paiement')
+        ->html('
+        <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; font-family: Arial, sans-serif; color: #333;">
+            <h1 style="color: #4CAF50;">Paiement confirmé !</h1>
+            <p>Bonjour,</p>
+            <p>Nous vous confirmons que votre paiement a été <strong>réalisé avec succès</strong>.</p>
+            <p>Merci pour votre confiance et à très bientôt !</p>
+        </div>
+    ');
+
+    $mailer->send($email);
+
+    return new Response('<h1>Paiement réussi ! Un e-mail de confirmation a été envoyé.</h1>');
     }
+
 
     #[Route('/payment-cancel', name: 'payment_cancel')]
     public function paymentCancel(): Response
