@@ -30,7 +30,7 @@ class StripeController extends AbstractController
                     'product_data' => [
                         'name' => 'Payer votre réservation',
                     ],
-                    'unit_amount' => 5000, 
+                    'unit_amount' => 195000, 
                 ],
                 'quantity' => 1,
             ]],
@@ -46,10 +46,16 @@ class StripeController extends AbstractController
     public function paymentSuccess(MailerInterface $mailer, ReservationRepository $reservationRepository): Response
     {
     $reservations = $reservationRepository->findAll();
+    $prixUnitaire = 50.00;
+    $total = 0;
 
+    foreach ($reservations as $reservation) {
+        $total += $prixUnitaire * $reservation->getPlaces();
+    }
     // 1. Générer HTML à partir du template
     $html = $this->renderView('reservation/facture.html.twig', [
         'reservations' => $reservations,
+        'total' => $total,
     ]);
 
     // 2. Générer le PDF avec Dompdf

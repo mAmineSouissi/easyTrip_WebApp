@@ -43,6 +43,7 @@
             <th style="padding: 15px 20px; border: 1px solid #ddd;">Prénom</th>
             <th style="padding: 15px 20px; border: 1px solid #ddd;">Téléphone</th>
             <th style="padding: 15px 20px; border: 1px solid #ddd;">Email</th>
+            <th style="padding: 15px 20px; border: 1px solid #ddd;">Prix</th>
             <th style="padding: 15px 20px; border: 1px solid #ddd;">Places</th>
             <th colspan="2" style="padding: 15px 20px; border: 1px solid #ddd;">Actions</th>
         </tr>
@@ -55,6 +56,7 @@
             <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.prenom }}</td>
             <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.phone }}</td>
             <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.email }}</td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">50.00</td>
             <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.places }}</td>
             <td style="padding: 15px 20px; border: 1px solid #ddd;">
                 <form method="post" data-turbo="false" action="{{ path('app_reservation_delete', {id_reservation: reservation.id_reservation}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?');">
@@ -77,6 +79,12 @@
 <div style="display: flex; justify-content: center; margin-top: 20px;">
     {{ knp_pagination_render(pagination, 'pagination/bootstrap5.html.twig') }}
 </div>
+
+<div id="total-container" style="text-align: right; padding-right: 120px; margin-bottom: 10px; font-weight: bold; font-size: 18px;">
+    Total : {{ total|number_format(2, '.', ' ') }} dt
+</div>
+
+
 
 <div style="text-align: right;padding-right: 120px; margin-bottom: 20px;">
     <a href="{{ path('stripe_checkout') }}" style="padding: 8px 15px; background-color: #28a745; color: white; border-radius: 4px; text-decoration: none;">

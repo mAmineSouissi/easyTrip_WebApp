@@ -57,9 +57,18 @@ public function show(ReservationRepository $reservationRepository, Request $requ
         4
     );
 
-    return $this->render('reservation/show.html.twig', [
-        'pagination' => $pagination,
-    ]);
+   // Calcule le total 
+   $reservations = $reservationRepository->findAll();
+   $prixUnitaire = 50.00;
+   $total = 0;
+   foreach ($reservations as $reservation) {
+    $total += $prixUnitaire * $reservation->getPlaces();
+   }
+
+   return $this->render('reservation/show.html.twig', [
+       'pagination' => $pagination,
+       'total' => $total,
+   ]);
 }
 
   #[Route('/reservation/ajouter', name: 'app_reservation_add')]
@@ -154,5 +163,5 @@ public function facture(ReservationRepository $reservationRepository): Response
 }
 
 
-    
+
 }
