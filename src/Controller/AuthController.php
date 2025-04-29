@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Form\RegistrationType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -33,12 +34,35 @@ class AuthController extends AbstractController
             );
             $user->setPassword($hashedPassword);
 
-            $em->persist($user);
-            $em->flush();
+            $profilePhotoFile = $form->get('profilePhoto')->getData();
 
-            return $this->redirectToRoute('app_home');
+            if ($profilePhotoFile) {
+                $newFilename = $profilePhotoFile->getClientOriginalName();
+
+                try {
+                    $profilePhotoFile->move(
+                        $this->getParameter('profiles_directory'),
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Failed to upload profile photo.');
+                    return $this->redirectToRoute('app_register');
+                }
+                $baseUrl = "http://localhost"; 
+                $photoUrl = $baseUrl . '/img/profile/' . $newFilename;
+
+                $user->setProfilePhoto($photoUrl);
+
+                $em->persist($user);
+                $em->flush();
+
+                return $this->redirectToRoute('app_home');
+            }
+
+            return $this->render('auth/register.html.twig', [
+                'form' => $form->createView(),
+            ]);
         }
-
         return $this->render('auth/register.html.twig', [
             'form' => $form->createView(),
         ]);
