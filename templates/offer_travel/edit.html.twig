@@ -1,0 +1,306 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Offre - {{ offer_travel.destination }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        .offer-form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        .form-title {
+            color: #2c3e50;
+            font-weight: 700;
+            margin: 0;
+        }
+        .current-image {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e1e5eb;
+            border-radius: 5px;
+        }
+        .form-control:focus {
+            border-color: #4361ee;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        .btn-submit {
+            background-color: #3498db;
+            color: white;
+            padding: 0.875rem 1.75rem;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+        .btn-submit:hover {
+            background-color: #2980b9;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .btn-back {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .btn-back:hover {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        .file-input-label {
+            display: inline-flex;
+            align-items: center;
+            background-color: #3498db;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+        .file-input-label:hover {
+            background-color: #2980b9;
+        }
+        .file-input-label i {
+            margin-right: 0.5rem;
+        }
+        #offer_travel_imageFile {
+            display: none;
+        }
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+        .preview-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="offer-form-container">
+    <div class="form-header">
+        <h1 class="form-title">
+            <i class="fas fa-edit"></i> Modifier {{ offer_travel.destination }}
+        </h1>
+    </div>
+
+    <div class="preview-section">
+        <h3><i class="fas fa-eye"></i> Aperçu actuel</h3>
+        {% if offer_travel.image %}
+            <img src="{{ offer_travel.image }}" alt="{{ offer_travel.destination }}" class="current-image">
+        {% else %}
+            <p>Aucune image disponible</p>
+        {% endif %}
+    </div>
+
+    {{ form_start(form, {'attr': {'id': 'edit-offer-form'}}) }}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form_label(form.departure) }}
+                    {{ form_widget(form.departure, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.destination) }}
+                    {{ form_widget(form.destination, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.departure_date) }}
+                    {{ form_widget(form.departure_date, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.arrival_date) }}
+                    {{ form_widget(form.arrival_date, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form_label(form.hotel_name) }}
+                    {{ form_widget(form.hotel_name, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.category) }}
+                    {{ form_widget(form.category, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.price) }}
+                    {{ form_widget(form.price, {'attr': {'class': 'form-control original-price'}}) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.imageFile) }}
+                    <label for="offer_travel_imageFile" class="file-input-label">
+                        <i class="fas fa-image"></i> Changer l'image
+                    </label>
+                    {{ form_widget(form.imageFile) }}
+                    <img id="imagePreview" src="{{ offer_travel.image ?: '#' }}" alt="Aperçu de l'image" class="image-preview" style="{{ offer_travel.image ? 'display: block;' : 'display: none;' }}">
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.flight_name) }}
+                    {{ form_widget(form.flight_name, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form_label(form.agency) }}
+                    {{ form_widget(form.agency, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form_label(form.promotion) }}
+                    {{ form_widget(form.promotion, {'attr': {'class': 'form-control promotion-select'}}) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.discription) }}
+            {{ form_widget(form.discription, {'attr': {'class': 'form-control', 'rows': 5}}) }}
+        </div>
+
+        <button type="submit" class="btn-submit">
+            <i class="fas fa-save"></i> Mettre à jour
+        </button>
+    {{ form_end(form) }}
+
+    <div class="action-buttons">
+        <a href="{{ path('app_offer_travel_index') }}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+        {{ include('offer_travel/_delete_form.html.twig') }}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const form = document.getElementById('edit-offer-form');
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Désactiver la validation HTML5 pour permettre la soumission sans image
+            form.noValidate = true;
+            
+            // Vous pouvez ajouter ici une validation personnalisée si nécessaire
+            return true;
+        });
+    }
+            // Gestion de la prévisualisation de l'image
+            const imageInput = document.getElementById('offer_travel_imageFile');
+            const imagePreview = document.getElementById('imagePreview');
+            
+            if (imageInput && imagePreview) {
+                imageInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            imagePreview.src = e.target.result;
+                            imagePreview.style.display = 'block';
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            // Gestion des promotions et calcul du prix
+            const promotionSelect = document.querySelector('.promotion-select');
+            const priceInput = document.querySelector('.original-price');
+            
+            if (promotionSelect && priceInput) {
+                // Récupérer le prix initial depuis l'attribut data-original-price
+                let originalPrice = parseFloat(priceInput.getAttribute('data-original-price')) || parseFloat(priceInput.value) || 0;
+                
+                // Stocker le prix initial dans l'attribut data
+                priceInput.setAttribute('data-original-price', originalPrice);
+                
+                // Écouter les changements de promotion
+                promotionSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const discount = selectedOption ? parseFloat(selectedOption.getAttribute('data-discount')) || 0 : 0;
+                    
+                    // Mettre à jour le prix affiché
+                    if (discount > 0) {
+                        const discountedPrice = originalPrice * (1 - discount / 100);
+                        priceInput.value = discountedPrice.toFixed(2);
+                    } else {
+                        priceInput.value = originalPrice.toFixed(2);
+                    }
+                });
+                
+                // Écouter les changements manuels du prix
+                priceInput.addEventListener('input', function() {
+                    // Mettre à jour le prix original uniquement si aucune promotion n'est sélectionnée
+                    if (!promotionSelect.value) {
+                        originalPrice = parseFloat(this.value) || 0;
+                        this.setAttribute('data-original-price', originalPrice);
+                    }
+                });
+                
+                // Déclencher le calcul initial si une promotion est déjà sélectionnée
+                if (promotionSelect.value) {
+                    promotionSelect.dispatchEvent(new Event('change'));
+                }
+            }
+
+            // Gestion des messages flash
+            {% for type, messages in app.flashes %}
+                {% for message in messages %}
+                    Swal.fire({
+                        icon: '{{ type }}',
+                        title: '{{ message }}',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        {% if type == 'success' %}
+                            window.location.href = "{{ path('app_offer_travel_index') }}";
+                        {% endif %}
+                    });
+                {% endfor %}
+            {% endfor %}
+        });
+    </script>
+{% endblock %}

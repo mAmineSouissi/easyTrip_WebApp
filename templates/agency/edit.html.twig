@@ -1,0 +1,341 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier {{ agency.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        .edit-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .form-label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: #4361ee;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        .form-control.is-valid {
+            border-color: #28a745;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        .form-control-file {
+            width: 100%;
+            padding: 0.75rem 0;
+        }
+        .btn-submit {
+            background: #4361ee;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .btn-submit:hover {
+            background: #3a56d4;
+        }
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .valid-feedback {
+            color: #28a745;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .preview-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        .file-input-label {
+            display: inline-flex;
+            align-items: center;
+            background-color: #3498db;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+        .file-input-label:hover {
+            background-color: #2980b9;
+        }
+        .file-input-label i {
+            margin-right: 0.5rem;
+        }
+        #agency_imageFile {
+            display: none;
+        }
+        .form-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="edit-container">
+    <div class="form-header">
+        <h1><i class="fas fa-edit"></i> Modifier {{ agency.name }}</h1>
+    </div>
+
+    <div class="preview-section">
+        <h3><i class="fas fa-eye"></i> Aperçu actuel</h3>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <img src="{{ agency.image ?: 'https://via.placeholder.com/80?text=Agence' }}" 
+                 alt="{{ agency.name }}" 
+                 style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+            <div>
+                <h4>{{ agency.name }}</h4>
+                <p><i class="fas fa-map-marker-alt"></i> {{ agency.address }}</p>
+            </div>
+        </div>
+    </div>
+
+    {{ form_start(form, {'attr': {'id': 'edit-agency-form'}}) }}
+        <div class="form-group">
+            {{ form_label(form.name) }}
+            {{ form_widget(form.name, {'attr': {
+                'class': 'form-control' ~ (form.name.vars.errors|length ? ' is-invalid' : ''),
+                'required': 'required'
+            }}) }}
+            <div class="invalid-feedback">
+                {{ form_errors(form.name) }}
+            </div>
+            <div class="valid-feedback">
+                Nom valide
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.address) }}
+            {{ form_widget(form.address, {'attr': {
+                'class': 'form-control' ~ (form.address.vars.errors|length ? ' is-invalid' : ''),
+                'required': 'required'
+            }}) }}
+            <div class="invalid-feedback">
+                {{ form_errors(form.address) }}
+            </div>
+            <div class="valid-feedback">
+                Adresse valide
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.phone) }}
+            {{ form_widget(form.phone, {'attr': {
+                'class': 'form-control' ~ (form.phone.vars.errors|length ? ' is-invalid' : ''),
+                'required': 'required',
+                'pattern': '^[0-9]{10}$'
+            }}) }}
+            <div class="invalid-feedback">
+                Numéro de téléphone invalide (10 chiffres requis)
+            </div>
+            <div class="valid-feedback">
+                Téléphone valide
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.email) }}
+            {{ form_widget(form.email, {'attr': {
+                'class': 'form-control' ~ (form.email.vars.errors|length ? ' is-invalid' : ''),
+                'required': 'required',
+                'pattern': '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'
+            }}) }}
+            <div class="invalid-feedback">
+                Email invalide
+            </div>
+            <div class="valid-feedback">
+                Email valide
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.imageFile) }}
+            <label for="agency_imageFile" class="file-input-label">
+                <i class="fas fa-image"></i> Choisir une nouvelle image
+            </label>
+            {{ form_widget(form.imageFile, {'attr': {'class': 'form-control-file' ~ (form.imageFile.vars.errors|length ? ' is-invalid' : '')}}) }}
+            <img id="imagePreview" src="{{ agency.image ?: '#' }}" alt="Aperçu de l'image" class="image-preview" style="{{ agency.image ? 'display: block;' : 'display: none;' }}">
+            <div class="invalid-feedback">
+                {{ form_errors(form.imageFile) }}
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit">
+            <i class="fas fa-save"></i> Enregistrer
+        </button>
+    {{ form_end(form) }}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion des messages flash
+            {% for type, messages in app.flashes %}
+                {% for message in messages %}
+                    Swal.fire({
+                        icon: '{{ type }}',
+                        title: '{{ type|capitalize }}',
+                        text: '{{ message|escape('js') }}',
+                        timer: 3000,
+                        timerProgressBar: true,
+                        showConfirmButton: false
+                    });
+                {% endfor %}
+            {% endfor %}
+
+            // Preview de l'image
+            document.getElementById('agency_imageFile').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                const preview = document.getElementById('imagePreview');
+                
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Validation en temps réel
+            const form = document.getElementById('edit-agency-form');
+            const inputs = form.querySelectorAll('.form-control[required]');
+            
+            inputs.forEach(input => {
+                // Validation initiale
+                validateField(input);
+                
+                // Validation lors de la saisie
+                input.addEventListener('input', function() {
+                    validateField(this);
+                });
+            });
+
+            function validateField(field) {
+                const isValid = field.checkValidity();
+                const feedback = field.parentElement.querySelector('.invalid-feedback');
+                const validFeedback = field.parentElement.querySelector('.valid-feedback');
+                
+                if (field.value.trim() === '') {
+                    field.classList.remove('is-valid', 'is-invalid');
+                    feedback.style.display = 'none';
+                    validFeedback.style.display = 'none';
+                    return;
+                }
+
+                if (isValid) {
+                    field.classList.remove('is-invalid');
+                    field.classList.add('is-valid');
+                    feedback.style.display = 'none';
+                    validFeedback.style.display = 'block';
+                } else {
+                    field.classList.remove('is-valid');
+                    field.classList.add('is-invalid');
+                    feedback.style.display = 'block';
+                    validFeedback.style.display = 'none';
+                }
+            }
+
+            // Validation avant soumission
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                const invalidFields = [];
+                
+                inputs.forEach(input => {
+                    validateField(input);
+                    if (!input.checkValidity()) {
+                        isValid = false;
+                        invalidFields.push(input);
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erreur',
+                        html: 'Veuillez corriger les erreurs suivantes :<br><br>' + 
+                              invalidFields.map(field => {
+                                  const label = field.parentElement.querySelector('label').textContent;
+                                  return `• ${label}`;
+                              }).join('<br>'),
+                        confirmButtonColor: '#4361ee'
+                    });
+                    
+                    // Scroll vers le premier champ invalide
+                    invalidFields[0].scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                } else {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Confirmer la modification',
+                        text: 'Voulez-vous enregistrer les modifications de cette agence ?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#4361ee',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Oui, enregistrer',
+                        cancelButtonText: 'Annuler'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}
