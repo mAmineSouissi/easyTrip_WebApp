@@ -11,6 +11,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use App\Repository\ReservationRepository;
+use Dompdf\Dompdf;
 
 
 class StripeController extends AbstractController
@@ -41,25 +43,44 @@ class StripeController extends AbstractController
     }
 
     #[Route('/payment-success', name: 'payment_success')]
-    public function paymentSuccess(MailerInterface $mailer): Response
+    public function paymentSuccess(MailerInterface $mailer, ReservationRepository $reservationRepository): Response
     {
+    $reservations = $reservationRepository->findAll();
+
+    // 1. Générer HTML à partir du template
+    $html = $this->renderView('reservation/facture.html.twig', [
+        'reservations' => $reservations,
+    ]);
+
+    // 2. Générer le PDF avec Dompdf
+    $dompdf = new \Dompdf\Dompdf();
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+    $pdfOutput = $dompdf->output();
+
+    // 3. Créer l'email
     $email = (new Email())
         ->from('boussaksonia@gmail.com') 
         ->to('benbrahemabir@gmail.com')    
         ->subject('Confirmation de paiement')
         ->html('
-        <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; font-family: Arial, sans-serif; color: #333;">
-            <h1 style="color: #4CAF50;">Paiement confirmé !</h1>
-            <p>Bonjour,</p>
-            <p>Nous vous confirmons que votre paiement a été <strong>réalisé avec succès</strong>.</p>
-            <p>Merci pour votre confiance et à très bientôt !</p>
-        </div>
-    ');
+            <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; font-family: Arial, sans-serif; color: #333;">
+                <h1 style="color: #4CAF50;">Paiement confirmé !</h1>
+                <p>Bonjour,</p>
+                <p>Nous vous confirmons que votre paiement a été <strong>réalisé avec succès</strong>.</p>
+                <p>Vous trouverez votre facture en pièce jointe.</p>
+                <p>Merci pour votre confiance et à très bientôt !</p>
+            </div>
+        ')
+        ->attach($pdfOutput, 'facture.pdf', 'application/pdf'); // ATTACHER LE PDF
 
+    // 4. Envoyer l'email
     $mailer->send($email);
 
-    return new Response('<h1>Paiement réussi ! Un e-mail de confirmation a été envoyé.</h1>');
-    }
+    return new Response('<h1>Paiement réussi ! Un e-mail de confirmation avec facture a été envoyé.</h1>');
+   }
+
 
 
     #[Route('/payment-cancel', name: 'payment_cancel')]

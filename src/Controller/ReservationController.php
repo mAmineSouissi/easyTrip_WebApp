@@ -143,6 +143,15 @@ public function statistiques(ReservationRepository $reservationRepository): Resp
     ]);
 }
 
+#[Route('/facture', name: 'app_facture')]
+public function facture(ReservationRepository $reservationRepository): Response
+{
+    $reservations = $reservationRepository->findAll();
+
+    return $this->render('reservation/facture.html.twig', [
+        'reservations' => $reservations,
+    ]);
+}
 
 
     
