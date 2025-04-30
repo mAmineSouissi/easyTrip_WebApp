@@ -1,0 +1,50 @@
+{% extends 'emails/base_email.html.twig' %}
+
+{% block content %}
+    <h1 style="color: #2a5885; margin-bottom: 20px;">Nouveau Ticket Disponible</h1>
+    
+    <p style="font-size: 16px;">Bonjour {{ agency.name }},</p>
+    
+    <p style="font-size: 16px;">Un nouveau ticket a été ajouté à notre plateforme :</p>
+    
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #2a5885;">
+        <h2 style="color: #2a5885; margin-top: 0;">Détails du Vol</h2>
+        
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; width: 30%;"><strong>Compagnie:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;">{{ ticket.airline }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Numéro de vol:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;">{{ ticket.flightNumber }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Trajet:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;">{{ ticket.departureCity }} → {{ ticket.arrivalCity }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Date de départ:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;">{{ ticket.departureDate|date('d/m/Y') }} à {{ ticket.departureTime }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Date d'arrivée:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;">{{ ticket.arrivalDate|date('d/m/Y') }} à {{ ticket.arrivalTime }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Classe:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;">{{ ticket.ticketClass }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0;"><strong>Prix:</strong></td>
+                <td style="padding: 8px 0;">{{ ticket.price|number_format(2, ',', ' ') }} €</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="{{ url('app_tickets_index') }}" style="background-color: #2a5885; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+            Voir tous les tickets
+        </a>
+    </div>
+{% endblock %}
