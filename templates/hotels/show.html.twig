@@ -1,0 +1,129 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ hotel.name }} - Détails{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="h4 mb-0">
+                    <i class="fas fa-hotel me-2"></i>{{ hotel.name }}
+                    {% if hotel.promotion %}
+                        <span class="badge bg-danger rounded-pill fs-5 ms-2 p-2 shadow">
+                            <i class="fas fa-fire me-1"></i>-{{ hotel.promotion.discountPercentage }}%
+                            <span class="fw-light ms-1">PROMO</span>
+                        </span>
+                    {% endif %}
+                </h2>
+                <div>
+                    <a href="{{ path('app_hotels_index') }}" class="btn btn-sm btn-light">
+                        <i class="fas fa-arrow-left me-1"></i> Retour
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    {% if hotel.image %}
+                    <img src="{{ asset('uploads/hotels/' ~ hotel.image) }}" class="img-fluid rounded mb-4" alt="{{ hotel.name }}">
+                    {% endif %}
+                    
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="me-3">
+                                {% for i in 1..5 %}
+                                    <i class="fas fa-star{{ i > hotel.rating ? '-alt' : '' }} {{ i <= hotel.rating ? 'text-warning' : 'text-muted' }} fs-4"></i>
+                                {% endfor %}
+                            </div>
+                            <h3 class="mb-0">{{ hotel.rating }}/5</h3>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h4 class="text-primary">
+                                <i class="fas fa-map-marker-alt me-2"></i>Localisation
+                            </h4>
+                            <p class="lead">{{ hotel.adresse }}, {{ hotel.city }}</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h4 class="text-primary">
+                                <i class="fas fa-align-left me-2"></i>Description
+                            </h4>
+                            <p class="lead">{{ hotel.description }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Détails
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-bed me-2 text-muted"></i>Type de chambre</span>
+                                    <span class="fw-bold">{{ hotel.typeRoom }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-door-open me-2 text-muted"></i>Nombre de chambres</span>
+                                    <span class="fw-bold">{{ hotel.numRoom }}</span>
+                                </li>
+                                {% if hotel.promotion %}
+                                    {% set originalPrice = hotel.getOriginalPrice() %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span><i class="fas fa-euro-sign me-2 text-muted"></i>Prix original</span>
+                                        <span class="fw-bold text-decoration-line-through">{{ originalPrice|number_format(2, ',', ' ') }} €</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center bg-success text-white">
+                                        <span><i class="fas fa-tag me-2"></i>Prix promotionnel</span>
+                                        <span class="fw-bold fs-5">{{ hotel.price|number_format(2, ',', ' ') }} €</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center bg-success text-white">
+                                        <span><i class="fas fa-percentage me-2"></i>Réduction</span>
+                                        <span class="fw-bold fs-4 text-warning">{{ hotel.promotion.discountPercentage }}%</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center bg-success text-white">
+                                        <span><i class="fas fa-calendar-alt me-2"></i>Valide jusqu'au</span>
+                                        <span class="fw-bold">{{ hotel.promotion.validUntil|date('d/m/Y') }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span><i class="fas fa-euro-sign me-2 text-muted"></i>Prix par nuit</span>
+                                        <span class="fw-bold">{{ hotel.price|number_format(2, ',', ' ') }} €</span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end mt-4">
+                <a href="{{ path('app_hotels_edit', {'id_hotel': hotel.idHotel}) }}" class="btn btn-warning me-2">
+                    <i class="fas fa-edit me-1"></i> Modifier
+                </a>
+                {{ include('hotels/_delete_form.html.twig') }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .fs-4.text-warning {
+        font-size: 1.75rem !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+</style>
+{% endblock %}

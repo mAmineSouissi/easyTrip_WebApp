@@ -52,11 +52,15 @@ class Promotion
     private \DateTimeInterface $valid_until;
 
     #[ORM\OneToMany(targetEntity: OfferTravel::class, mappedBy: 'promotion')]
-    private Collection $offerTravels;
+    private Collection $offerTravels ;
 
+    #[ORM\OneToMany(mappedBy: 'promotion', targetEntity: Hotels::class)]
+    private Collection $hotels;
+    
     public function __construct()
     {
         $this->offerTravels = new ArrayCollection();
+        $this->hotels = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -127,4 +131,27 @@ class Promotion
         $this->offerTravels->removeElement($offerTravel);
         return $this;
     }
+    public function getHotels(): Collection
+    {
+        return $this->hotels;
+    }
+
+    public function addHotel(Hotels $hotel): self
+    {
+        if (!$this->hotels->contains($hotel)) {
+            $this->hotels[] = $hotel;
+            $hotel->setPromotion($this);
+        }
+        return $this;
+    }
+
+    public function removeHotel(Hotels $hotel): self
+    {
+        if ($this->hotels->removeElement($hotel)) {
+            if ($hotel->getPromotion() === $this) {
+                $hotel->setPromotion(null);
+            }
+        }
+        return $this;
+    } 
 }

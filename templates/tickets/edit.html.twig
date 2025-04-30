@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Ticket #{{ ticket.idTicket }}{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .btn {
+        transition: all 0.2s ease;
+    }
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+    .alert {
+        border-radius: 6px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h1 class="h4 mb-0">
+                <i class="fas fa-edit me-2"></i> Modifier Ticket #{{ ticket.idTicket }}
+            </h1>
+        </div>
+        <div class="card-body">
+            {% if form is defined and form.vars.errors|length > 0 %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for error in form.vars.errors %}
+                    <li>{{ error.message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {{ include('tickets/_form.html.twig', {'button_label': 'Update'}) }}
+        </div>
+        <div class="card-footer bg-white">
+            <div class="d-flex justify-content-between">
+                <a href="{{ path('app_tickets_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Retour
+                </a>
+                {{ include('tickets/_delete_form.html.twig') }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+<form method="post" action="{{ path('app_hotels_delete', {'id_hotel': hotel.idHotel}) }}" 
+      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer définitivement cet hôtel ?');"
+      class="d-inline">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ hotel.idHotel) }}">
+    <button class="btn btn-danger">
+        <i class="fas fa-trash-alt me-1"></i> Supprimer
+    </button>
+</form>

@@ -3,232 +3,308 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
-
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: "App\Repository\TicketsRepository")]
 class Tickets
 {
-
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
-    private int $id_ticket;
+    #[ORM\GeneratedValue]  // <-- Cette ligne est cruciale
+    #[ORM\Column(type: 'integer')]
+    private ?int $idTicket = null;
 
-    
-    #[ORM\Column(type: "integer")]
-    private int $flight_number;
+    #[ORM\Column(type: 'integer')]
+    #[Assert\NotBlank(message: "Le numéro de vol est requis.")]
+    #[Assert\Positive(message: "Le numéro de vol doit être un nombre positif.")]
+    private int $flightNumber;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Assert\NotBlank(message: "La compagnie aérienne est requise.")]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "La compagnie aérienne ne peut pas dépasser {{ limit }} caractères."
+    )]
     private string $airline;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $departure_city;
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Assert\NotBlank(message: "La ville de départ est requise.")]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "La ville de départ ne peut pas dépasser {{ limit }} caractères."
+    )]
+    private string $departureCity;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $arrival_city;
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Assert\NotBlank(message: "La ville d'arrivée est requise.")]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "La ville d'arrivée ne peut pas dépasser {{ limit }} caractères."
+    )]
+    private string $arrivalCity;
 
-    #[ORM\Column(type: "date")]
-    private \DateTimeInterface $departure_date;
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Assert\NotBlank(message: "La date de départ est requise.")]
+    #[Assert\GreaterThanOrEqual(
+        "today",
+        message: "La date de départ doit être aujourd'hui ou dans le futur."
+    )]
+    private ?\DateTimeInterface $departureDate = null;
 
-    #[ORM\Column(type: "string")]
-    private string $departure_time;
+    #[ORM\Column(type: 'string', length: 8)]
+    #[Assert\NotBlank(message: "L'heure de départ est requise.")]
+    #[Assert\Regex(
+        pattern: "/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/",
+        message: "L'heure de départ doit être au format HH:MM (ex. 14:30)."
+    )]
+    private string $departureTime;
 
-    #[ORM\Column(type: "date")]
-    private \DateTimeInterface $arrival_date;
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Assert\NotBlank(message: "La date d'arrivée est requise.")]
+    private ?\DateTimeInterface $arrivalDate = null;
 
-    #[ORM\Column(type: "string")]
-    private string $arrival_time;
+    #[ORM\Column(type: 'string', length: 8)]
+    #[Assert\NotBlank(message: "L'heure d'arrivée est requise.")]
+    #[Assert\Regex(
+        pattern: "/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/",
+        message: "L'heure d'arrivée doit être au format HH:MM (ex. 16:45)."
+    )]
+    private string $arrivalTime;
 
-    #[ORM\Column(type: "string", length: 50)]
-    private string $ticket_class;
+    #[ORM\Column(type: 'string', length: 50)]
+    #[Assert\NotBlank(message: "La classe du ticket est requise.")]
+    #[Assert\Choice(
+        choices: ["Economy", "Business", "First"],
+        message: "La classe doit être Economy, Business ou First."
+    )]
+    private string $ticketClass;
 
-    #[ORM\Column(type: "float")]
+    #[ORM\Column(type: 'float')]
+    #[Assert\NotBlank(message: "Le prix est requis.")]
+    #[Assert\Positive(message: "Le prix doit être positif.")]
     private float $price;
 
-    #[ORM\Column(type: "string", length: 50)]
-    private string $ticket_type;
+    #[ORM\Column(type: 'string', length: 50)]
+    #[Assert\NotBlank(message: "Le type de ticket est requis.")]
+    #[Assert\Choice(
+        choices: ["One-way", "Round-trip"],
+        message: "Le type de ticket doit être One-way ou Round-trip."
+    )]
+    private string $ticketType;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $image_airline;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $imageAirline = null;
 
-    #[ORM\Column(type: "string", length: 1000)]
-    private string $city_image;
+    #[ORM\Column(type: 'string', length: 1000, nullable: true)]
+    private ?string $cityImage = null;
 
-    #[ORM\Column(type: "integer")]
-    private int $agency_id;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $agencyId = null;
 
-    #[ORM\Column(type: "integer")]
-    private int $promotion_id;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $promotionId = null;
 
-    #[ORM\Column(type: "integer", nullable: true)]
-    private ?int $user_id = null;
-
-    public function getId_ticket()
+    #[Assert\Callback]
+    public function validateDateTime(ExecutionContextInterface $context): void
     {
-        return $this->id_ticket;
+        if ($this->departureCity === $this->arrivalCity && $this->departureCity !== null && $this->arrivalCity !== null) {
+            $context->buildViolation("La ville de départ et la ville d'arrivée ne peuvent pas être identiques.")
+                ->atPath('arrivalCity')
+                ->addViolation();
+        }
+
+        if ($this->departureDate && $this->arrivalDate && $this->departureTime && $this->arrivalTime) {
+            $departureDateTime = \DateTime::createFromFormat(
+                'Y-m-d H:i',
+                $this->departureDate->format('Y-m-d') . ' ' . $this->departureTime
+            );
+            $arrivalDateTime = \DateTime::createFromFormat(
+                'Y-m-d H:i',
+                $this->arrivalDate->format('Y-m-d') . ' ' . $this->arrivalTime
+            );
+
+            if ($departureDateTime === false || $arrivalDateTime === false) {
+                $context->buildViolation("Les dates et heures fournies sont invalides.")
+                    ->atPath('arrivalDate')
+                    ->addViolation();
+                return;
+            }
+
+            if ($arrivalDateTime <= $departureDateTime) {
+                $context->buildViolation("La date et l'heure d'arrivée doivent être postérieures à la date et l'heure de départ.")
+                    ->atPath('arrivalDate')
+                    ->addViolation();
+            }
+        }
     }
 
-    public function setId_ticket($value)
+    public function getIdTicket(): ?int
     {
-        $this->id_ticket = $value;
+        return $this->idTicket;
     }
 
-    public function getUser_id()
+    public function getFlightNumber(): int
     {
-        return $this->user_id;
+        return $this->flightNumber;
     }
 
-    public function setUser_id($value)
+    public function setFlightNumber(int $flightNumber): self
     {
-        $this->user_id = $value;
+        $this->flightNumber = $flightNumber;
+        return $this;
     }
 
-    public function getFlight_number()
-    {
-        return $this->flight_number;
-    }
-
-    public function setFlight_number($value)
-    {
-        $this->flight_number = $value;
-    }
-
-    public function getAirline()
+    public function getAirline(): string
     {
         return $this->airline;
     }
 
-    public function setAirline($value)
+    public function setAirline(string $airline): self
     {
-        $this->airline = $value;
+        $this->airline = $airline;
+        return $this;
     }
 
-    public function getDeparture_city()
+    public function getDepartureCity(): string
     {
-        return $this->departure_city;
+        return $this->departureCity;
     }
 
-    public function setDeparture_city($value)
+    public function setDepartureCity(string $departureCity): self
     {
-        $this->departure_city = $value;
+        $this->departureCity = $departureCity;
+        return $this;
     }
 
-    public function getArrival_city()
+    public function getArrivalCity(): string
     {
-        return $this->arrival_city;
+        return $this->arrivalCity;
     }
 
-    public function setArrival_city($value)
+    public function setArrivalCity(string $arrivalCity): self
     {
-        $this->arrival_city = $value;
+        $this->arrivalCity = $arrivalCity;
+        return $this;
     }
 
-    public function getDeparture_date()
+    public function getDepartureDate(): ?\DateTimeInterface
     {
-        return $this->departure_date;
+        return $this->departureDate;
     }
 
-    public function setDeparture_date($value)
+    public function setDepartureDate(?\DateTimeInterface $departureDate): self
     {
-        $this->departure_date = $value;
+        $this->departureDate = $departureDate;
+        return $this;
     }
 
-    public function getDeparture_time()
+    public function getDepartureTime(): string
     {
-        return $this->departure_time;
+        return $this->departureTime;
     }
 
-    public function setDeparture_time($value)
+    public function setDepartureTime(string $departureTime): self
     {
-        $this->departure_time = $value;
+        $this->departureTime = $departureTime;
+        return $this;
     }
 
-    public function getArrival_date()
+    public function getArrivalDate(): ?\DateTimeInterface
     {
-        return $this->arrival_date;
+        return $this->arrivalDate;
     }
 
-    public function setArrival_date($value)
+    public function setArrivalDate(?\DateTimeInterface $arrivalDate): self
     {
-        $this->arrival_date = $value;
+        $this->arrivalDate = $arrivalDate;
+        return $this;
     }
 
-    public function getArrival_time()
+    public function getArrivalTime(): string
     {
-        return $this->arrival_time;
+        return $this->arrivalTime;
     }
 
-    public function setArrival_time($value)
+    public function setArrivalTime(string $arrivalTime): self
     {
-        $this->arrival_time = $value;
+        $this->arrivalTime = $arrivalTime;
+        return $this;
     }
 
-    public function getTicket_class()
+    public function getTicketClass(): string
     {
-        return $this->ticket_class;
+        return $this->ticketClass;
     }
 
-    public function setTicket_class($value)
+    public function setTicketClass(string $ticketClass): self
     {
-        $this->ticket_class = $value;
+        $this->ticketClass = $ticketClass;
+        return $this;
     }
 
-    public function getPrice()
+    public function getPrice(): float
     {
         return $this->price;
     }
 
-    public function setPrice($value)
+    public function setPrice(float $price): self
     {
-        $this->price = $value;
+        $this->price = $price;
+        return $this;
     }
 
-    public function getTicket_type()
+    public function getTicketType(): string
     {
-        return $this->ticket_type;
+        return $this->ticketType;
     }
 
-    public function setTicket_type($value)
+    public function setTicketType(string $ticketType): self
     {
-        $this->ticket_type = $value;
+        $this->ticketType = $ticketType;
+        return $this;
     }
 
-    public function getImage_airline()
+    public function getImageAirline(): ?string
     {
-        return $this->image_airline;
+        return $this->imageAirline;
     }
 
-    public function setImage_airline($value)
+    public function setImageAirline(?string $imageAirline): self
     {
-        $this->image_airline = $value;
+        $this->imageAirline = $imageAirline;
+        return $this;
     }
 
-    public function getCity_image()
+    public function getCityImage(): ?string
     {
-        return $this->city_image;
+        return $this->cityImage;
     }
 
-    public function setCity_image($value)
+    public function setCityImage(?string $cityImage): self
     {
-        $this->city_image = $value;
+        $this->cityImage = $cityImage;
+        return $this;
     }
 
-    public function getAgency_id()
+    public function getAgencyId(): ?int
     {
-        return $this->agency_id;
+        return $this->agencyId;
     }
 
-    public function setAgency_id($value)
+    public function setAgencyId(?int $agencyId): self
     {
-        $this->agency_id = $value;
+        $this->agencyId = $agencyId;
+        return $this;
     }
 
-    public function getPromotion_id()
+    public function getPromotionId(): ?int
     {
-        return $this->promotion_id;
+        return $this->promotionId;
     }
 
-    public function setPromotion_id($value)
+    public function setPromotionId(?int $promotionId): self
     {
-        $this->promotion_id = $value;
+        $this->promotionId = $promotionId;
+        return $this;
     }
 }

@@ -3,211 +3,215 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-
 use Doctrine\Common\Collections\Collection;
-use App\Entity\Webinaire;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 class Hotels
 {
-
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
-    private int $id_hotel;
-
-    
-    #[ORM\Column(type: "string", length: 255)]
-    private string $name;
+    private ?int $id_hotel = null;
 
     #[ORM\Column(type: "string", length: 255)]
-    private string $adresse;
+    #[Assert\NotBlank(message: "Le nom de l'hôtel est requis")]
+    #[Assert\Length(max: 255, maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères")]
+    private ?string $name = null;
 
     #[ORM\Column(type: "string", length: 255)]
-    private string $city;
+    #[Assert\NotBlank(message: "L'adresse est requise")]
+    #[Assert\Length(max: 255, maxMessage: "L'adresse ne peut pas dépasser {{ limit }} caractères")]
+    private ?string $adresse = null;
+
+    #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "La ville est requise")]
+    #[Assert\Length(max: 255, maxMessage: "La ville ne peut pas dépasser {{ limit }} caractères")]
+    private ?string $city = null;
 
     #[ORM\Column(type: "integer")]
-    private int $rating;
+    #[Assert\NotBlank(message: "La note est requise")]
+    #[Assert\Range(min: 1, max: 5, notInRangeMessage: "La note doit être entre {{ min }} et {{ max }}")]
+    private ?int $rating = null;
 
     #[ORM\Column(type: "text")]
-    private string $description;
+    #[Assert\NotBlank(message: "La description est requise")]
+    private ?string $description = null;
 
     #[ORM\Column(type: "float")]
-    private float $price;
+    #[Assert\NotBlank(message: "Le prix est requis")]
+    #[Assert\GreaterThan(value: 0, message: "Le prix doit être supérieur à 0")]
+    #[Assert\Type(type: "numeric", message: "Le prix doit être une valeur numérique")]
+    private ?float $price = null;
 
     #[ORM\Column(type: "string", length: 255)]
-    private string $type_room;
+    #[Assert\NotBlank(message: "Le type de chambre est requis")]
+    #[Assert\Length(max: 255, maxMessage: "Le type de chambre ne peut pas dépasser {{ limit }} caractères")]
+    private ?string $type_room = null;
 
     #[ORM\Column(type: "integer")]
-    private int $num_room;
+    #[Assert\NotBlank(message: "Le nombre de chambres est requis")]
+    #[Assert\GreaterThan(value: 0, message: "Le nombre de chambres doit être supérieur à 0")]
+    private ?int $num_room = null;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $image;
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    private ?string $image = null;
 
-    #[ORM\Column(type: "integer")]
-    private int $promotion_id;
+    #[ORM\ManyToOne(targetEntity: Promotion::class)]
+    #[ORM\JoinColumn(name: "promotion_id", referencedColumnName: "id", nullable: true)]
+    private ?Promotion $promotion = null;
 
-    #[ORM\Column(type: "integer")]
-    private int $agency_id;
-    #[ORM\Column(type: "integer")]
-    private int $user_id;
+    #[ORM\Column(type: "integer", nullable: true)]
+    private ?int $agency_id = null;
 
-    public function getId_hotel()
+    #[ORM\OneToMany(mappedBy: "hotel", targetEntity: Webinaire::class)]
+    private Collection $webinaires;
+
+    public function __construct()
+    {
+        $this->webinaires = new ArrayCollection();
+    }
+
+    public function getIdHotel(): ?int
     {
         return $this->id_hotel;
     }
 
-    public function setId_hotel($value)
+    // Alias pour compatibilité avec les templates utilisant hotel.id
+    public function getId(): ?int
     {
-        $this->id_hotel = $value;
+        return $this->id_hotel;
     }
 
-    public function getUser_id()
-    {
-        return $this->user_id;
-    }
-
-    public function setUser_id($value)
-    {
-        $this->user_id = $value;
-    }
-
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function setName($value)
+    public function setName(string $name): self
     {
-        $this->name = $value;
+        $this->name = $name;
+        return $this;
     }
 
-    public function getAdresse()
+    public function getAdresse(): ?string
     {
         return $this->adresse;
     }
 
-    public function setAdresse($value)
+    public function setAdresse(string $adresse): self
     {
-        $this->adresse = $value;
+        $this->adresse = $adresse;
+        return $this;
     }
 
-    public function getCity()
+    public function getCity(): ?string
     {
         return $this->city;
     }
 
-    public function setCity($value)
+    public function setCity(string $city): self
     {
-        $this->city = $value;
+        $this->city = $city;
+        return $this;
     }
 
-    public function getRating()
+    public function getRating(): ?int
     {
         return $this->rating;
     }
 
-    public function setRating($value)
+    public function setRating(int $rating): self
     {
-        $this->rating = $value;
+        $this->rating = $rating;
+        return $this;
     }
 
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function setDescription($value)
+    public function setDescription(string $description): self
     {
-        $this->description = $value;
+        $this->description = $description;
+        return $this;
     }
 
-    public function getPrice()
+    public function getPrice(): ?float
     {
         return $this->price;
     }
 
-    public function setPrice($value)
+    public function setPrice(float $price): self
     {
-        $this->price = $value;
+        $this->price = $price;
+        return $this;
     }
 
-    public function getType_room()
+    public function getOriginalPrice(): float
+    {
+        if ($this->promotion) {
+            return $this->price / (1 - ($this->promotion->getDiscountPercentage() / 100));
+        }
+        return $this->price;
+    }
+
+    public function getTypeRoom(): ?string
     {
         return $this->type_room;
     }
 
-    public function setType_room($value)
+    public function setTypeRoom(string $type_room): self
     {
-        $this->type_room = $value;
+        $this->type_room = $type_room;
+        return $this;
     }
 
-    public function getNum_room()
+    public function getNumRoom(): ?int
     {
         return $this->num_room;
     }
 
-    public function setNum_room($value)
+    public function setNumRoom(int $num_room): self
     {
-        $this->num_room = $value;
+        $this->num_room = $num_room;
+        return $this;
     }
 
-    public function getImage()
+    public function getImage(): ?string
     {
         return $this->image;
     }
 
-    public function setImage($value)
+    public function setImage(?string $image): self
     {
-        $this->image = $value;
+        $this->image = $image;
+        return $this;
     }
 
-    public function getPromotion_id()
+    public function getPromotion(): ?Promotion
     {
-        return $this->promotion_id;
+        return $this->promotion;
     }
 
-    public function setPromotion_id($value)
+    public function setPromotion(?Promotion $promotion): self
     {
-        $this->promotion_id = $value;
+        $this->promotion = $promotion;
+        return $this;
     }
 
-    public function getAgency_id()
+    public function getAgencyId(): ?int
     {
         return $this->agency_id;
     }
 
-    public function setAgency_id($value)
+    public function setAgencyId(?int $agency_id): self
     {
-        $this->agency_id = $value;
+        $this->agency_id = $agency_id;
+        return $this;
     }
 
-    #[ORM\OneToMany(mappedBy: "hotel_id", targetEntity: Webinaire::class)]
-    private Collection $webinaires;
-
-        public function getWebinaires(): Collection
-        {
-            return $this->webinaires;
-        }
-    
-        public function addWebinaire(Webinaire $webinaire): self
-        {
-            if (!$this->webinaires->contains($webinaire)) {
-                $this->webinaires[] = $webinaire;
-                $webinaire->setHotel_id($this);
-            }
-    
-            return $this;
-        }
-    
-        public function removeWebinaire(Webinaire $webinaire): self
-        {
-            if ($this->webinaires->removeElement($webinaire)) {
-                // set the owning side to null (unless already changed)
-                if ($webinaire->getHotel_id() === $this) {
-                    $webinaire->setHotel_id(null);
-                }
-            }
-    
-            return $this;
-        }
+   
 }

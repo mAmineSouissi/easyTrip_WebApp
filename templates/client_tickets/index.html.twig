@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nos offres de voyage{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .ticket-card {
+        transition: all 0.3s ease;
+        border-radius: 10px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .ticket-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    .price-badge {
+        font-size: 1.1rem;
+        padding: 0.5rem 1rem;
+    }
+    .search-card {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+    }
+    .airline-logo {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+    }
+    .city-image {
+        height: 200px;
+        object-fit: cover;
+        width: 100%;
+    }
+    .ticket-class {
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">
+            <i class="fas fa-plane-departure"></i> Trouvez votre vol idéal
+        </h1>
+        <p class="lead">Comparez les meilleures offres de vols et réservez en quelques clics</p>
+    </div>
+
+    <!-- Formulaire de recherche -->
+    <div class="card search-card mb-5 shadow-sm">
+        <div class="card-body">
+            {{ form_start(form, {'attr': {'class': 'row g-3', 'id': 'searchForm'}}) }}
+                <div class="col-md-3">
+                    {{ form_row(form.departureCity) }}
+                </div>
+                <div class="col-md-3">
+                    {{ form_row(form.arrivalCity) }}
+                </div>
+                <div class="col-md-2">
+                    {{ form_row(form.departureDate) }}
+                </div>
+                <div class="col-md-2">
+                    {{ form_row(form.ticketClass) }}
+                </div>
+                <div class="col-md-2">
+                    {{ form_row(form.maxPrice) }}
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <!-- Résultats -->
+    <div id="searchResults">
+        {% if tickets|length > 0 %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for ticket in tickets %}
+                <div class="col">
+                    <div class="card ticket-card h-100">
+                        {% if ticket.cityImage %}
+                        <img src="{{ asset('uploads/cities/' ~ ticket.cityImage) }}" class="city-image" alt="{{ ticket.arrivalCity }}">
+                        {% else %}
+                        <div class="city-image bg-light d-flex align-items-center justify-content-center">
+                            <i class="fas fa-city fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="card-title mb-1">{{ ticket.departureCity }} <i class="fas fa-arrow-right text-muted mx-1"></i> {{ ticket.arrivalCity }}</h5>
+                                    <small class="text-muted">{{ ticket.airline }} • Vol #{{ ticket.flightNumber }}</small>
+                                </div>
+                                {% if ticket.imageAirline %}
+                                <img src="{{ asset('uploads/airlines/' ~ ticket.imageAirline) }}" class="airline-logo" alt="{{ ticket.airline }}">
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <p class="mb-1"><i class="far fa-calendar-alt text-primary me-1"></i> {{ ticket.departureDate|date('d M Y') }}</p>
+                                    <p class="mb-0"><i class="far fa-clock text-primary me-1"></i> {{ ticket.departureTime }} - {{ ticket.arrivalTime }}</p>
+                                </div>
+                                <span class="badge bg-{{ ticket.ticketClass == 'First' ? 'primary' : ticket.ticketClass == 'Business' ? 'warning text-dark' : 'success' }} ticket-class">
+                                    {{ ticket.ticketClass }}
+                                </span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <span class="h4 fw-bold text-primary mb-0">{{ ticket.price }} €</span>
+                                <a href="{{ path('app_client_tickets_show', {'idTicket': ticket.idTicket}) }}" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i> Détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-plane-slash fa-4x text-muted mb-4"></i>
+                <h3>Aucun vol trouvé</h3>
+                <p class="text-muted">Ajustez vos critères de recherche pour trouver des vols disponibles</p>
+                <button class="btn btn-outline-primary" onclick="document.getElementById('searchForm').reset(); document.getElementById('searchForm').submit();">
+                    <i class="fas fa-sync-alt me-1"></i> Réinitialiser la recherche
+                </button>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// Recherche dynamique
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('searchForm');
+    const formInputs = form.querySelectorAll('input, select');
+    
+    formInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            form.submit();
+        });
+    });
+});
+</script>
+{% endblock %}

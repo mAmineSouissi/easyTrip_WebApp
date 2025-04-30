@@ -1,0 +1,255 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistiques des vols{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .chart-container {
+        height: 400px;
+        margin-bottom: 30px;
+    }
+    .stat-card {
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    .stat-icon {
+        font-size: 2.5rem;
+        opacity: 0.7;
+    }
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    .monthly-chart {
+        height: 500px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">
+            <i class="fas fa-chart-bar me-2"></i> Statistiques des vols
+        </h1>
+        <p class="lead">Visualisez les données de vos tickets de voyage</p>
+    </div>
+
+    <!-- Cartes de statistiques -->
+    <div class="row mb-4 g-4">
+        <div class="col-md-4">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-plane stat-icon mb-3"></i>
+                    <h3 class="stat-value">{{ classStats|reduce((sum, item) => sum + item.count, 0) }}</h3>
+                    <p class="mb-0">Vols au total</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card bg-success text-white">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-euro-sign stat-icon mb-3"></i>
+                    <h3 class="stat-value">{{ (classStats|reduce((sum, item) => sum + (item.avgPrice * item.count), 0) / classStats|reduce((sum, item) => sum + item.count, 0))|number_format(2) }} €</h3>
+                    <p class="mb-0">Prix moyen</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card bg-info text-white">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-map-marked-alt stat-icon mb-3"></i>
+                    <h3 class="stat-value">{{ cityStats|length }}</h3>
+                    <p class="mb-0">Destinations uniques</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-ticket-alt me-2 text-primary"></i> Répartition par classe</h5>
+                    <div class="chart-container">
+                        <canvas id="classChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-city me-2 text-primary"></i> Top 5 des destinations</h5>
+                    <div class="chart-container">
+                        <canvas id="cityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-calendar-alt me-2 text-primary"></i> Prix moyen par mois</h5>
+                    <div class="monthly-chart">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Chart colors
+    const colors = {
+        primary: '#0d6efd',
+        secondary: '#6c757d',
+        success: '#198754',
+        danger: '#dc3545',
+        warning: '#ffc107',
+        info: '#0dcaf0',
+        light: '#f8f9fa',
+        dark: '#212529'
+    };
+
+    // Répartition par classe
+    const classCtx = document.getElementById('classChart').getContext('2d');
+    new Chart(classCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ classStats|map(item => item.class)|json_encode|raw }},
+            datasets: [{
+                data: {{ classStats|map(item => item.count)|json_encode|raw }},
+                backgroundColor: [
+                    colors.primary,
+                    colors.warning,
+                    colors.success
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Top 5 des destinations
+    const cityCtx = document.getElementById('cityChart').getContext('2d');
+    new Chart(cityCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ cityStats|map(item => item.city)|json_encode|raw }},
+            datasets: [{
+                label: 'Nombre de vols',
+                data: {{ cityStats|map(item => item.count)|json_encode|raw }},
+                backgroundColor: [
+                    colors.primary,
+                    colors.success,
+                    colors.warning,
+                    colors.danger,
+                    colors.info
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // Prix moyen par mois
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
+            datasets: [{
+                label: 'Prix moyen (€)',
+                data: Array(12).fill(0).map((_, i) => {
+                    const monthData = {{ monthlyStats|json_encode|raw }}.find(item => item.month === i+1);
+                    return monthData ? Math.round(monthData.avgPrice * 100) / 100 : 0;
+                }),
+                backgroundColor: colors.primary + '20',
+                borderColor: colors.primary,
+                borderWidth: 3,
+                tension: 0.3,
+                fill: true,
+                pointBackgroundColor: colors.primary,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    grid: {
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
