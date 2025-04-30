@@ -27,7 +27,7 @@ class FeedbackRepository extends ServiceEntityRepository
 
         if ($search) {
             $qb->andWhere('f.message LIKE :search')
-               ->setParameter('search', '%' . $search . '%');
+                ->setParameter('search', '%' . $search . '%');
         }
 
         if ($type === 'hotel') {
@@ -53,7 +53,7 @@ class FeedbackRepository extends ServiceEntityRepository
 
         if ($search) {
             $qb->andWhere('f.message LIKE :search')
-               ->setParameter('search', '%' . $search . '%');
+                ->setParameter('search', '%' . $search . '%');
         }
 
         return $qb->orderBy('f.' . $sort, strtoupper($dir))->getQuery();
@@ -85,12 +85,12 @@ class FeedbackRepository extends ServiceEntityRepository
 
         if ($search) {
             $qb->andWhere('f.message LIKE :search')
-               ->setParameter('search', '%' . $search . '%');
+                ->setParameter('search', '%' . $search . '%');
         }
 
         return $qb->orderBy('f.' . $sort, strtoupper($dir))
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult();
     }
 
     /**
@@ -133,9 +133,9 @@ class FeedbackRepository extends ServiceEntityRepository
         }
 
         return $qb->setParameter('id', $id)
-                  ->orderBy('f.date', 'DESC')
-                  ->getQuery()
-                  ->getResult();
+            ->orderBy('f.date', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 
     /**
@@ -166,12 +166,12 @@ class FeedbackRepository extends ServiceEntityRepository
 
         if ($search) {
             $qb->andWhere('f.message LIKE :search')
-               ->setParameter('search', '%' . $search . '%');
+                ->setParameter('search', '%' . $search . '%');
         }
 
         return $qb->orderBy('f.' . $sort, strtoupper($dir))
-                  ->getQuery()
-                  ->getResult();
+            ->getQuery()
+            ->getResult();
     }
 
     /**
@@ -239,42 +239,42 @@ class FeedbackRepository extends ServiceEntityRepository
         return $conn->executeQuery($sql, ['agentId' => $agentId])->fetchAllAssociative();
     }
 
-    
+
     public function getAdminFeedbacksArray(?string $search = null, string $sort = 'date', string $dir = 'DESC'): array
     {
         return $this->findBySearchAndSort($search, $sort, $dir)->getResult();
     }
 
     public function getUserFeedbackCount(int $userId): int
-{
-    return $this->createQueryBuilder('f')
-        ->select('COUNT(f.id)')
-        ->andWhere('f.userId = :userId')
-        ->setParameter('userId', $userId)
-        ->getQuery()
-        ->getSingleScalarResult();
-}
+    {
+        return $this->createQueryBuilder('f')
+            ->select('COUNT(f.id)')
+            ->andWhere('f.userId = :userId')
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 
-public function getFeedbackCountByDate(): array
-{
-    $conn = $this->getEntityManager()->getConnection();
+    public function getFeedbackCountByDate(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
 
-    $sql = "
+        $sql = "
         SELECT DATE(f.date) as feedback_date, COUNT(*) as total
         FROM feedback f
         GROUP BY feedback_date
         ORDER BY feedback_date ASC
     ";
 
-    return $conn->executeQuery($sql)->fetchAllAssociative();
-}
+        return $conn->executeQuery($sql)->fetchAllAssociative();
+    }
 
 
-public function getMonthlyComparison(): array
-{
-    $conn = $this->getEntityManager()->getConnection();
+    public function getMonthlyComparison(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
 
-    $sql = "
+        $sql = "
         SELECT DATE_FORMAT(date, '%Y-%m') AS month, COUNT(*) AS total
         FROM feedback
         WHERE date >= DATE_SUB(CURRENT_DATE, INTERVAL 2 MONTH)
@@ -283,25 +283,37 @@ public function getMonthlyComparison(): array
         LIMIT 2
     ";
 
-    return $conn->executeQuery($sql)->fetchAllAssociative();
-}
-
-public function findNegativeFeedbacks(): array
-{
-    $keywords = ['nul', 'horrible', 'attente', 'problème', 'retard', 'sale', 'déçu', 'décevant','Catastrophique	','mauvais'];
-    $qb = $this->createQueryBuilder('f');
-    $orX = $qb->expr()->orX();
-
-    foreach ($keywords as $index => $word) {
-        $orX->add($qb->expr()->like('f.message', ":kw$index"));
-        $qb->setParameter("kw$index", "%$word%");
+        return $conn->executeQuery($sql)->fetchAllAssociative();
     }
 
-    return $qb->where($orX)
-              ->orderBy('f.date', 'DESC')
-              ->getQuery()
-              ->getResult();
-}
+    public function findNegativeFeedbacks(): array
+    {
+        $keywords = ['nul', 'horrible', 'attente', 'problème', 'retard', 'sale', 'déçu', 'décevant', 'Catastrophique	', 'mauvais'];
+        $qb = $this->createQueryBuilder('f');
+        $orX = $qb->expr()->orX();
 
+        foreach ($keywords as $index => $word) {
+            $orX->add($qb->expr()->like('f.message', ":kw$index"));
+            $qb->setParameter("kw$index", "%$word%");
+        }
 
+        return $qb->where($orX)
+            ->orderBy('f.date', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getEvaluationStats(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = "
+                SELECT
+                    COUNT(*) AS total_feedbacks,
+                    ROUND(AVG(rating), 2) AS average_rating
+                FROM feedback
+            ";
+
+        return $conn->fetchAssociative($sql);
+    }
 }

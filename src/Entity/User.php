@@ -43,6 +43,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: "string", length: 255)]
     private string $role;
 
+    #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Panier::class)]
+    private Collection $paniers;
+
+    #[ORM\OneToMany(mappedBy: "user", targetEntity: Feedback::class, orphanRemoval: true)]
+    private Collection $feedbacks;
+
     public function getId()
     {
         return $this->id;
@@ -210,6 +216,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Panier::class)]
-    private Collection $paniers;
+      // 🛒 Paniers
+      public function getPaniers(): Collection { return $this->paniers; }
+
+      // 💬 Feedbacks
+      public function getFeedbacks(): Collection { return $this->feedbacks; }
+  
+      public function addFeedback(Feedback $feedback): self
+      {
+          if (!$this->feedbacks->contains($feedback)) {
+              $this->feedbacks[] = $feedback;
+              $feedback->setUser($this);
+          }
+          return $this;
+      }
+  
+      public function removeFeedback(Feedback $feedback): self
+      {
+          if ($this->feedbacks->removeElement($feedback)) {
+              if ($feedback->getUser() === $this) {
+                  $feedback->setUser(null);
+              }
+          }
+          return $this;
+      }
+
 }

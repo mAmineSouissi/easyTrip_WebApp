@@ -1,0 +1,50 @@
+
+{{ form_start(form) }}
+
+<div class="mb-3">
+    {{ form_label(form.rating) }}
+    <div class="rating-bar">
+        {{ form_widget(form.rating) }}
+    </div>
+    {{ form_errors(form.rating) }}
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.message) }}
+    {{ form_widget(form.message, {'attr': {'class': 'form-control'}}) }}
+    {{ form_errors(form.message) }}
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.date) }}
+    {{ form_widget(form.date, {'attr': {'class': 'form-control'}}) }}
+    {{ form_errors(form.date) }}
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.hotel) }}
+    {{ form_widget(form.hotel, {'attr': {'class': 'form-select'}}) }}
+    {{ form_errors(form.hotel) }}
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.ticket) }}
+    {{ form_widget(form.ticket, {'attr': {'class': 'form-select'}}) }}
+    {{ form_errors(form.ticket) }}
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.travel) }}
+    {{ form_widget(form.travel, {'attr': {'class': 'form-select'}}) }}
+    {{ form_errors(form.travel) }}
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.userid) }}
+    {{ form_widget(form.userid, {'attr': {'class': 'form-select'}}) }}
+    {{ form_errors(form.userid) }}
+</div>
+
+<button class="btn btn-success mt-3">{{ button_label|default('Créer') }}</button>
+
+{{ form_end(form) }}
