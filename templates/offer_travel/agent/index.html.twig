@@ -282,9 +282,9 @@
             <i class="fas fa-plane"></i> Liste des Offres
             <span class="badge-count">{{ offer_travels|length }}</span>
         </h1>
-        <a href="{{ path('app_offer_travel_new') }}" class="btn-create">
-            <i class="fas fa-plus"></i> Nouvelle Offre
-        </a>
+        <a href="{{ path('app_offer_travel_action', {'action': 'new'}) }}" class="btn-create">
+    <i class="fas fa-plus"></i> Nouvelle Offre
+</a>
     </div>
 
     <div class="row">
@@ -309,18 +309,16 @@
                         <p>{{ offer.discription|slice(0, 100) }}...</p>
                         
                         <div class="action-buttons">
-                            <a href="{{ path('app_offer_travel_show', {'id': offer.id}) }}" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-eye"></i> Voir
-                            </a>
-                            <a href="{{ path('app_offer_travel_edit', {'id': offer.id}) }}" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-edit"></i> Modifier
-                            </a>
-                            <form method="post" action="{{ path('app_offer_travel_delete', {'id': offer.id}) }}" onsubmit="confirmDelete(event, this)" class="delete-form">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offer.id) }}">
-                                <button type="submit" class="btn btn-sm btn-danger">
-                                    <i class="fas fa-trash"></i> Supprimer
-                                </button>
-                            </form>
+                            <a href="{{ path('app_offer_travel_action', {'action': 'offer', 'id': offer.id}) }}" class="btn btn-sm btn-outline-primary">
+    <i class="fas fa-eye"></i> Voir
+</a>
+                            <a href="{{ path('app_offer_travel_action', {'action': 'edit', 'id': offer.id}) }}">Modifier</a>
+                            <form method="post" action="{{ path('app_offer_travel_action', {'action': 'delete', 'id': offer.id}) }}" onsubmit="confirmDelete(event, this)" class="delete-form">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offer.id) }}">
+    <button type="submit" class="btn btn-sm btn-danger">
+        <i class="fas fa-trash"></i> Supprimer
+    </button>
+</form>
                         </div>
                     </div>
                 </div>
@@ -331,9 +329,9 @@
                     <i class="fas fa-plane-slash fa-3x mb-3"></i>
                     <h4>Aucune offre disponible</h4>
                     <p>Commencez par créer une nouvelle offre</p>
-                    <a href="{{ path('app_offer_travel_new') }}" class="btn-create mt-2">
-                        <i class="fas fa-plus"></i> Créer une offre
-                    </a>
+                    <a href="{{ path('app_offer_travel_action', {'action': 'new'}) }}" class="btn-create">
+    <i class="fas fa-plus"></i> Créer une Offre
+</a>
                 </div>
             </div>
         {% endfor %}

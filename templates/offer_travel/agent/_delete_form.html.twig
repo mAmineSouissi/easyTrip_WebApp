@@ -1,5 +1,4 @@
-<form method="post" action="{{ path('app_offer_travel_delete', {'id': offer_travel.id}) }}" onsubmit="return confirmDelete(event, this)" style="display: inline-block;">
-    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offer_travel.id) }}">
+<form method="post" action="{{ path('app_offer_travel_action', {'action': 'delete', 'id': offer_travel.id}) }}" onsubmit="return confirmDelete(event, this)" class="delete-form">    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offer_travel.id) }}">
     <button type="submit" class="btn btn-danger">
         <i class="fas fa-trash"></i> Supprimer
     </button>

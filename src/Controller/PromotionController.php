@@ -33,7 +33,7 @@ final class PromotionController extends AbstractController
             6
         );
         
-        return $this->render('promotion/index.html.twig', [
+        return $this->render('promotion/admin/index.html.twig', [
             'promotions' => $promotions
         ]);
     }
@@ -73,7 +73,7 @@ public function new(
         return $this->redirectToRoute('app_promotion_index', [], Response::HTTP_SEE_OTHER);
     }
 
-    return $this->render('promotion/new.html.twig', [
+    return $this->render('promotion/admin/new.html.twig', [
         'promotion' => $promotion,
         'form' => $form,
     ]);
@@ -82,7 +82,7 @@ public function new(
     #[Route('/{id}', name: 'app_promotion_show', methods: ['GET'])]
     public function show(Promotion $promotion): Response
     {
-        return $this->render('promotion/show.html.twig', [
+        return $this->render('promotion/admin/show.html.twig', [
             'promotion' => $promotion,
         ]);
     }
@@ -99,7 +99,7 @@ public function new(
             return $this->redirectToRoute('app_promotion_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('promotion/edit.html.twig', [
+        return $this->render('promotion/admin/edit.html.twig', [
             'promotion' => $promotion,
             'form' => $form,
         ]);
@@ -146,7 +146,7 @@ public function new(
             6
         );
     
-        return $this->render('promotion/public_list.html.twig', [
+        return $this->render('promotion/agent/public_list.html.twig', [
             'promotions' => $promotions,
         ]);
     }

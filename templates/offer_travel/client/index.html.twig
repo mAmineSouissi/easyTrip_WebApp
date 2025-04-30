@@ -283,12 +283,10 @@
     </div>
 
     <div id="offersContainer">
-        {% include 'offer_travel/_offers_list.html.twig' %}
+        {% include 'offer_travel/client/_offers_list.html.twig' %}
     </div>
 
-    <a href="{{ path('app_offer_travel_index') }}" class="btn-back">
-        <i class="fas fa-arrow-left"></i> Retour (version agent)
-    </a>
+    
 </div>
 
 <script>
@@ -316,7 +314,7 @@ function loadResults() {
         params.append('hasPromotion', 'true');
     }
 
-    fetch(`{{ path('app_offer_travel_public_list') }}?${params.toString()}`, {
+    fetch(`{{ path('app_offer_travel_index') }}?${params.toString()}`, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'text/html'

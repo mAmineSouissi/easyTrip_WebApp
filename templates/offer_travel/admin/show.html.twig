@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin/base.html.twig' %}
 
 {% block title %}Détails de l'offre - {{ offer_travel.destination }}{% endblock %}
 
@@ -170,12 +170,11 @@
         </div>
     </div>
 
+    {# ... (conserve le même code jusqu'au bloc action-buttons) ... #}
+
     <div class="action-buttons">
         <a href="{{ path('app_offer_travel_index') }}" class="btn-back">
             <i class="fas fa-arrow-left"></i> Retour à la liste
-        </a>
-        <a href="{{ path('app_offer_travel_edit', {'id': offer_travel.id}) }}" class="btn-edit">
-            <i class="fas fa-edit"></i> Modifier
         </a>
     </div>
 </div>

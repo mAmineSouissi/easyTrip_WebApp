@@ -1,6 +1,6 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Modifier Promotion - {{ promotion.title }}{% endblock %}
+{% block title %}Nouvelle Promotion{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -16,9 +16,7 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
         .form-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            text-align: center;
             margin-bottom: 2rem;
             padding-bottom: 1rem;
             border-bottom: 1px solid #eee;
@@ -56,6 +54,19 @@
             background-position: right calc(0.375em + 0.1875rem) center;
             background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
         }
+        .btn-submit {
+            background-color: #2dce89;
+            color: white;
+            padding: 0.875rem 1.75rem;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-submit:hover {
+            background-color: #24b47e;
+            transform: translateY(-2px);
+        }
         .invalid-feedback {
             color: #f5365c;
             font-size: 0.85rem;
@@ -66,38 +77,16 @@
             font-size: 0.85rem;
             margin-top: 0.25rem;
         }
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        .btn-back {
-            background-color: #f8f9fa;
-            color: #6c757d;
-            border: 1px solid #dee2e6;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-weight: 600;
-            transition: all 0.3s;
-            text-decoration: none;
+        .back-link {
             display: inline-flex;
             align-items: center;
+            color: #6c757d;
+            margin-top: 1.5rem;
+            transition: color 0.3s;
         }
-        .btn-back:hover {
-            background-color: #e9ecef;
-            color: #495057;
-        }
-        .btn-submit {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .btn-submit:hover {
-            background-color: #2980b9;
+        .back-link:hover {
+            color: #4361ee;
+            text-decoration: none;
         }
     </style>
 {% endblock %}
@@ -106,24 +95,15 @@
 <div class="promotion-container">
     <div class="form-header">
         <h1 class="form-title">
-            <i class="fas fa-percentage"></i> Modifier {{ promotion.title }}
+            <i class="fas fa-percentage"></i> Créer une nouvelle promotion
         </h1>
     </div>
 
-    {{ include('promotion/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+    {{ include('promotion/admin/_form.html.twig') }}
 
-    <div class="action-buttons">
-        <a href="{{ path('app_promotion_index') }}" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Retour à la liste
-        </a>
-        
-        {{ include('promotion/_delete_form.html.twig', {
-            'promotion': promotion,
-            'button_style': 'btn btn-danger',
-            'button_icon': 'fas fa-trash',
-            'button_label': 'Supprimer'
-        }) }}
-    </div>
+    <a href="{{ path('app_promotion_index') }}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Retour à la liste
+    </a>
 </div>
 {% endblock %}
 
@@ -219,13 +199,13 @@
                 } else {
                     e.preventDefault();
                     Swal.fire({
-                        title: 'Confirmer la modification',
-                        text: 'Voulez-vous enregistrer les modifications de cette promotion ?',
+                        title: 'Confirmer la création',
+                        text: 'Voulez-vous créer cette nouvelle promotion ?',
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonColor: '#3498db',
+                        confirmButtonColor: '#2dce89',
                         cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Oui, enregistrer',
+                        confirmButtonText: 'Oui, créer',
                         cancelButtonText: 'Annuler'
                     }).then((result) => {
                         if (result.isConfirmed) {

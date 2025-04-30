@@ -31,7 +31,7 @@
                     <p>{{ offer.discription|slice(0, 100) }}...</p>
                     
                     <div class="action-buttons">
-                        <a href="{{ path('app_offer_travel_public_show', {'id': offer.id}) }}" class="btn btn-detail">
+                        <a href="{{ path('app_offer_travel_action', {'action': 'offer', 'id': offer.id}) }}" class="btn btn-detail">
                             <i class="fas fa-eye"></i> Détails
                         </a>
                         <button class="btn btn-reserve" disabled>

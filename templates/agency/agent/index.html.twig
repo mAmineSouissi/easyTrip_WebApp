@@ -1,4 +1,4 @@
-{% extends 'admin/base.html.twig' %}
+{% extends 'base.html.twig' %}
 
 {% block title %}Liste des Agences{% endblock %}
 
@@ -176,7 +176,7 @@
                                 <a href="{{ path('app_agency_edit', {'id': agency.id}) }}" class="btn btn-sm btn-outline-secondary">
                                     <i class="fas fa-edit"></i> Modifier
                                 </a>
-                                {{ include('agency/_delete_form.html.twig', {
+                                {{ include('agency/agent/_delete_form.html.twig', {
                                     'agency': agency,
                                     'button_style': 'btn-delete',
                                     'button_icon': 'fas fa-trash',

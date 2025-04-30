@@ -39,7 +39,7 @@ class Agency
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "L'adresse est obligatoire")]
     #[Assert\Length(
-        min: 5,
+        min: 2,
         max: 255,
         minMessage: "L'adresse doit contenir au moins {{ limit }} caractères",
         maxMessage: "L'adresse ne peut pas dépasser {{ limit }} caractères"

@@ -170,18 +170,10 @@
         </div>
     </div>
 
-    {# ... (conserve le même code jusqu'au bloc action-buttons) ... #}
-
     <div class="action-buttons">
-        <a href="{{ path('app_offer_travel_public_list') }}" class="btn-back">
+        <a href="{{ path('app_offer_travel_index') }}" class="btn-back">
             <i class="fas fa-arrow-left"></i> Retour à la liste
         </a>
-        <button class="btn btn-reserve" style="background-color: #2dce89; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: 600;" disabled>
-            <i class="fas fa-ticket-alt"></i> Réserver
-        </button>
-        <button class="btn btn-review" style="background-color: #f39c12; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: 600;" disabled>
-            <i class="fas fa-star"></i> Donner un avis
-        </button>
-    </div>
+    <a href="{{ path('app_offer_travel_action', {'action': 'edit', 'id': offer_travel.id}) }}">Modifier</a>    </div>
 </div>
 {% endblock %}

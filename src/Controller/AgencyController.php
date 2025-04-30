@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Agency;
 use App\Form\AgencyType;
-use App\Entity\User; // Ajout de l'import
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,16 +16,26 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/agency')]
 final class AgencyController extends AbstractController
 {
-    private string $baseImageUrl = 'http://localhost:8000/img/agency/'; // Ajout du port 8000
+    private string $baseImageUrl = 'http://localhost:8000/img/agency/';
+
+    private function getUserRole(User $user): string
+    {
+        return in_array('ROLE_ADMIN', $user->getRoles(), true) ? 'admin' : 'agent';
+    }
 
     #[Route(name: 'app_agency_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): Response
     {
-        $agencies = $entityManager
-            ->getRepository(Agency::class)
-            ->findAll();
+        /** @var User $user */
+        $user = $this->getUser();
+        $role = $this->getUserRole($user);
 
-        return $this->render('agency/index.html.twig', [
+        // If admin, fetch all agencies; if agent, fetch only the user's agencies
+        $agencies = $role === 'admin'
+            ? $entityManager->getRepository(Agency::class)->findAll()
+            : $entityManager->getRepository(Agency::class)->findBy(['user' => $user]);
+
+        return $this->render("agency/{$role}/index.html.twig", [
             'agencies' => $agencies,
         ]);
     }
@@ -33,16 +43,20 @@ final class AgencyController extends AbstractController
     #[Route('/new', name: 'app_agency_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
+        /** @var User $user */
+        $user = $this->getUser();
+        $role = $this->getUserRole($user);
+
         $agency = new Agency();
         
-        // Définir l'utilisateur avec ID 12 par défaut
-        $user = $em->getRepository(User::class)->find(12);
+        // Définir l'utilisateur connecté
         if ($user) {
             $agency->setUser($user);
         } else {
-            $this->addFlash('error', 'L\'utilisateur par défaut (ID:12) n\'existe pas');
+            $this->addFlash('error', 'Aucun utilisateur connecté');
             return $this->redirectToRoute('app_agency_index');
         }
+
         $form = $this->createForm(AgencyType::class, $agency);
         $form->handleRequest($request);
 
@@ -64,7 +78,7 @@ final class AgencyController extends AbstractController
                             );
                         } catch (FileException $e) {
                             $this->addFlash('error', 'Erreur lors de l\'upload de l\'image : '.$e->getMessage());
-                            return $this->render('agency/new.html.twig', [
+                            return $this->render("agency/{$role}/new.html.twig", [
                                 'form' => $form->createView(),
                             ]);
                         }
@@ -77,7 +91,7 @@ final class AgencyController extends AbstractController
                     $em->flush();
 
                     $this->addFlash('success', 'Agence créée avec succès ! ID: '.$agency->getId());
-                    return $this->redirectToRoute('app_agency_index', ['id' => $agency->getId()]);
+                    return $this->redirectToRoute('app_agency_index');
                 } catch (\Exception $e) {
                     $this->addFlash('error', 'Erreur technique : '.$e->getMessage());
                     dump($e->getMessage());
@@ -89,7 +103,7 @@ final class AgencyController extends AbstractController
             }
         }
 
-        return $this->render('agency/new.html.twig', [
+        return $this->render("agency/{$role}/new.html.twig", [
             'form' => $form->createView(),
         ]);
     }
@@ -97,21 +111,42 @@ final class AgencyController extends AbstractController
     #[Route('/{id}', name: 'app_agency_show', methods: ['GET'])]
     public function show(Agency $agency): Response
     {
-        return $this->render('agency/show.html.twig', [
+        /** @var User $user */
+        $user = $this->getUser();
+        $role = $this->getUserRole($user);
+
+        // Agents can only view their own agencies
+        if ($role === 'agent' && $agency->getUser() !== $user) {
+            $this->addFlash('error', 'Vous n\'êtes pas autorisé à voir cette agence.');
+            return $this->redirectToRoute('app_agency_index');
+        }
+
+        return $this->render("agency/{$role}/show.html.twig", [
             'agency' => $agency,
         ]);
     }
 
     #[Route('/{id}/edit', name: 'app_agency_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Agency $agency, EntityManagerInterface $em): Response
-    {   // S'assurer que l'utilisateur est bien ID 12
-        $user = $em->getRepository(User::class)->find(12);
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $role = $this->getUserRole($user);
+
+        // Agents can only edit their own agencies
+        if ($role === 'agent' && $agency->getUser() !== $user) {
+            $this->addFlash('error', 'Vous n\'êtes pas autorisé à modifier cette agence.');
+            return $this->redirectToRoute('app_agency_index');
+        }
+
+        // S'assurer que l'utilisateur est bien connecté
         if ($user) {
             $agency->setUser($user);
         } else {
-            $this->addFlash('error', 'L\'utilisateur par défaut (ID:12) n\'existe pas');
+            $this->addFlash('error', 'Aucun utilisateur connecté');
             return $this->redirectToRoute('app_agency_index');
         }
+
         $form = $this->createForm(AgencyType::class, $agency);
         $form->handleRequest($request);
 
@@ -129,14 +164,14 @@ final class AgencyController extends AbstractController
                             );
                         } catch (FileException $e) {
                             $this->addFlash('error', 'Erreur lors de l\'upload de l\'image : '.$e->getMessage());
-                            return $this->render('agency/edit.html.twig', [
+                            return $this->render("agency/{$role}/edit.html.twig", [
                                 'form' => $form->createView(),
                                 'agency' => $agency,
                             ]);
                         }
                         // Supprimer l'ancienne image si elle existe
                         if ($agency->getImage()) {
-                            $oldFilename = basename($agency->getImage()); // Extraire le nom du fichier du chemin complet
+                            $oldFilename = basename($agency->getImage());
                             $oldImagePath = $this->getParameter('agency_images_directory').'/'.$oldFilename;
                             if (file_exists($oldImagePath)) {
                                 unlink($oldImagePath);
@@ -160,7 +195,7 @@ final class AgencyController extends AbstractController
             }
         }
 
-        return $this->render('agency/edit.html.twig', [
+        return $this->render("agency/{$role}/edit.html.twig", [
             'form' => $form->createView(),
             'agency' => $agency,
         ]);
@@ -169,10 +204,20 @@ final class AgencyController extends AbstractController
     #[Route('/{id}', name: 'app_agency_delete', methods: ['POST'])]
     public function delete(Request $request, Agency $agency, EntityManagerInterface $entityManager): Response
     {
+        /** @var User $user */
+        $user = $this->getUser();
+        $role = $this->getUserRole($user);
+
+        // Agents can only delete their own agencies
+        if ($role === 'agent' && $agency->getUser() !== $user) {
+            $this->addFlash('error', 'Vous n\'êtes pas autorisé à supprimer cette agence.');
+            return $this->redirectToRoute('app_agency_index');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$agency->getId(), $request->getPayload()->getString('_token'))) {
             // Supprimer l'image associée
             if ($agency->getImage()) {
-                $filename = basename($agency->getImage()); // Extraire le nom du fichier du chemin complet
+                $filename = basename($agency->getImage());
                 $imagePath = $this->getParameter('agency_images_directory').'/'.$filename;
                 if (file_exists($imagePath)) {
                     unlink($imagePath);

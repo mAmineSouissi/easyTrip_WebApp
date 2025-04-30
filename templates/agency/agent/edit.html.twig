@@ -1,39 +1,35 @@
-{% extends 'admin/base.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title %}Nouvelle Promotion{% endblock %}
+{% block title %}Modifier {{ agency.name }}{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
-        .promotion-container {
+        .edit-container {
             max-width: 800px;
             margin: 2rem auto;
             padding: 2rem;
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-        .form-header {
-            text-align: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
-        }
-        .form-title {
-            color: #2c3e50;
-            font-weight: 700;
-            margin: 0;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
         }
         .form-group {
             margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .form-label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
         }
         .form-control {
             width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid #e1e5eb;
-            border-radius: 5px;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
             transition: all 0.3s;
         }
         .form-control:focus {
@@ -54,56 +50,167 @@
             background-position: right calc(0.375em + 0.1875rem) center;
             background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
         }
+        .form-control-file {
+            width: 100%;
+            padding: 0.75rem 0;
+        }
         .btn-submit {
-            background-color: #2dce89;
+            background: #4361ee;
             color: white;
-            padding: 0.875rem 1.75rem;
+            padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 5px;
-            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
             transition: all 0.3s;
         }
         .btn-submit:hover {
-            background-color: #24b47e;
-            transform: translateY(-2px);
+            background: #3a56d4;
         }
         .invalid-feedback {
-            color: #f5365c;
-            font-size: 0.85rem;
+            color: #dc3545;
+            font-size: 0.875rem;
             margin-top: 0.25rem;
         }
         .valid-feedback {
             color: #28a745;
-            font-size: 0.85rem;
+            font-size: 0.875rem;
             margin-top: 0.25rem;
         }
-        .back-link {
+        .preview-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        .file-input-label {
             display: inline-flex;
             align-items: center;
-            color: #6c757d;
-            margin-top: 1.5rem;
-            transition: color 0.3s;
+            background-color: #3498db;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
         }
-        .back-link:hover {
-            color: #4361ee;
-            text-decoration: none;
+        .file-input-label:hover {
+            background-color: #2980b9;
+        }
+        .file-input-label i {
+            margin-right: 0.5rem;
+        }
+        #agency_imageFile {
+            display: none;
+        }
+        .form-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
         }
     </style>
 {% endblock %}
 
 {% block body %}
-<div class="promotion-container">
+<div class="edit-container">
     <div class="form-header">
-        <h1 class="form-title">
-            <i class="fas fa-percentage"></i> Créer une nouvelle promotion
-        </h1>
+        <h1><i class="fas fa-edit"></i> Modifier {{ agency.name }}</h1>
     </div>
 
-    {{ include('promotion/_form.html.twig') }}
+    <div class="preview-section">
+        <h3><i class="fas fa-eye"></i> Aperçu actuel</h3>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <img src="{{ agency.image ?: 'https://via.placeholder.com/80?text=Agence' }}" 
+                 alt="{{ agency.name }}" 
+                 style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+            <div>
+                <h4>{{ agency.name }}</h4>
+                <p><i class="fas fa-map-marker-alt"></i> {{ agency.address }}</p>
+            </div>
+        </div>
+    </div>
 
-    <a href="{{ path('app_promotion_index') }}" class="back-link">
-        <i class="fas fa-arrow-left"></i> Retour à la liste
-    </a>
+    {{ form_start(form, {'attr': {'id': 'edit-agency-form'}}) }}
+        <div class="form-group">
+            {{ form_label(form.name) }}
+            {{ form_widget(form.name, {'attr': {
+                'class': 'form-control' ~ (form.name.vars.errors|length ? ' is-invalid' : ''),
+                'required': 'required'
+            }}) }}
+            <div class="invalid-feedback">
+                {{ form_errors(form.name) }}
+            </div>
+            <div class="valid-feedback">
+                Nom valide
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.address) }}
+            {{ form_widget(form.address, {'attr': {
+                'class': 'form-control' ~ (form.address.vars.errors|length ? ' is-invalid' : ''),
+                'required': 'required'
+            }}) }}
+            <div class="invalid-feedback">
+                {{ form_errors(form.address) }}
+            </div>
+            <div class="valid-feedback">
+                Adresse valide
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.phone) }}
+            {{ form_widget(form.phone, {'attr': {
+                'class': 'form-control' ~ (form.phone.vars.errors|length ? ' is-invalid' : ''),
+                'required': 'required',
+                'pattern': '^[0-9]{10}$'
+            }}) }}
+            <div class="invalid-feedback">
+                Numéro de téléphone invalide (10 chiffres requis)
+            </div>
+            <div class="valid-feedback">
+                Téléphone valide
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.email) }}
+            {{ form_widget(form.email, {'attr': {
+                'class': 'form-control' ~ (form.email.vars.errors|length ? ' is-invalid' : ''),
+                'required': 'required',
+                'pattern': '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'
+            }}) }}
+            <div class="invalid-feedback">
+                Email invalide
+            </div>
+            <div class="valid-feedback">
+                Email valide
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.imageFile) }}
+            <label for="agency_imageFile" class="file-input-label">
+                <i class="fas fa-image"></i> Choisir une nouvelle image
+            </label>
+            {{ form_widget(form.imageFile, {'attr': {'class': 'form-control-file' ~ (form.imageFile.vars.errors|length ? ' is-invalid' : '')}}) }}
+            <img id="imagePreview" src="{{ agency.image ?: '#' }}" alt="Aperçu de l'image" class="image-preview" style="{{ agency.image ? 'display: block;' : 'display: none;' }}">
+            <div class="invalid-feedback">
+                {{ form_errors(form.imageFile) }}
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit">
+            <i class="fas fa-save"></i> Enregistrer
+        </button>
+    {{ form_end(form) }}
 </div>
 {% endblock %}
 
@@ -126,8 +233,23 @@
                 {% endfor %}
             {% endfor %}
 
+            // Preview de l'image
+            document.getElementById('agency_imageFile').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                const preview = document.getElementById('imagePreview');
+                
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
             // Validation en temps réel
-            const form = document.getElementById('promotion-form');
+            const form = document.getElementById('edit-agency-form');
             const inputs = form.querySelectorAll('.form-control[required]');
             
             inputs.forEach(input => {
@@ -199,13 +321,13 @@
                 } else {
                     e.preventDefault();
                     Swal.fire({
-                        title: 'Confirmer la création',
-                        text: 'Voulez-vous créer cette nouvelle promotion ?',
+                        title: 'Confirmer la modification',
+                        text: 'Voulez-vous enregistrer les modifications de cette agence ?',
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonColor: '#2dce89',
+                        confirmButtonColor: '#4361ee',
                         cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Oui, créer',
+                        confirmButtonText: 'Oui, enregistrer',
                         cancelButtonText: 'Annuler'
                     }).then((result) => {
                         if (result.isConfirmed) {
