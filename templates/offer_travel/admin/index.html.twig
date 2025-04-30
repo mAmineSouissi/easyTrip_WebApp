@@ -128,7 +128,7 @@
         .btn-back:hover {
             background-color: #e9ecef;
             color: #495057;
-            }
+        }
         .search-filter-container {
             background: #f8f9fa;
             padding: 1.5rem;
@@ -158,16 +158,16 @@
             margin-bottom: 0.5rem;
             color: #495057;
         }
-        .category-filter {
+        .category-filter, .agency-filter {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
             margin-bottom: 1rem;
         }
-        .category-checkbox {
+        .category-checkbox, .agency-checkbox {
             display: none;
         }
-        .category-label {
+        .category-label, .agency-label {
             padding: 5px 12px;
             border-radius: 20px;
             font-size: 0.85rem;
@@ -175,9 +175,10 @@
             border: 1px solid #dee2e6;
             transition: all 0.2s;
         }
-        .category-checkbox:checked + .category-label {
+        .category-checkbox:checked + .category-label, .agency-checkbox:checked + .agency-label {
             border-color: transparent;
             color: white;
+            background-color: #3498db; /* Couleur pour les agences */
         }
         .promotion-switch {
             display: flex;
@@ -259,81 +260,86 @@
         
         <div class="filter-section">
             <div class="filter-title">Filtrer par catégorie:</div>
-            {# public_list.html.twig #}
-<div class="category-filter">
-    {% for category in ['Sportive', 'Romantique', 'Religieuse', 'Touristique'] %}
-        <input type="checkbox" class="category-checkbox" id="cat-{{ category }}" 
-               value="{{ category }}"
-               {% if category in selected_categories %}checked{% endif %}>
-        <label for="cat-{{ category }}" class="category-label {{ category|lower }}">
-            {{ category }}
-        </label>
-    {% endfor %}
-</div>
+            <div class="category-filter">
+                {% for category in ['Sportive', 'Romantique', 'Religieuse', 'Touristique'] %}
+                    <input type="checkbox" class="category-checkbox" id="cat-{{ category }}" 
+                           value="{{ category }}"
+                           {% if category in selected_categories %}checked{% endif %}>
+                    <label for="cat-{{ category }}" class="category-label {{ category|lower }}">
+                        {{ category }}
+                    </label>
+                {% endfor %}
+            </div>
             
+            <div class="filter-title">Filtrer par agence:</div>
+            <div class="agency-filter">
+                {% for agency in all_agencies %}
+                    <input type="checkbox" class="agency-checkbox" id="agency-{{ agency.id }}" 
+                           value="{{ agency.id }}"
+                           {% if agency.id in selected_agencies|map(v => v|number_format) %}checked{% endif %}>
+                    <label for="agency-{{ agency.id }}" class="agency-label">
+                        {{ agency.name }}
+                    </label>
+                {% endfor %}
+            </div>
+
             <div class="filter-title">Promotions:</div>
             <div class="promotion-switch">
-    <label class="switch">
-        <input type="checkbox" id="promotionSwitch" {% if has_promotion is same as(true) %}checked{% endif %}>
-        <span class="slider"></span>
-    </label>
-    <span>Filtrer seulement les offres en promotion</span> {# Texte modifié pour plus de clarté #}
-</div>
+                <label class="switch">
+                    <input type="checkbox" id="promotionSwitch" {% if has_promotion is same as(true) %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+                <span>Filtrer seulement les offres en promotion</span>
+            </div>
         </div>
     </div>
 
     <div id="offersContainer">
         {% include 'offer_travel/admin/_offers_list.html.twig' %}
     </div>
-
-    
 </div>
 
 <script>
-// Dans public_list.html.twig
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
     const promotionSwitch = document.getElementById('promotionSwitch');
+    const agencyCheckboxes = document.querySelectorAll('.agency-checkbox');
     const offersContainer = document.getElementById('offersContainer');
     const badgeCount = document.querySelector('.badge-count');
 
-    // Fonction pour charger les résultats
-    // Dans public_list.html.twig
-function loadResults() {
-    const search = searchInput.value;
-    const categories = Array.from(document.querySelectorAll('.category-checkbox:checked')).map(cb => cb.value);
-    const hasPromotion = promotionSwitch.checked;
+    function loadResults() {
+        const search = searchInput.value;
+        const categories = Array.from(document.querySelectorAll('.category-checkbox:checked')).map(cb => cb.value);
+        const hasPromotion = promotionSwitch.checked;
+        const agencies = Array.from(document.querySelectorAll('.agency-checkbox:checked')).map(cb => cb.value);
 
-    const params = new URLSearchParams();
-    if (search) params.append('search', search);
-    categories.forEach(cat => params.append('categories[]', cat));
-    
-    // Modification ici - n'envoie le paramètre que si true
-    if (hasPromotion) {
-        params.append('hasPromotion', 'true');
+        const params = new URLSearchParams();
+        if (search) params.append('search', search);
+        categories.forEach(cat => params.append('categories[]', cat));
+        agencies.forEach(agency => params.append('agencies[]', agency));
+        if (hasPromotion) {
+            params.append('hasPromotion', 'true');
+        }
+
+        fetch(`{{ path('app_offer_travel_index') }}?${params.toString()}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            offersContainer.innerHTML = html;
+            updateOfferCount();
+        });
     }
 
-    fetch(`{{ path('app_offer_travel_index') }}?${params.toString()}`, {
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'text/html'
-        }
-    })
-    .then(response => response.text())
-    .then(html => {
-        offersContainer.innerHTML = html;
-        updateOfferCount();
-    });
-}
-
-    // Mise à jour du compteur
     function updateOfferCount() {
         const offerCount = document.querySelectorAll('#offersContainer .col-md-4').length;
         badgeCount.textContent = offerCount;
     }
 
-    // Écouteurs d'événements
     searchInput.addEventListener('input', function() {
         clearTimeout(this.timer);
         this.timer = setTimeout(loadResults, 300);
@@ -345,9 +351,12 @@ function loadResults() {
 
     promotionSwitch.addEventListener('change', loadResults);
 
-    // Chargement initial si filtres présents dans l'URL
+    agencyCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', loadResults);
+    });
+
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('search') || urlParams.has('categories') || urlParams.has('hasPromotion')) {
+    if (urlParams.has('search') || urlParams.has('categories') || urlParams.has('hasPromotion') || urlParams.has('agencies')) {
         loadResults();
     }
 });

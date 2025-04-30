@@ -24,6 +24,17 @@
             width: 100% !important;
             min-height: 300px;
         }
+        .prediction-image {
+            width: 100%;
+            max-width: 800px; /* Limite la largeur maximale pour une meilleure lisibilité */
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .prediction-container {
+            display: flex;
+            justify-content: center; /* Centre l'image horizontalement */
+        }
     </style>
 {% endblock %}
 
@@ -62,6 +73,18 @@
                     <i class="fas fa-chart-pie me-2"></i>Offres par catégorie
                 </div>
                 <canvas id="offersByCategoryChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Nouvelle section pour l'image de prédiction -->
+        <div class="col-12">
+            <div class="chart-container">
+                <div class="chart-title">
+                    <i class="fas fa-chart-line me-2"></i>Revenus historiques (Jan-Mai 2025) et prédictions (Juin-Déc 2025)
+                </div>
+                <div class="prediction-container">
+                    <img src="{{ asset('images/revenue_prediction_2025.png') }}" alt="Revenus historiques et prédictions 2025" class="prediction-image">
+                </div>
             </div>
         </div>
     </div>

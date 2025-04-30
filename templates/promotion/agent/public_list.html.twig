@@ -121,6 +121,35 @@
             color: #6c757d;
             pointer-events: none;
         }
+        .navigation-buttons {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 1rem;
+        }
+        .btn-back {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        .btn-back:hover {
+            background-color: #e9ecef;
+            color: #495057;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .btn-back:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
     </style>
 {% endblock %}
 
@@ -190,6 +219,12 @@
                 <p>Revenez plus tard pour découvrir nos offres</p>
             </div>
         {% endif %}
+        
+        <div class="navigation-buttons">
+            <a href="{{ path('agent_dashboard') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}

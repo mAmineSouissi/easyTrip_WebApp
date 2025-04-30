@@ -77,10 +77,72 @@
             width: 20px;
             color: #3498db;
         }
+        .action-buttons {
+            margin-top: 1rem;
+        }
         .action-buttons .btn {
             padding: 5px 10px;
             font-size: 0.85rem;
             margin-right: 5px;
+            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 600;
+            border: 1px solid;
+        }
+        .btn-view {
+            background-color: #ffffff;
+            color: #3498db;
+            border-color: #3498db;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .btn-view:hover {
+            background-color: #3498db;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(52,152,219,0.3);
+        }
+        .btn-view:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        .btn-edit {
+            background-color: #ffffff;
+            color: #f39c12;
+            border-color: #f39c12;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .btn-edit:hover {
+            background-color: #f39c12;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(243,156,18,0.3);
+        }
+        .btn-edit:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        .btn-delete:hover {
+            background-color: #c82333;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(220,53,69,0.3);
+        }
+        .btn-delete:active {
+            transform: translateY(0);
+            box-shadow: none;
         }
         .no-agencies {
             text-align: center;
@@ -102,18 +164,29 @@
             text-overflow: ellipsis;
             max-width: 100%;
         }
-        .btn-delete {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 5px 10px;
+        .btn-back {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
             border-radius: 5px;
-            font-weight: 600;
+            padding: 5px 10px;
             font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
             transition: all 0.3s;
+            font-weight: 600;
         }
-        .btn-delete:hover {
-            background-color: #c82333;
+        .btn-back:hover {
+            background-color: #e9ecef;
+            color: #495057;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .btn-back:active {
+            transform: translateY(0);
+            box-shadow: none;
         }
         @media (max-width: 768px) {
             .agency-container {
@@ -170,10 +243,10 @@
                             </div>
                             
                             <div class="action-buttons mt-3">
-                                <a href="{{ path('app_agency_show', {'id': agency.id}) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ path('app_agency_show', {'id': agency.id}) }}" class="btn btn-view">
                                     <i class="fas fa-eye"></i> Voir
                                 </a>
-                                <a href="{{ path('app_agency_edit', {'id': agency.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                <a href="{{ path('app_agency_edit', {'id': agency.id}) }}" class="btn btn-edit">
                                     <i class="fas fa-edit"></i> Modifier
                                 </a>
                                 {{ include('agency/agent/_delete_form.html.twig', {
@@ -187,6 +260,11 @@
                     </div>
                 </div>
             {% endfor %}
+        </div>
+        <div class="action-buttons">
+            <a href="{{ path('agent_dashboard') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
         </div>
     {% else %}
         <div class="no-agencies">

@@ -100,6 +100,9 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            border: 1px solid;
         }
         .no-offers {
             text-align: center;
@@ -114,7 +117,41 @@
             font-size: 0.9rem;
             margin-left: 5px;
         }
-        /* Style spécifique pour le bouton Supprimer */
+        /* Style pour le bouton "Voir" */
+        .btn-view {
+            background-color: #ffffff;
+            color: #1cc88a;
+            border-color: #1cc88a;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .btn-view:hover {
+            background-color: #1cc88a;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(28,200,138,0.3);
+        }
+        .btn-view:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        /* Style pour le bouton "Modifier" */
+        .btn-edit {
+            background-color: #ffffff;
+            color: #f39c12;
+            border-color: #f39c12;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .btn-edit:hover {
+            background-color: #f39c12;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(243,156,18,0.3);
+        }
+        .btn-edit:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        /* Style pour le bouton "Supprimer" (inchangé, pour référence) */
         .btn-danger {
             background-color: #e74a3b;
             color: white;
@@ -127,7 +164,7 @@
         .btn-danger:hover {
             background-color: #c82333;
             transform: translateY(-1px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(231,74,59,0.2);
         }
         .btn-danger:active {
             transform: translateY(0);
@@ -283,8 +320,8 @@
             <span class="badge-count">{{ offer_travels|length }}</span>
         </h1>
         <a href="{{ path('app_offer_travel_action', {'action': 'new'}) }}" class="btn-create">
-    <i class="fas fa-plus"></i> Nouvelle Offre
-</a>
+            <i class="fas fa-plus"></i> Nouvelle Offre
+        </a>
     </div>
 
     <div class="row">
@@ -309,19 +346,26 @@
                         <p>{{ offer.discription|slice(0, 100) }}...</p>
                         
                         <div class="action-buttons">
-                            <a href="{{ path('app_offer_travel_action', {'action': 'offer', 'id': offer.id}) }}" class="btn btn-sm btn-outline-primary">
-    <i class="fas fa-eye"></i> Voir
-</a>
-                            <a href="{{ path('app_offer_travel_action', {'action': 'edit', 'id': offer.id}) }}">Modifier</a>
-                            <form method="post" action="{{ path('app_offer_travel_action', {'action': 'delete', 'id': offer.id}) }}" onsubmit="confirmDelete(event, this)" class="delete-form">
-    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offer.id) }}">
-    <button type="submit" class="btn btn-sm btn-danger">
-        <i class="fas fa-trash"></i> Supprimer
-    </button>
-</form>
+                            <a href="{{ path('app_offer_travel_action', {'action': 'offer', 'id': offer.id}) }}" class="btn btn-view">
+                                <i class="fas fa-eye"></i> Voir
+                            </a>
+                            <a href="{{ path('app_offer_travel_action', {'action': 'edit', 'id': offer.id}) }}" class="btn btn-edit">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
+                            <form method="post" action="{{ path('app_offer_travel_action', {'action': "delete", 'id': offer.id}) }}" onsubmit="confirmDelete(event, this)" class="delete-form">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offer.id) }}">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
+                <div class="action-buttons">
+        <a href="{{ path('agent_dashboard') }}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+        </div>
             </div>
         {% else %}
             <div class="col-12">
@@ -330,8 +374,8 @@
                     <h4>Aucune offre disponible</h4>
                     <p>Commencez par créer une nouvelle offre</p>
                     <a href="{{ path('app_offer_travel_action', {'action': 'new'}) }}" class="btn-create">
-    <i class="fas fa-plus"></i> Créer une Offre
-</a>
+                        <i class="fas fa-plus"></i> Créer une Offre
+                    </a>
                 </div>
             </div>
         {% endfor %}

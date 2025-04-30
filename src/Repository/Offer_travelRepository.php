@@ -14,7 +14,7 @@ class Offer_travelRepository extends ServiceEntityRepository
         parent::__construct($registry, OfferTravel::class);
     }
 
-    public function searchAndFilter(string $search, array $categories, ?bool $hasPromotion, ?Collection $agencies = null): array
+    public function searchAndFilter(string $search, array $categories, ?bool $hasPromotion, ?Collection $agencies = null, array $agenciesFilter = []): array
     {
         $qb = $this->createQueryBuilder('o');
 
@@ -53,6 +53,12 @@ class Offer_travelRepository extends ServiceEntityRepository
 
             $qb->andWhere('o.agency IN (:agencyIds)')
                ->setParameter('agencyIds', $agencyIds);
+        }
+
+        // Filtrer par agences sélectionnées (nouveau filtre)
+        if (!empty($agenciesFilter)) {
+            $qb->andWhere('o.agency IN (:agenciesFilter)')
+               ->setParameter('agenciesFilter', $agenciesFilter);
         }
 
         return $qb->getQuery()->getResult();

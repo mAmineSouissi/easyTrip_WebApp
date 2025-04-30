@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use App\Entity\Promotion;
 use App\Entity\User;
+use App\Entity\Agency; // Ajout de l'import pour Agency
 
 #[Route('/offer/travel')]
 class OfferTravelController extends AbstractController
@@ -72,6 +73,10 @@ class OfferTravelController extends AbstractController
         $categories = $request->query->all()['categories'] ?? [];
         $hasPromotion = $request->query->get('hasPromotion');
         $filterPromotion = ($hasPromotion === 'true');
+        $agenciesFilter = $request->query->all()['agencies'] ?? []; // Nouveau paramètre pour filtrer par agences
+
+        // Récupérer toutes les agences pour le menu déroulant
+        $allAgencies = $entityManager->getRepository(Agency::class)->findAll();
 
         // Récupérer les offres
         if ($role === 'agent') {
@@ -83,14 +88,17 @@ class OfferTravelController extends AbstractController
                 $search, 
                 $categories, 
                 $filterPromotion ? true : null,
-                $agencies
+                $agencies,
+                $agenciesFilter // Passer le filtre des agences
             );
         } else {
             // Admin et client voient toutes les offres
             $offers = $entityManager->getRepository(OfferTravel::class)->searchAndFilter(
                 $search, 
                 $categories, 
-                $filterPromotion ? true : null
+                $filterPromotion ? true : null,
+                null,
+                $agenciesFilter // Passer le filtre des agences
             );
         }
 
@@ -108,6 +116,8 @@ class OfferTravelController extends AbstractController
             'selected_categories' => $categories,
             'has_promotion' => $hasPromotion === 'true',
             'role' => $role,
+            'all_agencies' => $allAgencies, // Passer les agences au template
+            'selected_agencies' => $agenciesFilter, // Passer les agences sélectionnées
         ]);
     }
 
