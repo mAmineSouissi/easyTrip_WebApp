@@ -1,0 +1,60 @@
+{% extends 'emails/base_email.html.twig' %}
+
+{% block body %}
+    <h1 style="color: #333; font-size: 24px; margin-bottom: 20px;">Nouveau Ticket Disponible !</h1>
+    <p style="color: #555; font-size: 16px; line-height: 1.5;">
+        Bonjour {{ agency.name }},
+    </p>
+    <p style="color: #555; font-size: 16px; line-height: 1.5;">
+        Un nouveau ticket de vol a été ajouté à notre plateforme. Voici les détails :
+    </p>
+    
+    <table style="width: 100%; border-collapse: collapse; margin: 20px 0; background-color: #f9f9f9; border-radius: 8px;">
+        <tr style="border-bottom: 1px solid #ddd;">
+            <td style="padding: 10px; font-weight: bold; color: #333;">Compagnie Aérienne</td>
+            <td style="padding: 10px; color: #555;">{{ ticket.airline }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #ddd;">
+            <td style="padding: 10px; font-weight: bold; color: #333;">Numéro de Vol</td>
+            <td style="padding: 10px; color: #555;">{{ ticket.flightNumber }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #ddd;">
+            <td style="padding: 10px; font-weight: bold; color: #333;">Départ</td>
+            <td style="padding: 10px; color: #555;">
+                {{ ticket.departureCity }} - {{ ticket.departureDate|date('d/m/Y') }} à {{ ticket.departureTime }}
+            </td>
+        </tr>
+        <tr style="border-bottom: 1px solid #ddd;">
+            <td style="padding: 10px; font-weight: bold; color: #333;">Arrivée</td>
+            <td style="padding: 10px; color: #555;">
+                {{ ticket.arrivalCity }} - {{ ticket.arrivalDate|date('d/m/Y') }} à {{ ticket.arrivalTime }}
+            </td>
+        </tr>
+        <tr style="border-bottom: 1px solid #ddd;">
+            <td style="padding: 10px; font-weight: bold; color: #333;">Classe</td>
+            <td style="padding: 10px; color: #555;">{{ ticket.ticketClass }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #ddd;">
+            <td style="padding: 10px; font-weight: bold; color: #333;">Type de Ticket</td>
+            <td style="padding: 10px; color: #555;">{{ ticket.ticketType }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; font-weight: bold; color: #333;">Prix</td>
+            <td style="padding: 10px; color: #555;">{{ ticket.price|number_format(2, ',', ' ') }} EUR</td>
+        </tr>
+    </table>
+
+    <p style="color: #555; font-size: 16px; line-height: 1.5;">
+        Connectez-vous à votre compte pour plus de détails ou pour proposer ce ticket à vos clients.
+    </p>
+    
+    <a href="{{ url('app_tickets_show', {'idTicket': ticket.idTicket}) }}" 
+       style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; margin-top: 20px;">
+        Voir le Ticket
+    </a>
+
+    <p style="color: #555; font-size: 16px; line-height: 1.5; margin-top: 20px;">
+        Merci de votre confiance,<br>
+        L'équipe EasyTrip
+    </p>
+{% endblock %}

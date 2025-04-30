@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 class Tickets
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
+    #[ORM\GeneratedValue]  // <-- Cette ligne est cruciale
     #[ORM\Column(type: 'integer')]
     private ?int $idTicket = null;
 

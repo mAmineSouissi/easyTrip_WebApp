@@ -132,10 +132,10 @@
                     <p class="card-text text-truncate">{{ hotel.description }}</p>
                 </div>
                 <div class="card-footer bg-white border-0 d-flex justify-content-between">
-                    <a href="{{ path('app_hotels_show', {'id_hotel': hotel.idHotel}) }}" class="btn btn-sm btn-outline-primary">
+                    <a href="{{ path('app_hotels_show', {'id_hotel': hotel.id}) }}" class="btn btn-sm btn-outline-primary">
                         <i class="fas fa-eye me-1"></i> Voir
                     </a>
-                    <a href="{{ path('app_hotels_edit', {'id_hotel': hotel.idHotel}) }}" class="btn btn-sm btn-outline-secondary">
+                    <a href="{{ path('app_hotels_edit', {'id_hotel': hotel.id}) }}" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-edit me-1"></i> Modifier
                     </a>
                 </div>

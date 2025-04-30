@@ -17,10 +17,6 @@ class Agency
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'agencies')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
-    private ?User $user = null;
-    
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le nom de l'agence est obligatoire")]
@@ -92,17 +88,6 @@ class Agency
     public function getId(): int
     {
         return $this->id;
-    }
-
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
-
-    public function setUser(?User $user): self
-    {
-        $this->user = $user;
-        return $this;
     }
 
     public function getName(): string

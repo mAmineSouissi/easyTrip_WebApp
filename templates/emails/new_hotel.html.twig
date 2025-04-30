@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvel hôtel disponible</title>
+</head>
+<body>
+    <h2>Nouvel hôtel ajouté</h2>
+    <p><strong>Nom :</strong> {{ hotel.name }}</p>
+    <p><strong>Ville :</strong> {{ hotel.city }}</p>
+    <p><strong>Prix :</strong> {{ hotel.price|number_format(2, ',', ' ') }} €</p>
+    {% if hotel.promotion %}
+        <p><strong>Promotion :</strong> {{ hotel.promotion.discountPercentage }}%</p>
+    {% endif %}
+    <p>Connectez-vous à votre espace admin pour plus de détails.</p>
+</body>
+</html>

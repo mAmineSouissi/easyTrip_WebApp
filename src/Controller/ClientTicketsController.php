@@ -66,7 +66,7 @@ class ClientTicketsController extends AbstractController
     {
         // Fetch weather data for the arrival city
         $weatherData = null;
-        $apiKey = $this->getParameter('openweathermap_api_key'); // Retrieve from .env
+        $apiKey = $this->getParameter('openweathermap_api_key');
         $client = HttpClient::create();
 
         try {
@@ -74,8 +74,8 @@ class ClientTicketsController extends AbstractController
                 'query' => [
                     'q' => $ticket->getArrivalCity(),
                     'appid' => $apiKey,
-                    'units' => 'metric', // Use Celsius
-                    'lang' => 'fr', // French language
+                    'units' => 'metric',
+                    'lang' => 'fr',
                 ],
             ]);
 
@@ -83,13 +83,55 @@ class ClientTicketsController extends AbstractController
                 $weatherData = $response->toArray();
             }
         } catch (\Exception $e) {
-            // Handle errors (e.g., API failure, city not found)
             $weatherData = null;
         }
 
         return $this->render('client_tickets/show.html.twig', [
             'ticket' => $ticket,
             'weather' => $weatherData,
+        ]);
+    }
+
+    #[Route('/statistiques', name: 'app_client_tickets_statistics', methods: ['GET'])]
+    public function statistics(EntityManagerInterface $entityManager): Response
+    {
+        // Statistiques par classe de ticket
+        $classStats = $entityManager->createQuery(
+            "SELECT t.ticketClass as class, COUNT(t.idTicket) as count, AVG(t.price) as avgPrice 
+             FROM App\Entity\Tickets t 
+             GROUP BY t.ticketClass"
+        )->getResult();
+
+        // Statistiques par ville de destination
+        $cityStats = $entityManager->createQuery(
+            "SELECT t.arrivalCity as city, COUNT(t.idTicket) as count 
+             FROM App\Entity\Tickets t 
+             GROUP BY t.arrivalCity 
+             ORDER BY count DESC"
+        )->setMaxResults(5)
+         ->getResult();
+
+        // Prix moyen par mois (version corrigée avec SUBSTRING)
+        $monthlyStats = $entityManager->createQuery(
+            "SELECT SUBSTRING(t.departureDate, 6, 2) as month, AVG(t.price) as avgPrice 
+             FROM App\Entity\Tickets t 
+             WHERE t.departureDate IS NOT NULL 
+             GROUP BY month 
+             ORDER BY month"
+        )->getResult();
+
+        // Conversion des mois en nombres pour le traitement
+        $monthlyStats = array_map(function($item) {
+            return [
+                'month' => (int)$item['month'],
+                'avgPrice' => $item['avgPrice']
+            ];
+        }, $monthlyStats);
+
+        return $this->render('client_tickets/statistics.html.twig', [
+            'classStats' => $classStats,
+            'cityStats' => $cityStats,
+            'monthlyStats' => $monthlyStats,
         ]);
     }
 }
