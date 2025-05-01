@@ -56,15 +56,16 @@ class ChatbotService
 
     private function extractLocation(string $message): ?string
     {
-        if (preg_match('/à|en|dans|à (\w+)/i', $message, $matches)) {
-            return $matches[1];
+        // Matches city after prepositions like "à", "en", "dans", or "pour"
+        if (preg_match('/(?:à|en|dans|pour)\s+([\w\s-]+)/i', $message, $matches)) {
+            return trim($matches[1]);
         }
         return null;
     }
 
     private function extractRating(string $message): ?int
     {
-        if (preg_match('/(\d+) étoiles?/i', $message, $matches)) {
+        if (preg_match('/(\d+)\s*(?:étoiles?|stars?)/i', $message, $matches)) {
             return (int) $matches[1];
         }
         return null;
@@ -102,8 +103,8 @@ class ChatbotService
                 
                 $location = $this->extractLocation($message);
                 if ($location !== null) {
-                    $queryBuilder->andWhere('h.location LIKE :location')
-                               ->setParameter('location', '%' . $location . '%');
+                    $queryBuilder->andWhere('h.city = :city')
+                               ->setParameter('city', $location);
                 }
                 
                 $rating = $this->extractRating($message);
@@ -130,7 +131,7 @@ class ChatbotService
             }
 
             // Détection des mots-clés pour les tickets
-            if (preg_match('/ticket|billet|voyage|transport/i', $message)) {
+            if (preg_match('/ticket|billet|voyage|vol|transport/i', $message)) {
                 $queryBuilder = $this->entityManager->getRepository(Tickets::class)->createQueryBuilder('t');
                 
                 $price = $this->extractPrice($message);
@@ -139,10 +140,11 @@ class ChatbotService
                                ->setParameter('price', $price);
                 }
                 
-                $destination = $this->extractLocation($message);
-                if ($destination !== null) {
-                    $queryBuilder->andWhere('t.destination LIKE :destination')
-                               ->setParameter('destination', '%' . $destination . '%');
+                $city = $this->extractLocation($message);
+                if ($city !== null) {
+                    // Exact match for arrival_city to ensure precise filtering
+                    $queryBuilder->andWhere('t.arrivalCity = :city')
+                               ->setParameter('city', $city);
                 }
                 
                 $date = $this->extractDate($message);
@@ -202,4 +204,4 @@ class ChatbotService
 
         return $response;
     }
-} 
+}

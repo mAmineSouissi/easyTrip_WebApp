@@ -6,7 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="3964d33c-096e-42d7-b8f6-964b2a779898" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/agent/index.html.twig" beforeDir="false" afterPath="$PROJECT_DIR$/templates/agent/index.html.twig" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Service/ChatbotService.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Service/ChatbotService.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html.twig" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html.twig" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,7 +31,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;integration-oussama&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/oussa.LAPTOP-THCQB19P/OneDrive/Bureau/bani/easyTrip_WebApp-bani-bransh&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/oussa.LAPTOP-THCQB19P/OneDrive/Documents/GitHub/easyTrip_WebApp&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -39,21 +40,6 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
-  <component name="RunManager">
-    <configuration default="true" type="JetRunConfigurationType">
-      <module name="easyTrip_WebApp" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <module name="easyTrip_WebApp" />
-      <option name="filePath" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -71,7 +57,8 @@
       <option name="presentableId" value="Default" />
       <updated>1746060429076</updated>
       <workItem from="1746060430094" duration="9178000" />
-      <workItem from="1746095784759" duration="4630000" />
+      <workItem from="1746095784759" duration="5488000" />
+      <workItem from="1746123306804" duration="2004000" />
     </task>
     <servers />
   </component>
