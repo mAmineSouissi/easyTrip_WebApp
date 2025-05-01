@@ -4,108 +4,106 @@
 
 {% block body %}
 <div class="hero overlay">
-    <div class="img-bg rellax">
-        <img src="{{ asset('images/hero_2.jpg') }}" alt="Image" class="img-fluid">
+  <div class="img-bg rellax">
+    <img src="{{ asset('images/hero_2.jpg') }}" alt="Image" class="img-fluid">
+  </div>
+  <div class="container">
+    <div class="row align-items-center justify-content-start">
+      <div class="col-lg-6 mx-auto text-center">
+        <h1 class="heading" data-aos="fade-up">Contact</h1>
+        <p data-aos="fade-up">Si vous avez une réclamation, merci de nous contacter via ce formulaire.</p>
+      </div>
     </div>
-    <div class="container">
-        <div class="row align-items-center justify-content-start">
-            <div class="col-lg-6 mx-auto text-center">
-                <h1 class="heading" data-aos="fade-up">Contact</h1>
-                <p data-aos="fade-up">Si vous avez une réclamation, merci de nous contacter via ce formulaire.</p>
-            </div>
-        </div>
-    </div>
+  </div>
 </div>
 
-<div class="section">
-    <div class="container">
-        <div class="row">
-            <div class="col-12" data-aos="fade-up" data-aos-delay="0">
-                <h2 class="heading mb-5">Get In Touch</h2>
-            </div>
+<div class="section py-5">
+  <div class="container">
+
+    {# ✅ Affichage de secours visible dans la page #}
+    {% for label, messages in app.flashes %}
+      {% for message in messages %}
+        <div class="alert alert-{{ label == 'success' ? 'success' : 'danger' }}">
+          {{ message }}
         </div>
-        <div class="row">
-            <div class="col-lg-4 mb-5 mb-lg-0" data-aos="fade-up" data-aos-delay="100">
-                <div class="contact-info">
+      {% endfor %}
+    {% endfor %}
 
-                    <div class="address mt-4">
-                        <i class="icon-room"></i>
-                        <h4 class="mb-2">Location:</h4>
-                        <p>43 Raymouth Rd. Baltemoer, London 3910</p>
-                    </div>
-
-                    <div class="open-hours mt-4">
-                        <i class="icon-clock-o"></i>
-                        <h4 class="mb-2">Open Hours:</h4>
-                        <p>
-                            Sunday-Friday:<br>
-                            11:00 AM - 23:00 PM
-                        </p>
-                    </div>
-
-                    <div class="email mt-4">
-                        <i class="icon-envelope"></i>
-                        <h4 class="mb-2">Email:</h4>
-                        <p>info@example.com</p>
-                    </div>
-
-                    <div class="phone mt-4">
-                        <i class="icon-phone"></i>
-                        <h4 class="mb-2">Call:</h4>
-                        <p>+1 1234 55488 55</p>
-                    </div>
-
-                    <div class="mt-4 text-center">
-                        <a href="{{ path('chatbot') }}" class="btn btn-outline-dark btn-lg rounded-pill w-100">
-                            🤖 Discuter avec EasyBot
-                        </a>
-                    </div>
-
-                </div>
-            </div>
-            <div class="col-lg-8" data-aos="fade-up" data-aos-delay="200">
-                {{ form_start(form, { 'action': path('reclamation_contact') }) }}
-                <div class="row">
-                    <div class="col-12 mb-3">
-                        {{ form_row(form.category, {'attr': {'class': 'form-control'}}) }}
-                    </div>
-                    <div class="col-12 mb-3">
-                        {{ form_row(form.issue, {'attr': {'class': 'form-control', 'rows': '7'}}) }}
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary">Envoyer la réclamation</button>
-                    </div>
-                </div>
-                {{ form_end(form) }}
-            </div>
-        </div>
+    <div class="row mb-4">
+      <div class="col-12 text-center" data-aos="fade-up">
+        <h2 class="heading">📬 Envoyer une réclamation</h2>
+      </div>
     </div>
+
+    <div class="row">
+      <div class="col-lg-4 mb-5 mb-lg-0" data-aos="fade-up" data-aos-delay="100">
+        <div class="contact-info">
+          <div class="address mt-4">
+            <i class="icon-room"></i>
+            <h4 class="mb-2">Location:</h4>
+            <p>43 Raymouth Rd. Baltemoer, London 3910</p>
+          </div>
+          <div class="open-hours mt-4">
+            <i class="icon-clock-o"></i>
+            <h4 class="mb-2">Open Hours:</h4>
+            <p>Sunday-Friday:<br>11:00 AM - 23:00 PM</p>
+          </div>
+          <div class="email mt-4">
+            <i class="icon-envelope"></i>
+            <h4 class="mb-2">Email:</h4>
+            <p>info@example.com</p>
+          </div>
+          <div class="phone mt-4">
+            <i class="icon-phone"></i>
+            <h4 class="mb-2">Call:</h4>
+            <p>+1 1234 55488 55</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-8" data-aos="fade-up" data-aos-delay="200">
+        {{ form_start(form, { 'action': path('reclamation_contact'), 'method': 'POST' }) }}
+        <div class="row">
+          <div class="col-12 mb-3">
+            {{ form_label(form.category) }}
+            {{ form_widget(form.category, {'attr': {'class': 'form-select'}}) }}
+            {{ form_errors(form.category) }}
+          </div>
+          <div class="col-12 mb-3">
+            {{ form_label(form.issue) }}
+            {{ form_widget(form.issue, {'attr': {'class': 'form-control', 'rows': '6'}}) }}
+            {{ form_errors(form.issue) }}
+          </div>
+
+          <div class="col-12 text-center mt-3">
+            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2">
+              ✅ Envoyer la réclamation
+            </button>
+          </div>
+        </div>
+        {{ form_end(form) }}
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block javascripts %}
   {{ parent() }}
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      {% for message in app.flashes('success') %}
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    {% for label, messages in app.flashes %}
+      {% for message in messages %}
         Swal.fire({
-          icon: 'success',
-          title: 'Succès !',
-          text: '{{ message }}',
-          confirmButtonColor: '#3085d6'
+          icon: '{{ label == "success" ? "success" : "error" }}',
+          title: '{{ label == "success" ? "Succès !" : "Erreur !" }}',
+          text: {{ message|json_encode|raw }},
+          confirmButtonColor: '{{ label == "success" ? "#3085d6" : "#d33" }}'
         });
       {% endfor %}
+    {% endfor %}
+  });
+</script>
 
-      {% for message in app.flashes('error') %}
-        Swal.fire({
-          icon: 'error',
-          title: 'Erreur !',
-          text: '{{ message }}',
-          confirmButtonColor: '#d33'
-        });
-      {% endfor %}
-    });
-  </script>
 {% endblock %}

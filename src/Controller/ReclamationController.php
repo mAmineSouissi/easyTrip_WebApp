@@ -76,22 +76,21 @@ public function search(Request $request, ReclamationRepository $reclamationRepos
 }
 
 
-    #[Route('/contact', name: 'reclamation_contact', methods: ['GET', 'POST'])]
+#[Route('/contact', name: 'reclamation_contact', methods: ['GET', 'POST'])]
 public function contact(Request $request, EntityManagerInterface $em): Response
 {
-    $reclamation = new Reclamation();
-
-    /** @var User $user */
+    // ✅ Vérifie si l'utilisateur est connecté
     $user = $this->getUser();
-    $role = $this->getUserRole($user);
-
-    $reclamation->setDate(new \DateTime());
-
-    if ($role === 'agent') {
-        $reclamation->setStatus('En attente');
+    if (!$user) {
+        $this->addFlash('error', '⚠️ Vous devez être connecté pour envoyer une réclamation.');
+        return $this->redirectToRoute('app_login'); // ou une autre route publique
     }
 
-    // Création du formulaire (is_edit = false → création)
+    $reclamation = new Reclamation();
+    $reclamation->setDate(new \DateTime());
+    $reclamation->setStatus('En attente');
+    $reclamation->setUser($user); // Lier l'utilisateur
+
     $form = $this->createForm(ReclamationType::class, $reclamation, [
         'is_edit' => false
     ]);
@@ -99,24 +98,19 @@ public function contact(Request $request, EntityManagerInterface $em): Response
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
-        // 🔒 Liste des mots interdits
-        $forbiddenWords = [
-            'fuck', 'pute', 'con', 'spam', 'arnaque', 'merde', 'salope', 'idiot', 'stupid'
-        ];
-
-        // 🔍 Nettoyage du texte
+        // 🔍 Vérifie les mots interdits
         $issueText = strtolower(trim($reclamation->getIssue()));
         $issueText = preg_replace('/[^\p{L}\p{N}\s]/u', '', $issueText);
 
+        $forbiddenWords = ['fuck', 'pute', 'merde', 'con', 'arnaque', 'spam', 'salope', 'stupid'];
+
         foreach ($forbiddenWords as $word) {
-            $pattern = '/\b' . preg_quote($word, '/') . '\b/i';
-            if (preg_match($pattern, $issueText)) {
+            if (preg_match('/\b' . preg_quote($word, '/') . '\b/i', $issueText)) {
                 $this->addFlash('error', '❌ Votre message contient des mots interdits.');
                 return $this->redirectToRoute('reclamation_contact');
             }
         }
 
-        $reclamation->setUser($user);
         $em->persist($reclamation);
         $em->flush();
 
@@ -130,59 +124,57 @@ public function contact(Request $request, EntityManagerInterface $em): Response
 }
 
 
-    #[Route('/new', name: 'reclamation_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em): Response
-    {
-        $reclamation = new Reclamation();
-        $user = $this->getUser();
-        $role = $this->getUserRole($user);
-        $reclamation->setDate(new \DateTime());
-    
-        if ($role === 'agent') {
-            $reclamation->setStatus('En attente');
-        }
-    
-        // 💥 Ici on ignore le form handleRequest, on prend brut
-        if ($request->isMethod('POST')) {
-            $data = $request->request->all();
-    
-            // 🔥 Accès direct au champ texte
-            $issueText = strtolower(trim($data['reclamation']['issue'] ?? ''));
-            $issueText = preg_replace('/[^\p{L}\p{N}\s]/u', '', $issueText);
-    
-            $forbiddenWords = ['fuck', 'pute', 'merde', 'con', 'arnaque', 'spam'];
-    
-            foreach ($forbiddenWords as $word) {
-                if (preg_match('/\b' . preg_quote($word, '/') . '\b/i', $issueText)) {
-                    $this->addFlash('danger', '❌ Message bloqué : mot interdit détecté.');
-                    return $this->redirectToRoute('reclamation_new');
-                }
-            }
-    
-            // Si tout est bon, traitement normal avec formulaire
-            $form = $this->createForm(ReclamationType::class, $reclamation, [
-                'is_edit' => false
-            ]);
-            $form->handleRequest($request);
-    
-            if ($form->isSubmitted() && $form->isValid()) {
-                $reclamation->setUser($user);
-                $em->persist($reclamation);
-                $em->flush();
-    
-                $this->addFlash('success', '✅ Réclamation enregistrée sans mot interdit.');
-                return $this->redirectToRoute('reclamation_index');
+
+#[Route('/new', name: 'reclamation_new', methods: ['GET', 'POST'])]
+public function new(Request $request, EntityManagerInterface $em): Response
+{
+    $reclamation = new Reclamation();
+    $reclamation->setDate(new \DateTime());
+
+    $user = $this->getUser();
+    $role = $this->getUserRole($user);
+
+    $form = $this->createForm(ReclamationType::class, $reclamation, [
+        'is_edit' => false
+    ]);
+
+    $form->handleRequest($request);
+
+    if ($request->isMethod('POST')) {
+        // 🔍 Vérification des mots interdits
+        $data = $request->request->all();
+        $issueText = strtolower(trim($data['reclamation']['issue'] ?? ''));
+        $issueText = preg_replace('/[^\p{L}\p{N}\s]/u', '', $issueText);
+        $forbiddenWords = ['fuck', 'pute', 'merde', 'con', 'arnaque', 'spam'];
+
+        foreach ($forbiddenWords as $word) {
+            if (preg_match('/\b' . preg_quote($word, '/') . '\b/i', $issueText)) {
+                $this->addFlash('danger', '❌ Message bloqué : mot interdit détecté.');
+                return $this->redirectToRoute('reclamation_new');
             }
         }
-    
-        $form = $this->createForm(ReclamationType::class, $reclamation, [
-            'is_edit' => false
-        ]);
-    
-        return $this->render("reclamation/{$role}/new.html.twig", [
-            'form' => $form->createView(),
-        ]);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            // ✅ LIGNE CLÉ pour éviter le NULL sur "status"
+            if ($reclamation->getStatus() === null || $reclamation->getStatus() === '') {
+                $reclamation->setStatus('En attente');
+            }
+
+            $reclamation->setUser($user);
+            $em->persist($reclamation);
+            $em->flush();
+
+            $this->addFlash('success', '✅ Réclamation enregistrée sans mot interdit.');
+            return $this->redirectToRoute('reclamation_index');
+        }
     }
+
+    return $this->render("reclamation/{$role}/new.html.twig", [
+        'form' => $form->createView(),
+    ]);
+}
+
     
     
     #[Route('/{id}', name: 'reclamation_show', methods: ['GET'])]
@@ -226,21 +218,19 @@ public function edit(Request $request, Reclamation $reclamation, EntityManagerIn
     ]);
 }
 
+#[Route('/{id}', name: 'reclamation_delete', methods: ['POST'])]
+public function delete(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
+{
+    if ($this->isCsrfTokenValid('delete' . $reclamation->getId(), $request->request->get('_token'))) {
+        $em->remove($reclamation);
+        $em->flush();
 
-    #[Route('/{id}', name: 'reclamation_delete', methods: ['POST'])]
-    public function delete(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
-    {
-        if ($this->isCsrfTokenValid('delete' . $reclamation->getId(), $request->request->get('_token'))) {
-            $em->remove($reclamation);
-            $em->flush();
+        $this->addFlash('danger', '🗑️ Réclamation supprimée avec succès.');
+    }
 
-            $this->addFlash('danger', '🗑️ Réclamation supprimée avec succès.');
-        }
+    return $this->redirectToRoute('reclamation_index');
+}
 
-        return $this->redirectToRoute('reclamation_edit', [
-            'id' => $reclamation->getId(),
-        ]);
-            }
 
     #[Route('/{id}/send-sms', name: 'reclamation_send_sms', methods: ['GET'])]
     public function sendSmsManual(int $id, ReclamationRepository $repo, SmsService $smsService): Response
@@ -289,12 +279,13 @@ public function edit(Request $request, Reclamation $reclamation, EntityManagerIn
             throw $this->createNotFoundException('Réclamation introuvable');
         }
 
+        
         $email = (new Email())
-            ->from('oussema.msehli@esprit.tn')
-            ->to($reclamation->getUser()?->getEmail() ?? 'oussema.msehli@esprit.tn')
-            ->subject('📬 Suivi de votre réclamation')
-            ->html("<p>Bonjour,</p><p>Un administrateur vient de vous envoyer une notification liée à votre réclamation : <strong>{$reclamation->getIssue()}</strong>.</p><p><strong>Statut actuel :</strong> {$reclamation->getStatus()}</p><hr><p>L’équipe EasyTrip</p>");
-
+        ->from('omsehli@gmail.com')
+        ->to($reclamation->getUser()?->getEmail() ?? 'oussema.msehli@esprit.tn')
+        ->subject('📬 Suivi de votre réclamation')
+        ->html("<p>Bonjour,</p><p>Un administrateur vient de vous envoyer une notification liée à votre réclamation : <strong>{$reclamation->getIssue()}</strong>.</p><p><strong>Statut actuel :</strong> {$reclamation->getStatus()}</p><hr><p>L’équipe EasyTrip</p>");
+        
         $mailer->send($email);
 
         $this->addFlash('success', '✉️ Email envoyé avec succès !');
