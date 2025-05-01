@@ -62,8 +62,9 @@ class Hotels
     #[ORM\JoinColumn(name: "promotion_id", referencedColumnName: "id", nullable: true)]
     private ?Promotion $promotion = null;
 
-    #[ORM\Column(type: "integer", nullable: true)]
-    private ?int $agency_id = null;
+    #[ORM\ManyToOne(targetEntity: Agency::class)]
+    #[ORM\JoinColumn(name: "agency_id", referencedColumnName: "id", nullable: false)]
+    private ?Agency $agency = null;
 
     public function getIdHotel(): ?int
     {
@@ -190,14 +191,14 @@ class Hotels
         return $this;
     }
 
-    public function getAgencyId(): ?int
+    public function getAgency(): ?Agency
     {
-        return $this->agency_id;
+        return $this->agency;
     }
 
-    public function setAgencyId(?int $agency_id): self
+    public function setAgency(?Agency $agency): self
     {
-        $this->agency_id = $agency_id;
+        $this->agency = $agency;
         return $this;
     }
 }

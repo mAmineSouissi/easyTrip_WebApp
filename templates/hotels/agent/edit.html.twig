@@ -1,0 +1,198 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ hotel.id ? 'Modifier' : 'Créer un' }} Hôtel{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .hotel-form-container {
+        padding: 2rem;
+    }
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    .form-title {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .btn-back {
+        background-color: #6c757d;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .btn-back:hover {
+        background-color: #5a6268;
+        color: white;
+    }
+    .form-card {
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        padding: 2rem;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    .form-control {
+        border-radius: 0.25rem;
+        padding: 0.5rem 0.75rem;
+    }
+    .form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .btn-submit {
+        background-color: #28a745;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        border: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .btn-submit:hover {
+        background-color: #218838;
+    }
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="hotel-form-container">
+    <div class="form-header">
+        <h1 class="form-title">
+            <i class="fas fa-hotel"></i>
+            {{ hotel.id ? 'Modifier l\'hôtel' : 'Créer un nouvel hôtel' }}
+        </h1>
+        <a href="{{ path('app_hotel_index') }}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <div class="form-card">
+        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+            <div class="form-group">
+                {{ form_label(form.name) }}
+                {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.name) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.location) }}
+                {{ form_widget(form.location, {'attr': {'class': 'form-control'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.location) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.stars) }}
+                {{ form_widget(form.stars, {'attr': {'class': 'form-control'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.stars) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.price) }}
+                {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.price) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.description) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.description) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.image) }}
+                {{ form_widget(form.image, {'attr': {'class': 'form-control'}}) }}
+                <div class="form-text">
+                    Formats acceptés : JPG, PNG, GIF. Taille maximale : 2MB
+                </div>
+                <div class="invalid-feedback">
+                    {{ form_errors(form.image) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.amenities) }}
+                {{ form_widget(form.amenities, {'attr': {'class': 'form-control'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.amenities) }}
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-submit">
+                <i class="fas fa-save"></i>
+                {{ hotel.id ? 'Modifier' : 'Créer' }}
+            </button>
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation des champs en temps réel
+    const form = document.querySelector('form');
+    const inputs = form.querySelectorAll('input, textarea, select');
+
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.checkValidity()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+            }
+        });
+
+        input.addEventListener('blur', function() {
+            if (!this.checkValidity()) {
+                this.classList.add('is-invalid');
+            }
+        });
+    });
+
+    // Validation du formulaire avant soumission
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+});
+</script>
+{% endblock %} 
