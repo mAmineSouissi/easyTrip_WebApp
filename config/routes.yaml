@@ -7,3 +7,13 @@ controllers:
 connect_google_check:
     path: /connect/google/check
     controller: App\Controller\OAuthController::checkGoogle
+
+chatbot_interface:
+    path: /chatbot
+    controller: App\Controller\ChatbotController::index
+    methods: GET
+
+chatbot_message:
+    path: /api/chatbot/message
+    controller: App\Controller\ChatbotController::processMessage
+    methods: POST
