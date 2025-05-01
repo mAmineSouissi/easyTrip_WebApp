@@ -14,12 +14,20 @@ use Symfony\Component\HttpClient\HttpClient;
 #[Route('/voyages')]
 class ClientTicketsController extends AbstractController
 {
+    /**
+     * Display and handle the ticket search form, showing filtered results.
+     *
+     * @param Request $request
+     * @param EntityManagerInterface $entityManager
+     * @return Response
+     */
     #[Route('/', name: 'app_client_tickets_index', methods: ['GET', 'POST'])]
     public function index(Request $request, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(TicketSearchType::class);
         $form->handleRequest($request);
 
+        /** @var \Doctrine\ORM\QueryBuilder $queryBuilder */
         $queryBuilder = $entityManager
             ->getRepository(Tickets::class)
             ->createQueryBuilder('t');
@@ -61,7 +69,13 @@ class ClientTicketsController extends AbstractController
         ]);
     }
 
-    #[Route('/{idTicket}', name: 'app_client_tickets_show', methods: ['GET'])]
+    /**
+     * Display details of a specific ticket, including weather data for the arrival city.
+     *
+     * @param Tickets $ticket
+     * @return Response
+     */
+    #[Route('/{idTicket}', name: 'app_client_tickets_show', methods: ['GET'], requirements: ['idTicket' => '\d+'])]
     public function show(Tickets $ticket): Response
     {
         // Fetch weather data for the arrival city
@@ -92,6 +106,12 @@ class ClientTicketsController extends AbstractController
         ]);
     }
 
+    /**
+     * Display statistics about tickets, including class distribution, top destinations, and monthly prices.
+     *
+     * @param EntityManagerInterface $entityManager
+     * @return Response
+     */
     #[Route('/statistiques', name: 'app_client_tickets_statistics', methods: ['GET'])]
     public function statistics(EntityManagerInterface $entityManager): Response
     {
@@ -102,6 +122,9 @@ class ClientTicketsController extends AbstractController
              GROUP BY t.ticketClass"
         )->getResult();
 
+        // Ensure classStats is always an array
+        $classStats = is_array($classStats) ? $classStats : [];
+
         // Statistiques par ville de destination
         $cityStats = $entityManager->createQuery(
             "SELECT t.arrivalCity as city, COUNT(t.idTicket) as count 
@@ -111,7 +134,10 @@ class ClientTicketsController extends AbstractController
         )->setMaxResults(5)
          ->getResult();
 
-        // Prix moyen par mois (version corrigée avec SUBSTRING)
+        // Ensure cityStats is always an array
+        $cityStats = is_array($cityStats) ? $cityStats : [];
+
+        // Prix moyen par mois
         $monthlyStats = $entityManager->createQuery(
             "SELECT SUBSTRING(t.departureDate, 6, 2) as month, AVG(t.price) as avgPrice 
              FROM App\Entity\Tickets t 
@@ -120,13 +146,13 @@ class ClientTicketsController extends AbstractController
              ORDER BY month"
         )->getResult();
 
-        // Conversion des mois en nombres pour le traitement
-        $monthlyStats = array_map(function($item) {
+        // Ensure monthlyStats is always an array and convert month to integer
+        $monthlyStats = is_array($monthlyStats) ? array_map(function($item) {
             return [
-                'month' => (int)$item['month'],
-                'avgPrice' => $item['avgPrice']
+                'month' => (int)($item['month'] ?? 0),
+                'avgPrice' => (float)($item['avgPrice'] ?? 0)
             ];
-        }, $monthlyStats);
+        }, $monthlyStats) : [];
 
         return $this->render('client_tickets/statistics.html.twig', [
             'classStats' => $classStats,

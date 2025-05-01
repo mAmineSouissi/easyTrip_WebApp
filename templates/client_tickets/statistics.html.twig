@@ -40,6 +40,9 @@
             <i class="fas fa-chart-bar me-2"></i> Statistiques des vols
         </h1>
         <p class="lead">Visualisez les données de vos tickets de voyage</p>
+        <a href="{{ path('app_client_tickets_index') }}" class="btn btn-outline-primary mt-3">
+            <i class="fas fa-arrow-left me-1"></i> Retour aux vols
+        </a>
     </div>
 
     <!-- Cartes de statistiques -->
@@ -114,9 +117,14 @@
 
 {% block javascripts %}
 {{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Debug: Log data to console
+    console.log('Class Stats:', {{ classStats|json_encode|raw }});
+    console.log('City Stats:', {{ cityStats|json_encode|raw }});
+    console.log('Monthly Stats:', {{ monthlyStats|json_encode|raw }});
+
     // Chart colors
     const colors = {
         primary: '#0d6efd',
@@ -130,126 +138,163 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Répartition par classe
-    const classCtx = document.getElementById('classChart').getContext('2d');
-    new Chart(classCtx, {
-        type: 'doughnut',
-        data: {
-            labels: {{ classStats|map(item => item.class)|json_encode|raw }},
-            datasets: [{
-                data: {{ classStats|map(item => item.count)|json_encode|raw }},
-                backgroundColor: [
-                    colors.primary,
-                    colors.warning,
-                    colors.success
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.raw || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = Math.round((value / total) * 100);
-                            return `${label}: ${value} (${percentage}%)`;
+    try {
+        const classCtx = document.getElementById('classChart')?.getContext('2d');
+        if (!classCtx) {
+            console.error('Canvas element for classChart not found');
+            return;
+        }
+
+        const classData = {{ classStats|json_encode|raw }};
+        if (!classData || !Array.isArray(classData)) {
+            console.error('Invalid or empty classStats data:', classData);
+            return;
+        }
+
+        new Chart(classCtx, {
+            type: 'doughnut',
+            data: {
+                labels: classData.map(item => item.class || 'Unknown'),
+                datasets: [{
+                    data: classData.map(item => item.count || 0),
+                    backgroundColor: [colors.primary, colors.warning, colors.success],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total ? Math.round((value / total) * 100) : 0;
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
+    } catch (error) {
+        console.error('Error initializing classChart:', error);
+    }
 
     // Top 5 des destinations
-    const cityCtx = document.getElementById('cityChart').getContext('2d');
-    new Chart(cityCtx, {
-        type: 'bar',
-        data: {
-            labels: {{ cityStats|map(item => item.city)|json_encode|raw }},
-            datasets: [{
-                label: 'Nombre de vols',
-                data: {{ cityStats|map(item => item.count)|json_encode|raw }},
-                backgroundColor: [
-                    colors.primary,
-                    colors.success,
-                    colors.warning,
-                    colors.danger,
-                    colors.info
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
+    try {
+        const cityCtx = document.getElementById('cityChart')?.getContext('2d');
+        if (!cityCtx) {
+            console.error('Canvas element for cityChart not found');
+            return;
         }
-    });
 
-    // Prix moyen par mois
-    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-    new Chart(monthlyCtx, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
-            datasets: [{
-                label: 'Prix moyen (€)',
-                data: Array(12).fill(0).map((_, i) => {
-                    const monthData = {{ monthlyStats|json_encode|raw }}.find(item => item.month === i+1);
-                    return monthData ? Math.round(monthData.avgPrice * 100) / 100 : 0;
-                }),
-                backgroundColor: colors.primary + '20',
-                borderColor: colors.primary,
-                borderWidth: 3,
-                tension: 0.3,
-                fill: true,
-                pointBackgroundColor: colors.primary,
-                pointRadius: 5,
-                pointHoverRadius: 7
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    grid: {
-                        drawBorder: false
+        const cityData = {{ cityStats|json_encode|raw }};
+        if (!cityData || !Array.isArray(cityData)) {
+            console.error('Invalid or empty cityStats data:', cityData);
+            return;
+        }
+
+        new Chart(cityCtx, {
+            type: 'bar',
+            data: {
+                labels: cityData.map(item => item.city || 'Unknown'),
+                datasets: [{
+                    label: 'Nombre de vols',
+                    data: cityData.map(item => item.count || 0),
+                    backgroundColor: [colors.primary, colors.success, colors.warning, colors.danger, colors.info],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
                     }
                 },
-                x: {
-                    grid: {
+                plugins: {
+                    legend: {
                         display: false
                     }
                 }
+            }
+        });
+    } catch (error) {
+        console.error('Error initializing cityChart:', error);
+    }
+
+    // Prix moyen par mois
+    try {
+        const monthlyCtx = document.getElementById('monthlyChart')?.getContext('2d');
+        if (!monthlyCtx) {
+            console.error('Canvas element for monthlyChart not found');
+            return;
+        }
+
+        const monthlyData = {{ monthlyStats|json_encode|raw }};
+        if (!monthlyData || !Array.isArray(monthlyData)) {
+            console.error('Invalid or empty monthlyStats data:', monthlyData);
+            return;
+        }
+
+        const dataPoints = Array(12).fill(0).map((_, i) => {
+            const monthData = monthlyData.find(item => item.month === i + 1);
+            return monthData ? Math.round(monthData.avgPrice * 100) / 100 : 0;
+        });
+
+        new Chart(monthlyCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
+                datasets: [{
+                    label: 'Prix moyen (€)',
+                    data: dataPoints,
+                    backgroundColor: colors.primary + '20',
+                    borderColor: colors.primary,
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: colors.primary,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
             },
-            plugins: {
-                legend: {
-                    position: 'top',
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
                 }
             }
-        }
-    });
+        });
+    } catch (error) {
+        console.error('Error initializing monthlyChart:', error);
+    }
 });
 </script>
 {% endblock %}
