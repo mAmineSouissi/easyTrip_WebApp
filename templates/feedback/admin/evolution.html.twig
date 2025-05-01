@@ -47,6 +47,9 @@
       <a href="{{ path('feedback_pdf_evolution') }}" class="btn btn-dark rounded-pill">
         🧾 Télécharger le rapport PDF
       </a>
+      <button id="downloadChart" class="btn btn-outline-primary rounded-pill">
+    📥 Exporter en PNG
+  </button>
     </div>
 
   </div>
@@ -148,8 +151,15 @@
       createChart(document.getElementById('chartType').value, document.getElementById('timeRange').value);
     });
 
-    // Initialisation
     createChart('line', 'day');
   });
+
+  document.getElementById('downloadChart').addEventListener('click', function () {
+  const canvas = document.getElementById('feedbackChart');
+  const link = document.createElement('a');
+  link.download = 'graphique_feedbacks.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
 </script>
 {% endblock %}
