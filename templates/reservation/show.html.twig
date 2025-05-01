@@ -35,6 +35,13 @@
     </a>
 </div>
 
+{% if suggestedDate %}
+    <div class="alert alert-info">
+        📅 Date suggérée : <strong>{{ suggestedDate }}</strong>
+    </div>
+{% endif %}
+
+
 <table style="width: 90%; border-collapse: collapse; margin: 20px auto; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 8px; background-color: #fff;">
     <thead>
         <tr style="background-color: #e3d8c8; color: white; text-transform: uppercase;">

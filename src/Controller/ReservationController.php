@@ -11,12 +11,12 @@ use App\Form\ReservationType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-
+use App\Service\SlotSuggester;
 
 class ReservationController extends AbstractController
 {
     #[Route('/reservations', name: 'app_reservations')]
-public function show(ReservationRepository $reservationRepository, Request $request, PaginatorInterface $paginator): Response
+public function show(ReservationRepository $reservationRepository, Request $request, PaginatorInterface $paginator,SlotSuggester $slotSuggester): Response
 {
     $nom = $request->query->get('nom');
     $prenom = $request->query->get('prenom');
@@ -64,10 +64,11 @@ public function show(ReservationRepository $reservationRepository, Request $requ
    foreach ($reservations as $reservation) {
     $total += $prixUnitaire * $reservation->getPlaces();
    }
-
+   $suggestedDate = $slotSuggester->suggestDate();
    return $this->render('reservation/show.html.twig', [
        'pagination' => $pagination,
        'total' => $total,
+       'suggestedDate' => $suggestedDate,
    ]);
 }
 
@@ -159,6 +160,17 @@ public function facture(ReservationRepository $reservationRepository): Response
 
     return $this->render('reservation/facture.html.twig', [
         'reservations' => $reservations,
+    ]);
+}
+
+
+#[Route('/reserver', name: 'app_reservation')]
+public function reserver(Request $request, SlotSuggester $slotSuggester): Response
+{
+    $suggestedDate = $slotSuggester->suggestDate();
+
+    return $this->render('reservation/show.html.twig', [
+        'suggestedDate' => $suggestedDate,
     ]);
 }
 

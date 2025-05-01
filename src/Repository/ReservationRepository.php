@@ -25,5 +25,15 @@ class ReservationRepository extends ServiceEntityRepository
     }
     
 
+    public function countReservations(): array
+{
+    return $this->createQueryBuilder('r')
+        ->select('r.orderDate AS date', 'COUNT(r.id_reservation) AS reservation_count')
+        ->groupBy('r.orderDate')
+        ->orderBy('reservation_count', 'DESC')
+        ->getQuery()
+        ->getResult();
+}
+
     // Add custom methods as needed
 }
