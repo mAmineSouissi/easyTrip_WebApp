@@ -112,6 +112,16 @@ class HotelsController extends AbstractController
                     $hotel->setImage($newFilename);
                 }
 
+                // Treat form price as original price and apply discount if promotion exists
+                $originalPrice = $form->get('price')->getData();
+                if ($hotel->getPromotion() && $hotel->getPromotion()->getDiscountPercentage() > 0) {
+                    $discountPercentage = $hotel->getPromotion()->getDiscountPercentage();
+                    $discountedPrice = $originalPrice * (1 - $discountPercentage / 100);
+                    $hotel->setPrice($discountedPrice);
+                } else {
+                    $hotel->setPrice($originalPrice);
+                }
+
                 $this->entityManager->persist($hotel);
                 $this->entityManager->flush();
 
@@ -143,8 +153,45 @@ class HotelsController extends AbstractController
         $form = $this->createForm(HotelsType::class, $hotel);
         $form->handleRequest($request);
 
+        // Calculate original price for display
+        $originalPrice = $hotel->getPrice();
+        if ($hotel->getPromotion()) {
+            $discountPercentage = $hotel->getPromotion()->getDiscountPercentage();
+            if ($discountPercentage > 0) {
+                $originalPrice = $hotel->getPrice() / (1 - $discountPercentage / 100);
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             try {
+                $imageFile = $form->get('image')->getData();
+                if ($imageFile) {
+                    // Delete old image if exists
+                    if ($hotel->getImage()) {
+                        $oldImagePath = $this->getParameter('hotels_images_directory').'/'.$hotel->getImage();
+                        if (file_exists($oldImagePath)) {
+                            unlink($oldImagePath);
+                        }
+                    }
+                    // Upload new image
+                    $newFilename = uniqid().'.'.$imageFile->guessExtension();
+                    $imageFile->move(
+                        $this->getParameter('hotels_images_directory'),
+                        $newFilename
+                    );
+                    $hotel->setImage($newFilename);
+                }
+
+                // Treat form price as original price and apply discount if promotion exists
+                $originalPrice = $form->get('price')->getData();
+                if ($hotel->getPromotion() && $hotel->getPromotion()->getDiscountPercentage() > 0) {
+                    $discountPercentage = $hotel->getPromotion()->getDiscountPercentage();
+                    $discountedPrice = $originalPrice * (1 - $discountPercentage / 100);
+                    $hotel->setPrice($discountedPrice);
+                } else {
+                    $hotel->setPrice($originalPrice);
+                }
+
                 $this->entityManager->flush();
                 $this->addFlash('success', 'Hôtel modifié avec succès');
                 return $this->redirectToRoute('app_hotels_index');
@@ -157,6 +204,7 @@ class HotelsController extends AbstractController
         return $this->render('hotels/edit.html.twig', [
             'hotel' => $hotel,
             'form' => $form->createView(),
+            'original_price' => $originalPrice,
         ]);
     }
 
