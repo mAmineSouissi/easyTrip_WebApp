@@ -6,23 +6,11 @@
 <div class="section bg-light py-5">
   <div class="container">
 
-    <!-- 🔙 Retour -->
     <div class="mb-4 text-end">
       <a href="{{ path('gestion_test') }}" class="btn btn-secondary">
         ⬅️ Retour au dashboard
       </a>
     </div>
-
-    <!-- 🔍 Barre de recherche -->
-    <form method="get" class="row mb-4">
-      <div class="col-md-10">
-        <input type="text" name="search" value="{{ app.request.get('search') }}"
-               class="form-control" placeholder="🔍 Rechercher une offre (nom, destination...)">
-      </div>
-      <div class="col-md-2 text-end">
-        <button type="submit" class="btn btn-dark w-100">Rechercher</button>
-      </div>
-    </form>
 
     {% if topOffers is not empty %}
       <div class="card shadow-sm mb-4">
@@ -55,9 +43,17 @@
     {% endif %}
 
     <h2 class="mb-4 text-center">💼 Feedbacks sur vos Offres</h2>
+
+    <!-- ✅ Champ de recherche global -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <input type="text" id="global-search" class="form-control" placeholder="🔍 Rechercher une offre (nom, ville...)">
+      </div>
+    </div>
+
     <div class="row">
 
-      <!-- HÔTELS -->
+      <!-- HOTELS -->
       <div class="col-md-4">
         <h4 class="text-primary text-center">🏨 Hôtels</h4>
         <div id="hotel-list">
@@ -89,7 +85,7 @@
         <div id="ticket-pagination" class="text-center mt-3"></div>
       </div>
 
-      <!-- VOYAGES -->
+      <!-- TRAVELS -->
       <div class="col-md-4">
         <h4 class="text-info text-center">🌍 Voyages</h4>
         <div id="travel-list">
@@ -109,45 +105,63 @@
   </div>
 </div>
 
-<!-- ✅ PAGINATION JS MULTI-COLONNE (2 items / page avec style visible) -->
+<!-- ✅ SCRIPT GLOBAL SEARCH + PAGINATION -->
 <script>
-  function paginate(sectionId, paginationId, itemsPerPage = 2) {
-    const container = document.getElementById(sectionId);
-    const pagination = document.getElementById(paginationId);
-    const items = container.querySelectorAll('.card');
-    let currentPage = 1;
-    const totalPages = Math.ceil(items.length / itemsPerPage);
+  function setupSearchAndPagination(searchInputId, sectionIds, paginationIds, itemsPerPage = 2) {
+    const searchInput = document.getElementById(searchInputId);
 
-    function showPage(page) {
-      items.forEach((el, i) => {
-        el.style.display = (i >= (page - 1) * itemsPerPage && i < page * itemsPerPage) ? 'block' : 'none';
-      });
-      renderPagination(page);
+    function getFilteredItems(container, query) {
+      return Array.from(container.querySelectorAll('.card')).filter(card =>
+        card.innerText.toLowerCase().includes(query)
+      );
     }
 
-    function renderPagination(current) {
+    function showPage(container, pagination, items, page) {
+      const totalPages = Math.ceil(items.length / itemsPerPage);
+      container.querySelectorAll('.card').forEach(card => card.style.display = 'none');
+      items.forEach((card, index) => {
+        if (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) {
+          card.style.display = 'block';
+        }
+      });
+
+      renderPagination(pagination, totalPages, (newPage) => {
+        showPage(container, pagination, items, newPage);
+      });
+    }
+
+    function renderPagination(pagination, totalPages, onPageClick) {
       pagination.innerHTML = '';
       for (let i = 1; i <= totalPages; i++) {
         const btn = document.createElement('button');
         btn.textContent = i;
-        btn.className = 'btn btn-sm mx-1 ' + (i === current ? 'btn-primary text-white' : 'btn-outline-dark');
-        btn.addEventListener('click', () => {
-          currentPage = i;
-          showPage(i);
-        });
+        btn.className = 'btn btn-sm mx-1 ' + (i === 1 ? 'btn-primary text-white' : 'btn-outline-dark');
+        btn.addEventListener('click', () => onPageClick(i));
         pagination.appendChild(btn);
       }
     }
 
-    if (items.length > 0) {
-      showPage(currentPage);
+    function applySearch() {
+      const query = searchInput.value.toLowerCase();
+      sectionIds.forEach((sectionId, index) => {
+        const container = document.getElementById(sectionId);
+        const pagination = document.getElementById(paginationIds[index]);
+        const filteredItems = getFilteredItems(container, query);
+        showPage(container, pagination, filteredItems, 1);
+      });
     }
+
+    searchInput.addEventListener('input', applySearch);
+    applySearch(); // Initial
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
-    paginate('hotel-list', 'hotel-pagination', 2);
-    paginate('ticket-list', 'ticket-pagination', 2);
-    paginate('travel-list', 'travel-pagination', 2);
+  document.addEventListener('DOMContentLoaded', function () {
+    setupSearchAndPagination(
+      'global-search',
+      ['hotel-list', 'ticket-list', 'travel-list'],
+      ['hotel-pagination', 'ticket-pagination', 'travel-pagination'],
+      2
+    );
   });
 </script>
 {% endblock %}

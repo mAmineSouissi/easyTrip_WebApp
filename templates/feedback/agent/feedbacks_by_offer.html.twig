@@ -6,7 +6,6 @@
 <div class="section bg-light py-5">
   <div class="container">
 
-    <!-- 🔙 Retour -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>
         <i class="fa fa-comments text-info"></i>
@@ -17,30 +16,23 @@
       </a>
     </div>
 
-    <!-- 🔽 Formulaire de tri -->
-    <form method="get" class="row g-2 mb-4">
-      <input type="hidden" name="search" value="{{ app.request.get('search') }}">
-
-      <div class="col-md-4">
-        <select name="sort" class="form-select">
-          <option value="date" {{ app.request.get('sort') == 'date' ? 'selected' }}>📅 Date</option>
-          <option value="rating" {{ app.request.get('sort') == 'rating' ? 'selected' }}>⭐ Note</option>
-        </select>
-      </div>
-
-      <div class="col-md-3">
-        <select name="dir" class="form-select">
-          <option value="ASC" {{ app.request.get('dir') == 'ASC' ? 'selected' }}>⬆️ Croissant</option>
-          <option value="DESC" {{ app.request.get('dir') == 'DESC' ? 'selected' }}>⬇️ Décroissant</option>
-        </select>
-      </div>
-
-      <div class="col-md-2">
-        <button type="submit" class="btn btn-primary text-white w-100">🎯 Appliquer</button>
-      </div>
-    </form>
-
     {% if feedbacks is not empty %}
+      <div class="row g-2 mb-4">
+        <div class="col-md-4">
+          <select id="sort-select" class="form-select">
+            <option value="date">📅 Date</option>
+            <option value="rating">⭐ Note</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <select id="dir-select" class="form-select">
+            <option value="ASC">⬆️ Croissant</option>
+            <option value="DESC">⬇️ Décroissant</option>
+          </select>
+        </div>
+      </div>
+
       <div class="table-responsive">
         <table class="table table-bordered table-hover align-middle shadow-sm">
           <thead class="table-dark text-center">
@@ -52,14 +44,11 @@
             </tr>
           </thead>
           <tbody id="feedback-table-body">
-            {# Les lignes seront injectées ici par JavaScript #}
           </tbody>
         </table>
       </div>
 
-      <!-- 🔘 Pagination -->
       <div id="pagination" class="text-center mt-4"></div>
-
     {% else %}
       <div class="alert alert-warning text-center">
         🚫 Aucun feedback trouvé pour cette offre.
@@ -85,10 +74,23 @@
   const itemsPerPage = 5;
   let currentPage = 1;
 
-  function renderTable(page) {
+  function sortFeedbacks(sortKey, direction) {
+    return feedbacks.slice().sort((a, b) => {
+      if (sortKey === 'date') {
+        const d1 = new Date(a.date);
+        const d2 = new Date(b.date);
+        return direction === 'ASC' ? d1 - d2 : d2 - d1;
+      } else if (sortKey === 'rating') {
+        return direction === 'ASC' ? a.rating - b.rating : b.rating - a.rating;
+      }
+      return 0;
+    });
+  }
+
+  function renderTable(page, sorted) {
     const start = (page - 1) * itemsPerPage;
     const end = start + itemsPerPage;
-    const sliced = feedbacks.slice(start, end);
+    const sliced = sorted.slice(start, end);
 
     const tableBody = document.getElementById('feedback-table-body');
     tableBody.innerHTML = '';
@@ -106,7 +108,7 @@
     });
   }
 
-  function renderPagination(totalItems) {
+  function renderPagination(totalItems, sorted) {
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const container = document.getElementById('pagination');
     container.innerHTML = '';
@@ -117,16 +119,26 @@
       btn.className = 'btn btn-sm mx-1 ' + (i === currentPage ? 'btn-primary' : 'btn-outline-primary');
       btn.addEventListener('click', () => {
         currentPage = i;
-        renderTable(currentPage);
-        renderPagination(feedbacks.length);
+        renderTable(currentPage, sorted);
+        renderPagination(sorted.length, sorted);
       });
       container.appendChild(btn);
     }
   }
 
+  function updateDisplay() {
+    const sort = document.getElementById('sort-select').value;
+    const dir = document.getElementById('dir-select').value;
+    const sorted = sortFeedbacks(sort, dir);
+    currentPage = 1;
+    renderTable(currentPage, sorted);
+    renderPagination(sorted.length, sorted);
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
-    renderTable(currentPage);
-    renderPagination(feedbacks.length);
+    updateDisplay();
+    document.getElementById('sort-select').addEventListener('change', updateDisplay);
+    document.getElementById('dir-select').addEventListener('change', updateDisplay);
   });
 </script>
 {% endif %}
