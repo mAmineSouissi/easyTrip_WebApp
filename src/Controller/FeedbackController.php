@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\Feedback;
 use App\Entity\Hotels;
 use App\Entity\Tickets;
-use App\Entity\Offer_travel;
+use App\Entity\Offertravel;
 use App\Entity\User;
 use App\Form\FeedbackType;
 use App\Repository\FeedbackRepository;
@@ -53,7 +53,7 @@ class FeedbackController extends AbstractController
             );
 
             $travels = array_filter(
-                $em->getRepository(Offer_travel::class)->findBy(['user_id' => $agent]),
+                $em->getRepository(Offertravel::class)->findBy(['user_id' => $agent]),
                 fn($t) => !$query || stripos($t->getDeparture(), $query) !== false || stripos($t->getDestination(), $query) !== false
             );
 
@@ -89,7 +89,7 @@ class FeedbackController extends AbstractController
                         $label = $entity ? $entity->getDeparture_city() . ' ➔ ' . $entity->getArrival_city() : 'Ticket inconnu';
                         break;
                     case 'travel':
-                        $entity = $em->getRepository(Offer_travel::class)->find($entry['offer_id']);
+                        $entity = $em->getRepository(Offertravel::class)->find($entry['offer_id']);
                         $label = $entity ? $entity->getDeparture() . ' ➔ ' . $entity->getDestination() : 'Voyage inconnu';
                         break;
                 }
@@ -169,7 +169,7 @@ class FeedbackController extends AbstractController
                 $feedback->setTicket($entity);
                 break;
             case 'travel':
-                $entity = $em->getRepository(Offer_travel::class)->find($id);
+                $entity = $em->getRepository(Offertravel::class)->find($id);
                 if (!$entity) throw $this->createNotFoundException("Voyage introuvable.");
                 $feedback->setTravel($entity);
                 break;
