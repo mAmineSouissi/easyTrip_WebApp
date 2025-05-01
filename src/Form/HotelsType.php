@@ -59,7 +59,7 @@ class HotelsType extends AbstractType
                 ],
             ])
             ->add('price', NumberType::class, [
-                'label' => 'Prix par nuit (€)',
+                'label' => 'Prix original par nuit (€)',
                 'attr' => [
                     'class' => 'form-control',
                     'type' => 'number',

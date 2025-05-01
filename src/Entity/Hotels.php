@@ -65,20 +65,11 @@ class Hotels
     #[ORM\Column(type: "integer", nullable: true)]
     private ?int $agency_id = null;
 
-    #[ORM\OneToMany(mappedBy: "hotel", targetEntity: Webinaire::class)]
-    private Collection $webinaires;
-
-    public function __construct()
-    {
-        $this->webinaires = new ArrayCollection();
-    }
-
     public function getIdHotel(): ?int
     {
         return $this->id_hotel;
     }
 
-    // Alias pour compatibilité avec les templates utilisant hotel.id
     public function getId(): ?int
     {
         return $this->id_hotel;
@@ -150,11 +141,8 @@ class Hotels
         return $this;
     }
 
-    public function getOriginalPrice(): float
+    public function getOriginalPrice(): ?float
     {
-        if ($this->promotion) {
-            return $this->price / (1 - ($this->promotion->getDiscountPercentage() / 100));
-        }
         return $this->price;
     }
 
@@ -212,6 +200,4 @@ class Hotels
         $this->agency_id = $agency_id;
         return $this;
     }
-
-   
 }

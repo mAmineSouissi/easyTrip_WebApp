@@ -104,7 +104,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                {{ form_label(form.price, 'Prix par nuit (€)', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_label(form.price, 'Prix original par nuit (€)', {'label_attr': {'class': 'form-label'}}) }}
                                 {{ form_widget(form.price, {
                                     'attr': {
                                         'class': 'form-control',
@@ -179,7 +179,7 @@
                                             <span class="me-3"><strong>Réduction:</strong> 
                                             <span id="discount-display" class="fs-5 text-danger fw-bold">0%</span></span>
                                             
-                                            <span><strong>Nouveau prix:</strong> 
+                                            <span><strong>Prix réduit:</strong> 
                                             <span id="discounted-price-display" class="fs-5 fw-bold">0,00 €</span></span>
                                         </div>
                                     </div>
@@ -193,8 +193,7 @@
                                 {{ form_widget(form.image, {
                                     'attr': {
                                         'class': 'form-control',
-                                        'accept': 'image/*',
-                                        'required': 'required'
+                                        'accept': 'image/*'
                                     }
                                 }) }}
                                 <div class="form-text">Formats acceptés: JPG, PNG, max 2MB</div>
@@ -246,44 +245,44 @@ document.addEventListener('DOMContentLoaded', function() {
     let originalPrice = 0;
 
     function updatePriceDisplay(discountPercentage) {
-        if (discountPercentage) {
-            const discount = originalPrice * (parseFloat(discountPercentage) / 100);
-            const discountedPrice = originalPrice - discount;
-            priceInput.value = discountedPrice.toFixed(2);
-            
-            discountDisplay.textContent = discountPercentage + '%';
+        if (discountPercentage && !isNaN(originalPrice) && originalPrice > 0) {
+            const discount = parseFloat(discountPercentage);
+            const discountedPrice = originalPrice * (1 - discount / 100);
+            originalPriceDisplay.textContent = originalPrice.toFixed(2).replace('.', ',') + ' €';
+            discountDisplay.textContent = discount + '%';
             discountDisplay.classList.add('text-danger', 'fw-bold');
             discountDisplay.style.fontSize = '1.5rem';
-            
             discountedPriceDisplay.textContent = discountedPrice.toFixed(2).replace('.', ',') + ' €';
             discountedPriceDisplay.classList.add('text-success', 'fw-bold');
         } else {
-            priceInput.value = originalPrice.toFixed(2);
+            originalPriceDisplay.textContent = originalPrice.toFixed(2).replace('.', ',') + ' €';
             discountDisplay.textContent = '0%';
             discountDisplay.classList.remove('text-danger', 'fw-bold');
             discountDisplay.style.fontSize = '';
-            
             discountedPriceDisplay.textContent = originalPrice.toFixed(2).replace('.', ',') + ' €';
             discountedPriceDisplay.classList.remove('text-success', 'fw-bold');
         }
     }
 
-    priceInput.addEventListener('change', function() {
+    priceInput.addEventListener('input', function() {
         originalPrice = parseFloat(this.value) || 0;
-        originalPriceDisplay.textContent = originalPrice.toFixed(2).replace('.', ',') + ' €';
-        updatePriceDisplay(promotionSelect.options[promotionSelect.selectedIndex]?.getAttribute('data-discount'));
+        const selectedOption = promotionSelect.options[promotionSelect.selectedIndex];
+        const discountPercentage = selectedOption ? selectedOption.getAttribute('data-discount') : null;
+        updatePriceDisplay(discountPercentage);
     });
 
     promotionSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
-        const discountPercentage = selectedOption.getAttribute('data-discount');
+        const discountPercentage = selectedOption ? selectedOption.getAttribute('data-discount') : null;
         updatePriceDisplay(discountPercentage);
     });
 
+    // Initialize display
     if (priceInput.value) {
         originalPrice = parseFloat(priceInput.value) || 0;
-        originalPriceDisplay.textContent = originalPrice.toFixed(2).replace('.', ',') + ' €';
-        updatePriceDisplay(promotionSelect.options[promotionSelect.selectedIndex]?.getAttribute('data-discount'));
+        const selectedOption = promotionSelect.options[promotionSelect.selectedIndex];
+        const discountPercentage = selectedOption ? selectedOption.getAttribute('data-discount') : null;
+        updatePriceDisplay(discountPercentage);
     }
 });
 </script>
