@@ -1,0 +1,52 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Statistiques de Réservations</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <canvas id="barChart" height="200"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="pieChart" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const labels = {{ labels|json_encode|raw }};
+    const totals = {{ totals|json_encode|raw }};
+
+    new Chart(document.getElementById('barChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Réservations par date',
+                data: totals,
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        }
+    });
+
+    new Chart(document.getElementById('pieChart'), {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Réservations',
+                data: totals,
+                backgroundColor: labels.map((_, i) => `hsl(${i * 30}, 70%, 70%)`)
+            }]
+        }
+    });
+</script>
+<div style="text-align: left;padding-left: 10px; margin-bottom: 20px;">
+    <a href="{{ path('app_adminreservations') }}" style="padding: 8px 15px; background-color: #28a745; color: white; border-radius: 4px; text-decoration: none;">
+        <i class="bi bi-arrow-left me-1"></i> retour
+    </a>
+    </div>
+{% endblock %}

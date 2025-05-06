@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+	<div class="hero overlay">
+		<div class="img-bg rellax">
+			<img src="{{ asset('images/hero_2.jpg') }}" alt="Image" class="img-fluid">
+		</div>
+		<div class="container">
+			<div class="row align-items-center justify-content-start">
+				<div class="col-lg-6 mx-auto text-center">
+					<h1 class="heading" data-aos="fade-up">Modifier Réservation</h1>
+					<p data-aos="fade-up">Choisissez votre créneau et confirmez votre réservation en quelques étapes simples...</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'data-turbo': 'false'}}) }}
+	<div class="section">
+		<div class="container">
+			<div class="row">
+				<div class="col-12" data-aos="fade-up">
+					<h2 class="heading mb-5">Modifier réservation</h2>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-8" data-aos="fade-up" data-aos-delay="200">
+						<div class="row">
+							<div class="col-12 mb-3">
+                            {{ form_label(form.nom) }}
+							{{ form_widget(form.nom, { 'attr': { 'class': 'form-control', 'placeholder': 'Saisir ici votre nom ' } }) }}
+                            {{ form_errors(form.nom) }}
+							</div>
+
+							<div class="col-12 mb-3">
+                                {{ form_label(form.prenom) }}
+								{{ form_widget(form.prenom, { 'attr': { 'class': 'form-control', 'placeholder': 'Saisir ici votre prénom ' } }) }}
+                                {{ form_errors(form.prenom) }}
+							</div>
+
+							<div class="col-12 mb-3">
+                                {{ form_label(form.email) }}
+								{{ form_widget(form.email, { 'attr': { 'class': 'form-control', 'placeholder': 'Saisir ici votre e-mail ' } }) }}
+                                {{ form_errors(form.email) }}
+							</div>
+
+							<div class="row">
+							<div class="col-6 mb-3">
+								{{ form_label(form.phone) }}
+								{{ form_widget(form.phone, { 'attr': { 'class': 'form-control', 'placeholder': 'Saisir ici votre numéro de téléphone ' } }) }}
+                                {{ form_errors(form.phone) }}
+							</div>
+							<div class="col-6 mb-3">
+								{{ form_label(form.places) }}
+							    {{ form_widget(form.places, { 'attr': { 'class': 'form-control', 'placeholder': 'Saisir ici le nombre de places ' } }) }}
+                                {{ form_errors(form.places) }}
+							</div>
+                          <br><br> <br><br>
+							<div class="col-12">
+							  <a href="{{ path('app_reservations') }}" class="btn btn-primary">← Retour </a>
+                              <button class="btn btn-primary" >Modifier</button>
+							</div>
+						</div>
+				</div>
+			</div>
+		</div>
+	</div>
+ {{ form_end(form) }}
+<br>
+{% endblock %}

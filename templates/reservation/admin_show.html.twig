@@ -1,0 +1,107 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Reservation{% endblock %}
+
+{% block body %}
+<div class="container mt-10">
+    <h2 class="text-center mb-10">Réservations</h2>
+
+    <table id="usersTable" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Téléphone</th>
+                <th>Email</th>
+                <th>Places</th>
+            </tr>
+        </thead>
+        <tbody>
+         {% for reservation in reservations  %}
+            <tr>
+                <td>{{ reservation.orderDate|date('Y-m-d') }}</td>
+                <td>{{ reservation.nom }}</td>
+                <td>{{ reservation.prenom }}</td>
+                <td>{{ reservation.phone }}</td>
+                <td>{{ reservation.email }}</td>
+                <td>{{ reservation.places }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6">Aucune réservation trouvée.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <br><br>
+    <div style="text-align: right;padding-right: 120px; margin-bottom: 20px;">
+    <a href="{{ path('admin_statistiques_reservations') }}" style="padding: 8px 15px; background-color: #28a745; color: white; border-radius: 4px; text-decoration: none;">
+        <i class="bi bi-bar-chart me-1"></i> Voir statistique
+    </a>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="userForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="user-id">
+
+                    <div class="mb-3">
+                        <label for="user-name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="user-name" name="name" required>
+                        <div class="form-text text-muted">Enter the user's first name.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="user-surname" class="form-label">Surname</label>
+                        <input type="text" class="form-control" id="user-surname" name="surname" required>
+                        <div class="form-text text-muted">Enter the user's last name.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="user-email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="user-email" name="email" required>
+                        <div class="form-text text-muted">Provide a valid email address (e.g., example@domain.com).</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="user-phone" class="form-label">Phone</label>
+                        <input type="text" class="form-control" id="user-phone" name="phone" required>
+                        <div class="form-text text-muted">Include the phone number with area code.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="user-address" class="form-label">Address</label>
+                        <input type="text" class="form-control" id="user-address" name="address" required>
+                        <div class="form-text text-muted">Enter the user's full address (street, city, etc.).</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="user-role" class="form-label">Role</label>
+                        <select class="form-select" id="user-role" name="role" required>
+                            <option value="Agent">Agent</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Client">Client</option>
+                        </select>
+                        <div class="form-text text-muted">Select the appropriate user role.</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

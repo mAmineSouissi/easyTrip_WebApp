@@ -7,12 +7,14 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Entity\User;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Panier;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 class Reservation
 {
 
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
     private int $id_reservation;
 
@@ -26,7 +28,7 @@ class Reservation
     #[ORM\Column(type: "string", length: 255)]
     private string $status;
 
-    #[ORM\Column(type: "date")]
+    #[ORM\Column(type: "date", name: 'orderDate')]
     private \DateTimeInterface $orderDate;
 
     #[ORM\Column(type: "integer")]
@@ -36,18 +38,32 @@ class Reservation
     private int $hotel_id;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "Le nom est obligatoire !")]
     private string $nom;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire !")]
     private string $prenom;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "Le numéro de téléphone  est obligatoire !")]
+    #[Assert\Regex(
+        pattern: '/^\d{8}$/',
+        message: "Le téléphone doit être un nombre valide."
+    )]
     private string $phone;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "L'E-mail est obligatoire !")]
+    #[Assert\Email(message: "L'adresse e-mail '{{ value }}' n'est pas valide !")]
     private string $email;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "Le nombre de places est obligatoire !")]
+    #[Assert\Regex(
+    pattern: '/^\d+$/',
+    message: "Le nombre de places doit être valide !"
+     )]
     private string $places;
 
     public function getId_reservation()
