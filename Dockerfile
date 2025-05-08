@@ -60,7 +60,7 @@ RUN composer dump-autoload --optimize \
 # Set permissions
 RUN chown -R www-data:www-data /var/www/var \
     && chmod -R 777 /var/www/var \
-    && chmod +x /var/www/detect_face.py
+    && chmod +x /var/www/scripts/detect_face.py
 
 # Expose port
 EXPOSE 8000
