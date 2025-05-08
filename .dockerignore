@@ -2,7 +2,6 @@
 .gitignore
 node_modules
 vendor
-.env
 .env.local
 .env.*.local
 docker-compose.yml

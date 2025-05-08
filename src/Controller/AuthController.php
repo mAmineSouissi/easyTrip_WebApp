@@ -26,70 +26,50 @@ class AuthController extends AbstractController
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         ManagerRegistry $doctrine
+
     ): Response {
         $user = new User();
-    
+
         $form = $this->createForm(RegistrationType::class, $user);
         $form->handleRequest($request);
-    
+
         if ($form->isSubmitted() && $form->isValid()) {
             $em = $doctrine->getManager();
-    
-            // Hash the password
             $hashedPassword = $passwordHasher->hashPassword(
                 $user,
                 $form->get('password')->getData()
             );
             $user->setPassword($hashedPassword);
-    
-            // Handle profile photo upload
+
             $profilePhotoFile = $form->get('profilePhoto')->getData();
-    
+
             if ($profilePhotoFile) {
-                // Generate a unique filename to avoid collisions
-                $originalFilename = pathinfo($profilePhotoFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $originalFilename);
-                $extension = $profilePhotoFile->guessExtension();
-                $newFilename = uniqid() . '-' . $safeFilename . '.' . $extension;
-                
-                $profilesDirectory = $this->getParameter('profiles_directory');
-                
+                $newFilename = $profilePhotoFile->getClientOriginalName();
+
                 try {
-                    $profilePhotoFile->move($profilesDirectory, $newFilename);
+                    $profilePhotoFile->move(
+                        $this->getParameter('profiles_directory'),
+                        $newFilename
+                    );
                 } catch (FileException $e) {
-                    $this->addFlash('error', 'Failed to upload profile photo: ' . $e->getMessage());
+                    $this->addFlash('error', 'Failed to upload profile photo.');
                     return $this->redirectToRoute('app_register');
                 }
-    
-                // Absolute path to uploaded photo
-                $photoAbsolutePath = $profilesDirectory . '/' . $newFilename;
-    
-                // Run face detection
-                $hasFace = $this->detectFace($photoAbsolutePath);
-                
-                if (!$hasFace) {
-                    // Clean up the file if no face detected
-                    if (file_exists($photoAbsolutePath)) {
-                        unlink($photoAbsolutePath);
-                    }
-                    $this->addFlash('error', 'The profile photo must clearly show a face.');
-                    return $this->redirectToRoute('app_register');
-                }
-    
-                // Save the relative path for the database
-                // This assumes your web server is configured to serve files from 'profiles_directory'
-                // under the '/img/profile/' URL path
-                $photoUrl = '/img/profile/' . $newFilename;
+                $baseUrl = "http://localhost"; 
+                $photoUrl = $baseUrl . '/img/profile/' . $newFilename;
+
                 $user->setProfilePhoto($photoUrl);
+
+                $em->persist($user);
+                $em->flush();
+
+                return $this->redirectToRoute('app_home');
             }
-    
-            $em->persist($user);
-            $em->flush();
-    
-            $this->addFlash('success', 'Registration successful!');
-            return $this->redirectToRoute('app_home');
+
+            return $this->render('auth/register.html.twig', [
+                'form' => $form->createView(),
+            ]);
         }
-    
         return $this->render('auth/register.html.twig', [
             'form' => $form->createView(),
         ]);
