@@ -23,29 +23,28 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # 📁 Set working directory
 WORKDIR /var/www
 
-# ✅ Set Symfony environment variables (used during build + runtime)
+# ✅ Set Symfony environment variables
 ENV APP_ENV=prod
 ENV APP_DEBUG=0
 ENV COMPOSER_ALLOW_SUPERUSER=1
-# ENV COMPOSER_DISABLE_NETWORK=1
 
 # 📁 Copy all project files
 COPY . .
 
-# 📦 Install PHP dependencies using dist only (avoids SSH/git)
-RUN composer install --no-interaction --no-scripts --prefer-dist --optimize-autoloader
+# 📦 Install PHP dependencies and generate autoload files (important!)
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# ⚙️ Symfony cache warmup (safe fallback if fails)
-RUN php bin/console cache:clear --env=prod --no-interaction || true && \
-    php bin/console cache:warmup --env=prod --no-interaction || true
+# ⚙️ Symfony cache warmup
+RUN php bin/console cache:clear --env=prod --no-interaction || true \
+ && php bin/console cache:warmup --env=prod --no-interaction || true
 
-# 🔐 Set file permissions safely
+# 🔐 Set file permissions
 RUN mkdir -p /var/www/var \
  && chown -R www-data:www-data /var/www/var \
  && chmod -R 755 /var/www/var
 
-# 🌐 Expose port 8081
+# 🌐 Expose port
 EXPOSE 8081
 
-# 🚀 Start the Symfony server (on port 8081)
+# 🚀 Start the Symfony app
 CMD ["php", "-S", "0.0.0.0:8081", "-t", "public"]
