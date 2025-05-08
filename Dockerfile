@@ -37,7 +37,7 @@ WORKDIR /var/www
 COPY composer.json composer.lock ./
 
 # Install PHP dependencies
-RUN composer install --no-scripts --no-autoloader --no-dev
+RUN composer install --no-scripts --no-autoloader
 
 # Copy project files
 COPY . .
@@ -54,7 +54,7 @@ RUN /var/www/venv/bin/python -c "from huggingface_hub import hf_hub_download; hf
 RUN ln -sf /var/www/venv/bin/python3 /usr/local/bin/python-app
 
 # Generate optimized autoloader and run scripts
-RUN composer dump-autoload --optimize --no-dev \
+RUN composer dump-autoload --optimize \
     && composer run-script post-install-cmd
 
 # Set permissions
