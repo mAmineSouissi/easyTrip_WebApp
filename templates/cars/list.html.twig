@@ -1,0 +1,165 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des voitures{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="mb-4">
+        <h1 class="h2 mb-0">Liste des voitures disponibles</h1>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input type="text" id="search-input" class="form-control" placeholder="Rechercher par modèle ou emplacement...">
+                        <button class="btn btn-outline-secondary" type="button" id="voice-search-btn">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select id="seats-filter" class="form-select">
+                        <option value="">Nombre de sièges</option>
+                        <option value="2">2 sièges</option>
+                        <option value="4">4 sièges</option>
+                        <option value="5">5 sièges</option>
+                        <option value="7">7 sièges</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select id="price-filter" class="form-select">
+                        <option value="">Prix par jour</option>
+                        <option value="0-50">Moins de 50€</option>
+                        <option value="50-100">50€ - 100€</option>
+                        <option value="100-200">100€ - 200€</option>
+                        <option value="200+">Plus de 200€</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4" id="cars-container">
+        {% include 'cars/_cars_list.html.twig' with { cars: cars } %}
+    </div>
+</div>
+
+{# Widget Chatbot en bas à droite #}
+<div id="chatbot-widget" style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; width: 350px; max-width: 90vw;">
+    <a href="{{ path('chatbot_index') }}" style="text-decoration: none;">
+        <div class="chatbot-header" style="background: #ff6600; color: #fff; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+            <i class="fas fa-robot me-2"></i> Assistant EasyTrip
+        </div>
+    </a>
+    <div class="chatbot-body" style="display: none; background: #fff; border: 1px solid #ddd; border-top: none; border-radius: 0 0 10px 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <div class="chat-messages" id="chatbot-messages" style="height: 300px; overflow-y: auto; padding: 15px;">
+            <div class="message bot-message">
+                Bonjour ! Je suis votre assistant EasyTrip, propulsé par l'IA. Je peux vous aider à trouver la voiture idéale pour vos besoins. N'hésitez pas à me poser des questions sur :
+                <ul>
+                    <li>Les voitures disponibles</li>
+                    <li>Les caractéristiques spécifiques (sièges, prix, etc.)</li>
+                    <li>Les locations dans une ville particulière</li>
+                    <li>Des recommandations personnalisées</li>
+                </ul>
+            </div>
+        </div>
+        <div class="input-container" style="display: flex; gap: 5px; padding: 10px; border-top: 1px solid #eee;">
+            <input type="text" id="chatbot-input" class="form-control" placeholder="Posez votre question..." style="flex:1;">
+            <button id="chatbot-send" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        #chatbot-widget .chat-messages {
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        #chatbot-widget .message {
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+        }
+        #chatbot-widget .user-message {
+            background-color: #e3f2fd;
+            margin-left: 20%;
+            text-align: right;
+        }
+        #chatbot-widget .bot-message {
+            background-color: #f5f5f5;
+            margin-right: 20%;
+        }
+        #chatbot-widget .typing-indicator {
+            font-style: italic;
+            color: #666;
+        }
+        #chatbot-widget ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+        #chatbot-widget li {
+            margin: 4px 0;
+        }
+        #chatbot-widget .chatbot-header:hover {
+            background: #ff8533 !important;
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search-input');
+            const seatsFilter = document.getElementById('seats-filter');
+            const priceFilter = document.getElementById('price-filter');
+            const carsContainer = document.getElementById('cars-container');
+            let debounceTimer;
+
+            function updateFilters() {
+                const search = searchInput.value;
+                const seats = seatsFilter.value;
+                const price = priceFilter.value;
+
+                const params = new URLSearchParams();
+                if (search) params.append('search', search);
+                if (seats) params.append('seats', seats);
+                if (price) params.append('priceRange', price);
+
+                fetch(`/cars?${params.toString()}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    // Replace only the car list part
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    const newCars = tempDiv.querySelector('#cars-container');
+                    if (newCars) {
+                        carsContainer.innerHTML = newCars.innerHTML;
+                    }
+                });
+            }
+
+            searchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(updateFilters, 300);
+            });
+            seatsFilter.addEventListener('change', updateFilters);
+            priceFilter.addEventListener('change', updateFilters);
+        });
+    </script>
+{% endblock %}
+{% endblock %}

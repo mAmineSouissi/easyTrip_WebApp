@@ -1,0 +1,232 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier la réservation (Admin){% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .admin-form-title {
+            color: #2563eb;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .status-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .status-section h3 {
+            color: #2563eb;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            padding: 0.75rem;
+        }
+
+        .form-control:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        .btn-admin {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-admin-primary {
+            background: linear-gradient(145deg, #2563eb, #3b82f6);
+            color: white;
+            border: none;
+        }
+
+        .btn-admin-primary:hover {
+            background: linear-gradient(145deg, #1d4ed8, #2563eb);
+            transform: translateY(-1px);
+        }
+
+        .btn-admin-secondary {
+            background: #6b7280;
+            color: white;
+            border: none;
+        }
+
+        .btn-admin-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+
+        .reservation-info {
+            background: #f3f4f6;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 0.75rem;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #374151;
+            width: 150px;
+        }
+
+        .info-value {
+            color: #4b5563;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="admin-form-container">
+        <h1 class="admin-form-title">Modifier la réservation (Admin)</h1>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="reservation-info">
+            <div class="info-row">
+                <span class="info-label">ID Réservation:</span>
+                <span class="info-value">{{ reservation.id }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Utilisateur:</span>
+                <span class="info-value">Utilisateur #{{ reservation.user.id }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Voiture:</span>
+                <span class="info-value">{{ reservation.car.model }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Dates:</span>
+                <span class="info-value">
+                    Du {{ reservation.startDate|date('d/m/Y') }} au {{ reservation.endDate|date('d/m/Y') }}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Prix total:</span>
+                <span class="info-value">{{ reservation.totalPrice }}€</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Statut actuel:</span>
+                <span class="info-value">
+                    <span class="badge {% if reservation.status == 'Confirmée' %}bg-success{% elseif reservation.status == 'En attente' %}bg-warning{% else %}bg-danger{% endif %}">
+                        {{ reservation.status }}
+                    </span>
+                </span>
+            </div>
+        </div>
+
+        {{ form_start(form) }}
+            <div class="status-section">
+                <h3>Modifier le statut</h3>
+                <div class="form-group">
+                    {{ form_label(form.status) }}
+                    {{ form_widget(form.status, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.startDate) }}
+                {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.endDate) }}
+                {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.totalPrice) }}
+                {{ form_widget(form.totalPrice, {'attr': {'class': 'form-control', 'readonly': true}}) }}
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-admin btn-admin-primary">
+                    <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                </button>
+                <a href="{{ path('reservations_manage') }}" class="btn btn-admin btn-admin-secondary">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </a>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Price calculation
+    const startDateInput = document.querySelector('input[name="res_transport[startDate]"]');
+    const endDateInput = document.querySelector('input[name="res_transport[endDate]"]');
+    const totalPriceInput = document.querySelector('input[name="res_transport[totalPrice]"]');
+    const pricePerDay = {{ reservation.car.pricePerDay }};
+
+    function calculateTotalPrice() {
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        
+        if (startDate && endDate && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+            const diffTime = Math.abs(endDate - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            const totalPrice = pricePerDay * diffDays;
+            totalPriceInput.value = totalPrice.toFixed(2);
+        }
+    }
+
+    if (startDateInput && endDateInput && totalPriceInput) {
+        startDateInput.addEventListener('change', calculateTotalPrice);
+        endDateInput.addEventListener('change', calculateTotalPrice);
+        
+        // Calculate initial price if all fields are filled
+        if (startDateInput.value && endDateInput.value) {
+            calculateTotalPrice();
+        }
+    }
+});
+</script>
+{% endblock %} 

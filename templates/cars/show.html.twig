@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ car.model }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="modern-card">
+                <img src="{{ car.image }}" class="card-img-top" alt="{{ car.model }}" onerror="this.onerror=null; this.classList.add('error');">
+                <div class="card-body">
+                    <h1 class="h3 mb-3">{{ car.model }}</h1>
+                    <div class="mb-3">
+                        <span class="badge bg-primary me-2">{{ car.seats }} sièges</span>
+                        <span class="badge bg-info">{{ car.location }}</span>
+                    </div>
+                    <p class="card-text">
+                        <strong class="text-primary price-value" data-price="{{ car.pricePerDay }}">{{ car.pricePerDay }}€</strong> / jour
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="modern-card">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Localisation</h2>
+                    <div id="map"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <script>
+        mapboxgl.accessToken = '{{ mapbox_access_token }}';
+        
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: [{{ car.longitude }}, {{ car.latitude }}],
+            zoom: 12
+        });
+
+        // Add a marker at the car's location
+        new mapboxgl.Marker()
+            .setLngLat([{{ car.longitude }}, {{ car.latitude }}])
+            .setPopup(new mapboxgl.Popup().setHTML('<h3>{{ car.model }}</h3><p>{{ car.location }}</p>'))
+            .addTo(map);
+    </script>
+{% endblock %} 

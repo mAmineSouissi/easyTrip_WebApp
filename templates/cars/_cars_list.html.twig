@@ -1,0 +1,43 @@
+{% for car in cars %}
+    <div class="col-md-6 col-lg-4 car-item" 
+         data-model="{{ car.model|lower }}"
+         data-location="{{ car.location|lower }}"
+         data-seats="{{ car.seats }}"
+         data-price="{{ car.pricePerDay }}">
+        <div class="modern-card h-100">
+            <img src="{{ car.image }}" class="card-img-top" alt="{{ car.model }}" onerror="this.onerror=null; this.classList.add('error');">
+            <div class="card-body">
+                <h5 class="card-title">{{ car.model }}</h5>
+                <div class="mb-3">
+                    <span class="badge bg-primary me-2">{{ car.seats }} sièges</span>
+                    <span class="badge bg-info">{{ car.location }}</span>
+                </div>
+                <p class="card-text car-detail">
+                    <strong class="text-primary price-value" data-price="{{ car.pricePerDay }}">{{ car.pricePerDay }}€</strong> / jour
+                </p>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="btn-group">
+                        {% if car.reservations|length == 0 %}
+                            <a href="{{ path('reservations_new', {'car_id': car.id}) }}" class="btn btn-primary btn-modern">
+                                <i class="fas fa-calendar-plus me-1"></i>Réserver
+                            </a>
+                            <a href="{{ path('cars_show', {'id': car.id}) }}" class="btn btn-outline-primary btn-modern">
+                                <i class="fas fa-info-circle me-1"></i>Détails
+                            </a>
+                        {% else %}
+                            <button class="btn btn-secondary btn-modern" disabled>
+                                <i class="fas fa-ban me-1"></i>Indisponible
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>Aucune voiture disponible pour le moment.
+        </div>
+    </div>
+{% endfor %} 

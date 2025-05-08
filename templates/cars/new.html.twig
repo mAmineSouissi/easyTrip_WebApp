@@ -1,0 +1,215 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Ajouter une voiture{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        .car-form {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-control {
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            padding: 0.75rem;
+        }
+        .form-control:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+        }
+        .btn-primary {
+            background: linear-gradient(145deg, #2563eb, #3b82f6);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(145deg, #1d4ed8, #2563eb);
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: #6b7280;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+        .invalid-feedback {
+            display: block;
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        #map {
+            min-height: 400px;
+            width: 100%;
+            position: relative !important;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .mapboxgl-canvas {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="modern-card">
+                <div class="card-body">
+                    <h1 class="h3 mb-4">Ajouter une voiture</h1>
+                    {{ include('cars/_form.html.twig', {'editMode': false}) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mapElement = document.getElementById('map');
+            const locationInput = document.getElementById('location-input');
+            const latitudeInput = document.getElementById('latitude-input');
+            const longitudeInput = document.getElementById('longitude-input');
+            const searchButton = document.getElementById('search-button');
+
+            if (!mapElement || !locationInput || !latitudeInput || !longitudeInput) {
+                console.error('Required elements not found');
+                return;
+            }
+
+            mapboxgl.accessToken = 'pk.eyJ1IjoieWFzc2luZTIwMDMiLCJhIjoiY205dzBvaTlmMG40ZjJrc2UwbGFvOHJ0MiJ9.koNv4itShOWxY5cyaPw0cQ';
+
+            const map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/streets-v12',
+                center: [10.1815, 36.8065],
+                zoom: 8
+            });
+
+            map.addControl(new mapboxgl.NavigationControl());
+
+            let marker = null;
+
+            function updateMarker(lngLat, placeName = null) {
+                if (marker) {
+                    marker.remove();
+                }
+
+                marker = new mapboxgl.Marker({
+                    draggable: true
+                })
+                .setLngLat(lngLat)
+                .addTo(map);
+
+                latitudeInput.value = lngLat.lat;
+                longitudeInput.value = lngLat.lng;
+
+                if (placeName) {
+                    locationInput.value = placeName;
+                }
+
+                // Handle marker drag events
+                marker.on('dragend', function() {
+                    const newLngLat = marker.getLngLat();
+                    latitudeInput.value = newLngLat.lat;
+                    longitudeInput.value = newLngLat.lng;
+
+                    // Get address for new position
+                    fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${newLngLat.lng},${newLngLat.lat}.json?access_token=${mapboxgl.accessToken}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.features && data.features[0]) {
+                                locationInput.value = data.features[0].place_name;
+                            }
+                        })
+                        .catch(console.error);
+                });
+            }
+
+            // Handle map clicks
+            map.on('click', function(e) {
+                updateMarker(e.lngLat);
+                
+                // Get address for clicked position
+                fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${e.lngLat.lng},${e.lngLat.lat}.json?access_token=${mapboxgl.accessToken}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.features && data.features[0]) {
+                            locationInput.value = data.features[0].place_name;
+                        }
+                    })
+                    .catch(console.error);
+            });
+
+            // Handle location search
+            function searchLocation() {
+                const searchText = locationInput.value.trim();
+                if (!searchText) return;
+
+                fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchText)}.json?access_token=${mapboxgl.accessToken}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.features && data.features[0]) {
+                            const [lng, lat] = data.features[0].center;
+                            const lngLat = { lng, lat };
+                            
+                            map.flyTo({
+                                center: [lng, lat],
+                                zoom: 14,
+                                essential: true
+                            });
+
+                            updateMarker(lngLat, data.features[0].place_name);
+                        }
+                    })
+                    .catch(console.error);
+            }
+
+            // Add search button click handler
+            if (searchButton) {
+                searchButton.addEventListener('click', searchLocation);
+            }
+
+            // Add location input handlers
+            locationInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchLocation();
+                }
+            });
+
+            locationInput.addEventListener('change', searchLocation);
+        });
+    </script>
+{% endblock %}

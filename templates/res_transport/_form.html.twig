@@ -1,0 +1,211 @@
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{{ form_start(form, {
+    'attr': {
+        'class': 'modern-form',
+        'id': 'reservation-form',
+        'data-turbo': 'false'
+    }
+}) }}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                {{ form_label(form.car) }}
+                {{ form_widget(form.car, {'attr': {'class': 'form-control', 'data-price': car ? car.pricePerDay : 0}}) }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form_label(form.startDate) }}
+                {{ form_widget(form.startDate, {
+                    'attr': {
+                        'class': 'form-control',
+                        'type': 'date',
+                        'min': 'now'|date('Y-m-d')
+                    }
+                }) }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form_label(form.endDate) }}
+                {{ form_widget(form.endDate, {
+                    'attr': {
+                        'class': 'form-control',
+                        'type': 'date',
+                        'min': 'now'|date('Y-m-d')
+                    }
+                }) }}
+            </div>
+
+            {% if form.status.vars.block_prefixes[1] == 'choice' %}
+            <div class="form-group mb-3">
+                {{ form_label(form.status) }}
+                {{ form_widget(form.status, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            {% endif %}
+
+            <div class="form-group mb-3">
+                {{ form_label(form.totalPrice) }}
+                {{ form_widget(form.totalPrice, {'attr': {'class': 'form-control', 'readonly': true}}) }}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label required">Location</label>
+                <div id="map" style="height: 400px; width: 100%; margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 8px; position: relative;"></div>
+                <div class="input-group">
+                    <input type="text" id="location-input" class="form-control" placeholder="Entrez une adresse ou cliquez sur la carte">
+                    <button class="btn btn-outline-secondary" type="button" id="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            {{ form_widget(form.latitude, {
+                'id': 'latitude-input',
+                'attr': {
+                    'class': 'd-none'
+                }
+            }) }}
+            {{ form_widget(form.longitude, {
+                'id': 'longitude-input',
+                'attr': {
+                    'class': 'd-none'
+                }
+            }) }}
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary">
+            {% if editMode %}
+                Modifier
+            {% else %}
+                Ajouter
+            {% endif %}
+        </button>
+        <a href="{{ path('reservations_list') }}" class="btn btn-secondary">Annuler</a>
+    </div>
+{{ form_end(form) }}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Price calculation
+    const carSelect = document.querySelector('select[name="res_transport[car]"]');
+    const startDateInput = document.querySelector('input[name="res_transport[startDate]"]');
+    const endDateInput = document.querySelector('input[name="res_transport[endDate]"]');
+    const totalPriceInput = document.querySelector('input[name="res_transport[totalPrice]"]');
+
+    function calculateTotalPrice() {
+        const pricePerDay = parseFloat(carSelect.options[carSelect.selectedIndex].dataset.price);
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        
+        if (pricePerDay && startDate && endDate && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+            const diffTime = Math.abs(endDate - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            const totalPrice = pricePerDay * diffDays;
+            totalPriceInput.value = totalPrice.toFixed(2);
+        }
+    }
+
+    if (carSelect && startDateInput && endDateInput && totalPriceInput) {
+        carSelect.addEventListener('change', calculateTotalPrice);
+        startDateInput.addEventListener('change', calculateTotalPrice);
+        endDateInput.addEventListener('change', calculateTotalPrice);
+        
+        // Calculate initial price if all fields are filled
+        if (carSelect.value && startDateInput.value && endDateInput.value) {
+            calculateTotalPrice();
+        }
+    }
+
+    // Map initialization
+    const mapElement = document.getElementById('map');
+    const locationInput = document.getElementById('location-input');
+    const latitudeInput = document.getElementById('latitude-input');
+    const longitudeInput = document.getElementById('longitude-input');
+    const searchButton = document.getElementById('search-button');
+    const car = {{ car|json_encode|raw }};
+
+    if (!mapElement || !locationInput || !latitudeInput || !longitudeInput || !searchButton) {
+        console.error('Required elements not found:', {
+            map: !!mapElement,
+            location: !!locationInput,
+            latitude: !!latitudeInput,
+            longitude: !!longitudeInput,
+            search: !!searchButton
+        });
+        return;
+    }
+
+    // Initialize map with car's coordinates or default to Tunis
+    const defaultCoords = {
+        lat: car?.latitude || 36.8065,
+        lng: car?.longitude || 10.1815
+    };
+
+    // Set Mapbox token directly
+    const mapboxToken = 'pk.eyJ1IjoieWFzc2luZTIwMDMiLCJhIjoiY205dzBvaTlmMG40ZjJrc2UwbGFvOHJ0MiJ9.koNv4itShOWxY5cyaPw0cQ';
+    
+    try {
+        // Initialize map
+        mapboxgl.accessToken = mapboxToken;
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [defaultCoords.lng, defaultCoords.lat],
+            zoom: 12
+        });
+
+        // Add navigation controls
+        map.addControl(new mapboxgl.NavigationControl());
+
+        // Add marker for car location
+        const marker = new mapboxgl.Marker()
+            .setLngLat([defaultCoords.lng, defaultCoords.lat])
+            .addTo(map);
+
+        // Update marker position when map is clicked
+        map.on('click', (e) => {
+            const { lng, lat } = e.lngLat;
+            marker.setLngLat([lng, lat]);
+            latitudeInput.value = lat;
+            longitudeInput.value = lng;
+            
+            // Reverse geocode to get location name
+            fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxToken}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.features && data.features.length > 0) {
+                        locationInput.value = data.features[0].place_name;
+                    }
+                });
+        });
+
+        // Search functionality
+        searchButton.addEventListener('click', () => {
+            const searchText = locationInput.value;
+            if (searchText) {
+                fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchText)}.json?access_token=${mapboxToken}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.features && data.features.length > 0) {
+                            const [lng, lat] = data.features[0].center;
+                            map.flyTo({
+                                center: [lng, lat],
+                                zoom: 12
+                            });
+                            marker.setLngLat([lng, lat]);
+                            latitudeInput.value = lat;
+                            longitudeInput.value = lng;
+                        }
+                    });
+            }
+        });
+    } catch (error) {
+        console.error('Error initializing map:', error);
+    }
+});
+</script>
+{% endblock %} 

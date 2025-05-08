@@ -1,0 +1,118 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gérer les voitures{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .car-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+        }
+        .modal-header {
+            background: #f8f9fa;
+            border-radius: 12px 12px 0 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .modal-footer {
+            background: #f8f9fa;
+            border-radius: 0 0 12px 12px;
+            border-top: 1px solid #e9ecef;
+        }
+        .car-info {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .car-info p {
+            margin: 0.5rem 0;
+        }
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .btn-delete:hover {
+            background: #bb2d3b;
+            color: white;
+        }
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .btn-cancel:hover {
+            background: #5c636a;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">Gestion des voitures</h1>
+        <a href="{{ path('cars_new') }}" class="btn btn-primary btn-modern">
+            <i class="fas fa-plus me-2"></i>Ajouter une voiture
+        </a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="row g-4">
+        {% for car in cars %}
+            <div class="col-md-6 col-lg-4">
+                <div class="modern-card h-100">
+                    <img src="{{ car.image }}" class="card-img-top" alt="{{ car.model }}" onerror="this.onerror=null; this.classList.add('error');">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ car.model }}</h5>
+                        <div class="mb-3">
+                            <span class="badge bg-primary me-2">{{ car.seats }} sièges</span>
+                            <span class="badge bg-info">{{ car.location }}</span>
+                        </div>
+                        <p class="card-text">
+                            <strong class="text-primary price-value" data-price="{{ car.pricePerDay }}">{{ car.pricePerDay }}€</strong> / jour
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="btn-group">
+                                <a href="{{ path('cars_edit', {'id': car.id}) }}" class="btn btn-outline-primary btn-modern">
+                                    <i class="fas fa-edit me-1"></i>Modifier
+                                </a>
+                                <form action="{{ path('cars_delete', {'id': car.id}) }}" method="post" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ car.id) }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-modern" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette voiture ?');">
+                                        <i class="fas fa-trash me-1"></i>Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>Aucune voiture enregistrée.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

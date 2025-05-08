@@ -64,6 +64,43 @@
         </a>
       </li>
 
+
+
+
+
+
+
+  <!-- CRUD Dropdown -->
+      <li class="nav-item">
+        <a class="nav-link text-white underline-hover d-flex justify-content-between align-items-center"
+           data-bs-toggle="collapse" href="#crudMenu2" role="button" aria-expanded="false" aria-controls="crudMenu2">
+          <span><i class="bi bi-gear-fill me-2 text-primary"></i>Cars and Res</span>
+          <i class="bi bi-chevron-down text-primary"></i>
+        </a>
+        <div class="collapse" id="crudMenu2">
+          <ul class="nav flex-column ms-3 mt-2">
+            <li class="nav-item">
+              <a class="nav-link text-white underline-hover" href="{{ path('cars_manage') }}">
+                <i class="bi bi-car-fill me-2 text-primary"></i> Cars Manage
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white underline-hover" href="{{ path('cars_new') }}">
+                <i class="bi bi-envelope-exclamation-fill me-2 text-primary"></i> New Car
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white underline-hover" href="{{ path('reservations_manage') }}">
+                <i class="bi bi-envelope-exclamation-fill me-2 text-primary"></i> Reservations Management
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
+
+
+
       <!-- Settings -->
       <li class="nav-item">
         <a class="nav-link text-white underline-hover" href="{{ path('admin_settings') }}">

@@ -1,0 +1,259 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes réservations{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .car-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .car-info {
+            display: flex;
+            align-items: center;
+        }
+        .status-badge {
+            min-width: 100px;
+            text-align: center;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <h1 class="mb-4">Mes réservations</h1>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" id="search-input" class="form-control" placeholder="Rechercher par modèle...">
+                        <button class="btn btn-outline-secondary" type="button" id="voice-search-btn">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select id="status-filter" class="form-select">
+                        <option value="">Tous les statuts</option>
+                        <option value="en attente">En attente</option>
+                        <option value="confirmée">Confirmée</option>
+                        <option value="annulée">Annulée</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select id="date-filter" class="form-select">
+                        <option value="">Toutes les dates</option>
+                        <option value="today">Aujourd'hui</option>
+                        <option value="week">Cette semaine</option>
+                        <option value="month">Ce mois</option>
+                        <option value="upcoming">À venir</option>
+                        <option value="past">Passées</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover" id="reservations-table">
+            <thead>
+                <tr>
+                    <th>Voiture</th>
+                    <th>Date de début</th>
+                    <th>Date de fin</th>
+                    <th>Statut</th>
+                    <th>Prix total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in res_transports %}
+                    <tr class="reservation-item"
+                        data-car="{{ reservation.car.model|lower }}"
+                        data-status="{{ reservation.status|lower }}"
+                        data-start-date="{{ reservation.startDate|date('Y-m-d') }}"
+                        data-end-date="{{ reservation.endDate|date('Y-m-d') }}">
+                        <td>
+                            <div class="car-info">
+                                <img src="{{ asset(reservation.car.image) }}" alt="{{ reservation.car.model }}" class="car-image" onerror="this.onerror=null; this.src='{{ asset('images/default-car.jpg') }}'">
+                                {{ reservation.car.model }}
+                            </div>
+                        </td>
+                        <td>{{ reservation.startDate|date('d/m/Y') }}</td>
+                        <td>{{ reservation.endDate|date('d/m/Y') }}</td>
+                        <td>
+                            <span class="badge bg-{{ reservation.status == 'Confirmée' ? 'success' : (reservation.status == 'En attente' ? 'warning' : 'danger') }} status-badge">
+                                {{ reservation.status }}
+                            </span>
+                        </td>
+                        <td>{{ reservation.totalPrice }}€</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{{ path('reservations_edit', {'id': reservation.id}) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="{{ path('reservations_delete', {'id': reservation.id}) }}" method="post" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">Aucune réservation trouvée.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const statusFilter = document.getElementById('status-filter');
+    const dateFilter = document.getElementById('date-filter');
+    const reservationItems = document.querySelectorAll('.reservation-item');
+
+    function filterReservations() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedStatus = statusFilter.value;
+        const selectedDate = dateFilter.value;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        reservationItems.forEach(reservation => {
+            const car = reservation.dataset.car;
+            const status = reservation.dataset.status;
+            const startDate = new Date(reservation.dataset.startDate);
+            const endDate = new Date(reservation.dataset.endDate);
+
+            let matchesSearch = true;
+            let matchesStatus = true;
+            let matchesDate = true;
+
+            // Search term filter
+            if (searchTerm) {
+                matchesSearch = car.includes(searchTerm);
+            }
+
+            // Status filter
+            if (selectedStatus) {
+                matchesStatus = status === selectedStatus;
+            }
+
+            // Date filter
+            if (selectedDate) {
+                switch (selectedDate) {
+                    case 'today':
+                        matchesDate = startDate <= today && endDate >= today;
+                        break;
+                    case 'week':
+                        const weekEnd = new Date(today);
+                        weekEnd.setDate(today.getDate() + 7);
+                        matchesDate = startDate <= weekEnd && endDate >= today;
+                        break;
+                    case 'month':
+                        const monthEnd = new Date(today);
+                        monthEnd.setMonth(today.getMonth() + 1);
+                        matchesDate = startDate <= monthEnd && endDate >= today;
+                        break;
+                    case 'upcoming':
+                        matchesDate = startDate > today;
+                        break;
+                    case 'past':
+                        matchesDate = endDate < today;
+                        break;
+                }
+            }
+
+            // Show/hide based on all filters
+            reservation.style.display = matchesSearch && matchesStatus && matchesDate ? '' : 'none';
+        });
+
+        // Show no results message if needed
+        const visibleReservations = Array.from(reservationItems).filter(r => r.style.display !== 'none');
+        const noResultsMessage = document.querySelector('.no-results-message');
+        
+        if (visibleReservations.length === 0) {
+            if (!noResultsMessage) {
+                const message = document.createElement('tr');
+                message.className = 'no-results-message';
+                message.innerHTML = '<td colspan="6" class="text-center">Aucun résultat trouvé.</td>';
+                document.querySelector('#reservations-table tbody').appendChild(message);
+            }
+        } else if (noResultsMessage) {
+            noResultsMessage.remove();
+        }
+    }
+
+    // Add event listeners
+    searchInput.addEventListener('input', filterReservations);
+    statusFilter.addEventListener('change', filterReservations);
+    dateFilter.addEventListener('change', filterReservations);
+
+    // Voice search functionality
+    if ('webkitSpeechRecognition' in window) {
+        const recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'fr-FR';
+
+        const voiceSearchBtn = document.getElementById('voice-search-btn');
+        voiceSearchBtn.addEventListener('click', () => {
+            try {
+                recognition.start();
+                voiceSearchBtn.classList.add('btn-primary');
+                voiceSearchBtn.classList.remove('btn-outline-secondary');
+            } catch (e) {
+                console.error('Error starting voice recognition:', e);
+            }
+        });
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            searchInput.value = transcript;
+            filterReservations();
+            voiceSearchBtn.classList.remove('btn-primary');
+            voiceSearchBtn.classList.add('btn-outline-secondary');
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Voice recognition error:', event.error);
+            voiceSearchBtn.classList.remove('btn-primary');
+            voiceSearchBtn.classList.add('btn-outline-secondary');
+        };
+
+        recognition.onend = () => {
+            voiceSearchBtn.classList.remove('btn-primary');
+            voiceSearchBtn.classList.add('btn-outline-secondary');
+        };
+    } else {
+        document.getElementById('voice-search-btn').style.display = 'none';
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,250 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la réservation{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .reservation-form {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-control {
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            padding: 0.75rem;
+        }
+        .form-control:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+        }
+        .btn-primary {
+            background: linear-gradient(145deg, #2563eb, #3b82f6);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(145deg, #1d4ed8, #2563eb);
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: #6b7280;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+        .invalid-feedback {
+            display: block;
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        #map {
+            min-height: 400px;
+            width: 100%;
+            position: relative !important;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .mapboxgl-canvas {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .car-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            object-fit: cover;
+        }
+        .car-info {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .modern-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .card-body {
+            padding: 2rem;
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-title {
+            margin-bottom: 2rem;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #444;
+        }
+
+        .status-field {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-field label {
+            color: #2563eb;
+            font-weight: 600;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="modern-card">
+                <div class="card-body">
+                    <h1 class="h3 mb-4">Modifier la réservation</h1>
+                    
+                    {% if car %}
+                        <div class="car-info">
+                            <img src="{{ car.image }}" alt="{{ car.model }}" class="car-image" onerror="this.onerror=null; this.src='{{ asset('images/default-car.jpg') }}';">
+                            <h5 class="mb-2">{{ car.model }}</h5>
+                            <p class="text-muted mb-0">Prix par jour: {{ car.pricePerDay }}€</p>
+                        </div>
+                    {% endif %}
+
+                    {{ include('res_transport/_form.html.twig', {'editMode': true}) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize date pickers
+    flatpickr(".datepicker", {
+        locale: "fr",
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        altInput: true,
+        altFormat: "j F Y",
+        monthSelectorType: "static"
+    });
+
+    // Price calculation
+    const carSelect = document.querySelector('select[name="res_transport[car]"]');
+    const startDateInput = document.querySelector('input[name="res_transport[startDate]"]');
+    const endDateInput = document.querySelector('input[name="res_transport[endDate]"]');
+    const totalPriceInput = document.querySelector('input[name="res_transport[totalPrice]"]');
+
+    function calculateTotalPrice() {
+        const pricePerDay = parseFloat(carSelect.options[carSelect.selectedIndex].dataset.price);
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        
+        if (pricePerDay && startDate && endDate && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+            const diffTime = Math.abs(endDate - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            const totalPrice = pricePerDay * diffDays;
+            totalPriceInput.value = totalPrice.toFixed(2);
+        }
+    }
+
+    if (carSelect && startDateInput && endDateInput && totalPriceInput) {
+        carSelect.addEventListener('change', calculateTotalPrice);
+        startDateInput.addEventListener('change', calculateTotalPrice);
+        endDateInput.addEventListener('change', calculateTotalPrice);
+        
+        // Calculate initial price if all fields are filled
+        if (carSelect.value && startDateInput.value && endDateInput.value) {
+            calculateTotalPrice();
+        }
+    }
+
+    // Map initialization
+    const mapElement = document.getElementById('map');
+    const locationInput = document.getElementById('location-input');
+    const latitudeInput = document.getElementById('latitude-input');
+    const longitudeInput = document.getElementById('longitude-input');
+    const searchButton = document.getElementById('search-button');
+    const car = {{ car|json_encode|raw }};
+
+    if (mapElement && locationInput && latitudeInput && longitudeInput && searchButton) {
+        const defaultCoords = {
+            lat: car?.latitude || 36.8065,
+            lng: car?.longitude || 10.1815
+        };
+
+        mapboxgl.accessToken = '{{ mapbox_access_token }}';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [defaultCoords.lng, defaultCoords.lat],
+            zoom: 12
+        });
+
+        map.addControl(new mapboxgl.NavigationControl());
+
+        const marker = new mapboxgl.Marker()
+            .setLngLat([defaultCoords.lng, defaultCoords.lat])
+            .addTo(map);
+
+        map.on('click', (e) => {
+            const { lng, lat } = e.lngLat;
+            marker.setLngLat([lng, lat]);
+            latitudeInput.value = lat;
+            longitudeInput.value = lng;
+            
+            fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.features && data.features[0]) {
+                        locationInput.value = data.features[0].place_name;
+                    }
+                });
+        });
+    }
+});
+</script>
+{% endblock %} 

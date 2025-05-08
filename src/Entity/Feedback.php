@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use App\Entity\Hotels;
 use App\Entity\Tickets;
-use App\Entity\Offer_travel;
+use App\Entity\OfferTravel;
 use App\Entity\User;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -35,9 +35,9 @@ class Feedback
     #[ORM\JoinColumn(name: "ticket_id", referencedColumnName: "id_ticket", nullable: true, onDelete: "SET NULL")]
     private ?Tickets $ticket = null;
 
-    #[ORM\ManyToOne(targetEntity: Offer_travel::class)]
+    #[ORM\ManyToOne(targetEntity: OfferTravel::class)]
     #[ORM\JoinColumn(name: "travel_id", referencedColumnName: "id", nullable: true, onDelete: "SET NULL")]
-    private ?Offer_travel $travel = null;
+    private ?OfferTravel $travel = null;
 
     #[ORM\ManyToOne(targetEntity: Hotels::class)]
     #[ORM\JoinColumn(name: "hotel_id", referencedColumnName: "id_hotel", nullable: true, onDelete: "SET NULL")]
@@ -70,10 +70,10 @@ class Feedback
 
     public function getTicket(): ?Tickets { return $this->ticket; }
     public function setTicket(?Tickets $ticket): static { $this->ticket = $ticket; return $this; }
-
-    public function getTravel(): ?Offer_travel { return $this->travel; }
-    public function setTravel(?Offer_travel $travel): static { $this->travel = $travel; return $this; }
-
+    
+    public function getTravel(): ?OfferTravel { return $this->travel; }
+    public function setTravel(?OfferTravel $travel): static { $this->travel = $travel; return $this; }
+    
     public function getUser(): ?User { return $this->user; }
     public function setUser(?User $user): static { $this->user = $user; return $this; }
 }

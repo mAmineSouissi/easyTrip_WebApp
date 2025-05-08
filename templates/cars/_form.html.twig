@@ -1,0 +1,59 @@
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{{ form_start(form, {
+    'attr': {
+        'class': 'modern-form',
+        'id': 'car-form',
+        'data-turbo': 'false'
+    }
+}) }}
+    <div class="row">
+        <div class="col-md-6">
+            {{ form_row(form.model) }}
+            {{ form_row(form.seats) }}
+            {{ form_row(form.price_per_day) }}
+            {{ form_row(form.image) }}
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label required">Localisation</label>
+                <div id="map" style="height: 400px; width: 100%; margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 8px; position: relative;"></div>
+                <div class="input-group">
+                    {{ form_widget(form.location, {
+                        'id': 'location-input',
+                        'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Entrez une adresse ou cliquez sur la carte'
+                        }
+                    }) }}
+                    <button class="btn btn-outline-secondary" type="button" id="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                {{ form_errors(form.location) }}
+            </div>
+            {{ form_widget(form.latitude, {
+                'id': 'latitude-input',
+                'attr': {
+                    'class': 'd-none'
+                }
+            }) }}
+            {{ form_widget(form.longitude, {
+                'id': 'longitude-input',
+                'attr': {
+                    'class': 'd-none'
+                }
+            }) }}
+        </div>
+    </div>
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary">
+            {% if editMode %}
+                Modifier
+            {% else %}
+                Ajouter
+            {% endif %}
+        </button>
+        <a href="{{ path('cars_list') }}" class="btn btn-secondary">Annuler</a>
+    </div>
+{{ form_end(form) }} 

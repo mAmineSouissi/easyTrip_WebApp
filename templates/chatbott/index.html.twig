@@ -1,0 +1,212 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Assistant EasyTrip{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .chat-messages {
+            height: 500px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            max-width: 80%;
+            position: relative;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: auto;
+            margin-right: 10px;
+        }
+        .bot-message {
+            background-color: #ffffff;
+            margin-right: auto;
+            margin-left: 10px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .input-container {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .input-container input {
+            flex: 1;
+            padding: 10px;
+        }
+        .chat-header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .chat-mode-selector {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .typing-indicator {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 10px;
+            margin-left: 10px;
+        }
+        .btn-mode {
+            margin: 0 5px;
+        }
+        .btn-mode.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1 class="mb-4">Assistant EasyTrip</h1>
+            <p class="text-muted">Propulsé par Gemini AI</p>
+        </div>
+
+        <div class="chat-mode-selector">
+            <button class="btn btn-outline-primary btn-mode active" data-mode="chat">
+                <i class="fas fa-comments"></i> Discussion générale
+            </button>
+            <button class="btn btn-outline-primary btn-mode" data-mode="car">
+                <i class="fas fa-car"></i> Recherche de voiture
+            </button>
+        </div>
+        
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot-message">
+                Bonjour ! Je suis votre assistant EasyTrip. Je peux vous aider de deux façons :
+                <ul>
+                    <li><strong>Discussion générale :</strong> Posez-moi n'importe quelle question</li>
+                    <li><strong>Recherche de voiture :</strong> Je vous aide à trouver la voiture idéale pour vos besoins</li>
+                </ul>
+                Que puis-je faire pour vous ?
+            </div>
+        </div>
+
+        <div class="input-container">
+            <input type="text" id="user-input" class="form-control" placeholder="Votre message...">
+            <button id="send-button" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chat-messages');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const modeButtons = document.querySelectorAll('.btn-mode');
+            let currentMode = 'chat';
+            let isTyping = false;
+
+            modeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    modeButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentMode = this.dataset.mode;
+                    
+                    // Update placeholder based on mode
+                    if (currentMode === 'chat') {
+                        userInput.placeholder = 'Posez votre question...';
+                        addMessage('Mode discussion générale activé. Je suis prêt à répondre à vos questions !', false);
+                    } else {
+                        userInput.placeholder = 'Décrivez la voiture que vous recherchez...';
+                        addMessage('Mode recherche de voiture activé. Dites-moi vos critères (lieu, nombre de sièges, budget...)', false);
+                    }
+                });
+            });
+
+            function addMessage(message, isUser = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+                messageDiv.innerHTML = message;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function addTypingIndicator() {
+                if (isTyping) return;
+                isTyping = true;
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'typing-indicator';
+                typingDiv.textContent = 'Assistant écrit...';
+                typingDiv.id = 'typing-indicator';
+                chatMessages.appendChild(typingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function removeTypingIndicator() {
+                const typingIndicator = document.getElementById('typing-indicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+                isTyping = false;
+            }
+
+            async function sendMessage() {
+                const message = userInput.value.trim();
+                if (!message) return;
+
+                userInput.value = '';
+                addMessage(message, true);
+                addTypingIndicator();
+
+                try {
+                    const endpoint = currentMode === 'chat' ? '/api/chatbot/chat' : '/api/chatbot/suggest-car';
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message: message
+                        })
+                    });
+
+                    const data = await response.json();
+                    removeTypingIndicator();
+                    
+                    if (data.status === 'success') {
+                        addMessage(data.message);
+                    } else {
+                        addMessage('Désolé, je rencontre des difficultés techniques. Veuillez réessayer.');
+                    }
+                } catch (error) {
+                    removeTypingIndicator();
+                    addMessage('Désolé, une erreur est survenue. Veuillez réessayer.');
+                    console.error('Error:', error);
+                }
+            }
+
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+{% endblock %} 

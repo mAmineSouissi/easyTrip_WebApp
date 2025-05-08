@@ -13,6 +13,8 @@ parameters:
     cities_directory: '%kernel.project_dir%/public/Uploads/cities'
     hotels_images_directory: '%uploads_directory%/hotels'
     openweathermap_api_key: '%env(OPENWEATHERMAP_API_KEY)%'
+    mapbox_access_token: '%env(MAPBOX_ACCESS_TOKEN)%'
+
 
 services:
     # default configuration for services in *this* file
@@ -37,3 +39,18 @@ services:
     # Explicitly configure the ChatbotService
     App\Service\ChatbotService:
         public: true
+
+ # Gemini service
+    App\Service\GeminiService:
+        arguments:
+            $apiKey: '%env(GEMINI_API_KEY)%'
+
+    # Google Maps service (kept for backward compatibility)
+    App\Service\GoogleMapsService:
+        arguments:
+            $apiKey: '%env(GOOGLE_MAPS_API_KEY)%'
+
+    # Mapbox service
+    App\Service\MapboxService:
+        arguments:
+            $accessToken: '%env(MAPBOX_ACCESS_TOKEN)%'

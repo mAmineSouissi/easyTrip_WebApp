@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nos Voitures{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1 class="mb-4">Nos Voitures</h1>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div id="map" 
+                     style="height: 500px; width: 100%;"
+                     data-mapbox-token="{{ mapbox_access_token }}"
+                     data-cars="{{ cars|json_encode|e('html_attr') }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="list-group">
+                    {% for car in cars %}
+                        <div class="list-group-item">
+                            <h5 class="mb-1">{{ car.model }}</h5>
+                            <p class="mb-1">{{ car.location }}</p>
+                            <p class="mb-1">{{ car.pricePerDay }}€/jour</p>
+                            <small>{{ car.seats }} places</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+{% endblock %}
