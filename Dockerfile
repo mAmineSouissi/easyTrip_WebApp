@@ -1,6 +1,7 @@
+# 🐘 Use PHP 8.2 with FPM
 FROM php:8.2-fpm
 
-# Install system dependencies for PHP and Python
+# 🧰 Install system dependencies for PHP + Python
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -16,54 +17,52 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
     python3-venv \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-    intl \
-    pdo \
-    pdo_mysql \
-    zip \
-    opcache \
-    gd \
-    xml \
-    mbstring
+ && docker-php-ext-configure gd --with-freetype --with-jpeg \
+ && docker-php-ext-install -j$(nproc) intl pdo pdo_mysql zip opcache gd xml mbstring \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Composer
+# 🎼 Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Set working directory
+# 📁 Set working directory
 WORKDIR /var/www
 
-# Copy composer files first to leverage Docker cache
+# 📦 Copy composer files first (better cache usage)
 COPY composer.json composer.lock ./
 
-# Install PHP dependencies
-RUN composer install --no-scripts --no-autoloader
+# ⚙️ Install PHP dependencies (no autoloader or scripts yet)
+RUN composer install --no-scripts --no-autoloader --no-interaction --no-progress
 
-# Copy project files
+# 📁 Copy full Symfony project
 COPY . .
 
-# Install Python dependencies in a virtual environment
+# 🐍 Setup Python virtual environment and install YOLO + dependencies
 RUN python3 -m venv /var/www/venv && \
     /var/www/venv/bin/pip install --upgrade pip && \
     /var/www/venv/bin/pip install --no-cache-dir ultralytics pillow huggingface_hub
 
-# Pre-download the YOLO model to avoid downloading at runtime
-RUN /var/www/venv/bin/python -c "from huggingface_hub import hf_hub_download; hf_hub_download(repo_id='arnabdhar/YOLOv8-Face-Detection', filename='model.pt', cache_dir='/var/www/.cache')"
+# 📥 Download YOLOv8 face detection model from HuggingFace
+RUN /var/www/venv/bin/python -c "from huggingface_hub import hf_hub_download; \
+    hf_hub_download(repo_id='arnabdhar/YOLOv8-Face-Detection', filename='model.pt', cache_dir='/var/www/.cache')"
 
-# Create a symlink to make the Python path easier to use in scripts
+# 🔗 Create shortcut to python3 for Symfony use
 RUN ln -sf /var/www/venv/bin/python3 /usr/local/bin/python-app
 
-# Generate optimized autoloader and run scripts
+# ⚙️ Set Symfony production environment
+ENV APP_ENV=prod
+
+# ⚙️ Generate autoloader and warmup Symfony cache
 RUN composer dump-autoload --optimize \
-    && composer run-script post-install-cmd
+ && php bin/console cache:clear --env=prod --no-interaction || true \
+ && php bin/console cache:warmup --env=prod --no-interaction || true
 
-# Set permissions
+# 🔐 Set secure permissions
 RUN chown -R www-data:www-data /var/www/var \
-    && chmod -R 777 /var/www/var \
-    && chmod +x /var/www/scripts/detect_face.py
+ && chmod -R 755 /var/www/var \
+ && chmod +x /var/www/scripts/detect_face.py
 
-# Expose port
+# 🌐 Expose port for Railway or Docker
 EXPOSE 8000
 
-# Start Symfony app using the built-in server
+# 🚀 Launch Symfony app using PHP's built-in web server
 CMD php -S 0.0.0.0:8000 -t public
