@@ -64,7 +64,7 @@ RUN mkdir -p /var/www/var /var/www/scripts \
  && chmod +x /var/www/scripts/detect_face.py
 
 # 🌐 Expose the port used by Symfony
-EXPOSE 8000
+EXPOSE 8081
 
 # 🚀 Start the Symfony server
-CMD php -S 0.0.0.0:8000 -t public
+CMD php -S 0.0.0.0:8081 -t public
