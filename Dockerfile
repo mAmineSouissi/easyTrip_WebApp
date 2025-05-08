@@ -1,7 +1,7 @@
-# 🐘 Use PHP 8.2 with FPM
+# 🐘 Base PHP image with FPM
 FROM php:8.2-fpm
 
-# 🧰 Install system dependencies for PHP + Python
+# 🧰 Install PHP and Python system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -27,42 +27,44 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # 📁 Set working directory
 WORKDIR /var/www
 
-# 📦 Copy composer files first (better cache usage)
+# 📦 Copy only composer files first (better Docker layer caching)
 COPY composer.json composer.lock ./
 
-# ⚙️ Install PHP dependencies (no autoloader or scripts yet)
+# ⚙️ Install PHP dependencies (scripts and autoload skipped at first)
 RUN composer install --no-scripts --no-autoloader --no-interaction --no-progress
 
-# 📁 Copy full Symfony project
+# 📁 Copy all project files
 COPY . .
 
-# 🐍 Setup Python virtual environment and install YOLO + dependencies
+# 🐍 Setup Python virtualenv and install YOLO dependencies
 RUN python3 -m venv /var/www/venv && \
     /var/www/venv/bin/pip install --upgrade pip && \
     /var/www/venv/bin/pip install --no-cache-dir ultralytics pillow huggingface_hub
 
-# 📥 Download YOLOv8 face detection model from HuggingFace
+# 📥 Download YOLOv8 model from HuggingFace
 RUN /var/www/venv/bin/python -c "from huggingface_hub import hf_hub_download; \
     hf_hub_download(repo_id='arnabdhar/YOLOv8-Face-Detection', filename='model.pt', cache_dir='/var/www/.cache')"
 
-# 🔗 Create shortcut to python3 for Symfony use
+# 🔗 Optional alias to make Python easier to call
 RUN ln -sf /var/www/venv/bin/python3 /usr/local/bin/python-app
 
-# ⚙️ Set Symfony production environment
+# 🌍 Set environment for Symfony
 ENV APP_ENV=prod
 
-# ⚙️ Generate autoloader and warmup Symfony cache
+# ⚙️ Dump autoload and warm Symfony cache
 RUN composer dump-autoload --optimize \
  && php bin/console cache:clear --env=prod --no-interaction || true \
  && php bin/console cache:warmup --env=prod --no-interaction || true
 
-# 🔐 Set secure permissions
-RUN chown -R www-data:www-data /var/www/var \
+# 🔐 Secure permissions – only if paths exist
+RUN mkdir -p /var/www/var /var/www/scripts \
+ && touch /var/www/scripts/detect_face.py \
+ && chown -R www-data:www-data /var/www/var \
  && chmod -R 755 /var/www/var \
  && chmod +x /var/www/scripts/detect_face.py
 
-# 🌐 Expose port for Railway or Docker
+# 🌐 Expose the port used by Symfony
 EXPOSE 8000
 
-# 🚀 Launch Symfony app using PHP's built-in web server
+# 🚀 Start the Symfony server
 CMD php -S 0.0.0.0:8000 -t public
