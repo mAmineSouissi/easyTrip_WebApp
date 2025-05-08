@@ -27,13 +27,17 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # 📁 Set working directory
 WORKDIR /var/www
 
+# ✅ Set environment variables (important for Symfony + Railway)
+ENV APP_ENV=prod
+ENV APP_DEBUG=0
+
 # 📦 Copy only composer files first (better Docker layer caching)
 COPY composer.json composer.lock ./
 
 # ⚙️ Install PHP dependencies (scripts and autoload skipped at first)
 RUN composer install --no-scripts --no-autoloader --no-interaction --no-progress
 
-# 📁 Copy all project files
+# 📁 Copy full Symfony project
 COPY . .
 
 # 🐍 Setup Python virtualenv and install YOLO dependencies
@@ -48,10 +52,7 @@ RUN /var/www/venv/bin/python -c "from huggingface_hub import hf_hub_download; \
 # 🔗 Optional alias to make Python easier to call
 RUN ln -sf /var/www/venv/bin/python3 /usr/local/bin/python-app
 
-# 🌍 Set environment for Symfony
-ENV APP_ENV=prod
-
-# ⚙️ Dump autoload and warm Symfony cache
+# ⚙️ Dump autoload and warm Symfony cache (safe build with fallback)
 RUN composer dump-autoload --optimize \
  && php bin/console cache:clear --env=prod --no-interaction || true \
  && php bin/console cache:warmup --env=prod --no-interaction || true
