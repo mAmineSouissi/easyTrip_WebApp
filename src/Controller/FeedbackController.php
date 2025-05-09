@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Feedback;
 use App\Entity\Hotels;
-use App\Entity\Offer_travel;
 use App\Entity\OfferTravel;
 use App\Entity\Tickets;
 use App\Entity\User;
