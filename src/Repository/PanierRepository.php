@@ -6,7 +6,7 @@ use App\Entity\Promotion;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-class PromotionRepository extends ServiceEntityRepository
+class PanierRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
