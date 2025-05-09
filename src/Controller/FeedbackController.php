@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Feedback;
 use App\Entity\Hotels;
 use App\Entity\Offer_travel;
+use App\Entity\OfferTravel;
 use App\Entity\Tickets;
 use App\Entity\User;
 use App\Form\FeedbackType;
@@ -42,7 +43,7 @@ class FeedbackController extends AbstractController
 
             $hotels = $em->getRepository(Hotels::class)->findBy(['user' => $user]);
             $tickets = $em->getRepository(Tickets::class)->findBy(['user' => $user]);
-            $travels = $em->getRepository(Offer_travel::class)->findBy(['user' => $user]);
+            $travels = $em->getRepository(OfferTravel::class)->findBy(['user' => $user]);
 
             return $this->render('feedback/agent/index.html.twig', [
                 'hotels' => $hotels,
@@ -89,7 +90,7 @@ class FeedbackController extends AbstractController
         $entity = match ($type) {
             'hotel' => $em->getRepository(Hotels::class)->find($id),
             'ticket' => $em->getRepository(Tickets::class)->find($id),
-            'travel' => $em->getRepository(Offer_travel::class)->find($id),
+            'travel' => $em->getRepository(OfferTravel::class)->find($id),
             default => null,
         };
 
