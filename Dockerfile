@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
  && docker-php-ext-install -j$(nproc) intl pdo pdo_mysql zip opcache gd xml mbstring \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# ➕ Installe Node.js (version LTS) + Yarn
+# ➕ Install Node.js + Yarn
 RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - \
  && apt-get install -y nodejs \
  && npm install --global yarn
@@ -31,21 +31,21 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # 📁 Set working directory
 WORKDIR /var/www
 
-# ✅ Set Symfony environment variables
+# ✅ Symfony environment variables
 ENV APP_ENV=prod
 ENV APP_DEBUG=0
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# 📁 Copy all project files
+# 📁 Copy project files
 COPY . .
 
 # 📦 Install PHP dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# 🧱 Build Webpack Encore assets
+# 🧱 Build assets
 RUN yarn install && yarn encore production
 
-# ⚙️ Symfony cache warmup
+# ⚙️ Cache warmup
 RUN php bin/console cache:clear --env=prod --no-interaction || true \
  && php bin/console cache:warmup --env=prod --no-interaction || true
 
@@ -54,8 +54,8 @@ RUN mkdir -p /var/www/var \
  && chown -R www-data:www-data /var/www/var \
  && chmod -R 755 /var/www/var
 
-# 🌐 Expose port
+# 🌐 Port
 EXPOSE 8081
 
-# 🚀 Start server
+# 🚀 Start app
 CMD ["php", "-S", "0.0.0.0:8081", "-t", "public"]
