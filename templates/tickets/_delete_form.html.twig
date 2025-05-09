@@ -1,0 +1,8 @@
+<form method="post" action="{{ path('app_tickets_delete', {'idTicket': ticket.idTicket}) }}" 
+      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce ticket?');"
+      class="d-inline">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ ticket.idTicket) }}">
+    <button class="btn btn-danger btn-sm" data-bs-toggle="tooltip" title="Supprimer">
+        <i class="fas fa-trash-alt"></i>
+    </button>
+</form>

@@ -39,6 +39,7 @@ class FeedbackController extends AbstractController
         $type = $request->query->get('type');
 
         if ($role === 'agent') {
+
             $hotels = $em->getRepository(Hotels::class)->findBy(['user' => $user]);
             $tickets = $em->getRepository(Tickets::class)->findBy(['user' => $user]);
             $travels = $em->getRepository(Offer_travel::class)->findBy(['user' => $user]);
@@ -85,7 +86,6 @@ class FeedbackController extends AbstractController
         $feedback = new Feedback();
         $user = $this->getUser();
         $feedback->setUser($user);
-
         $entity = match ($type) {
             'hotel' => $em->getRepository(Hotels::class)->find($id),
             'ticket' => $em->getRepository(Tickets::class)->find($id),

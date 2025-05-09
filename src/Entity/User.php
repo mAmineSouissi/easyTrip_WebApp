@@ -3,9 +3,10 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 use App\Entity\Panier;
+use App\Entity\Agency; // Add this import for the Agency entity
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -13,7 +14,6 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\Table(name: "User")]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
@@ -43,11 +43,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: "string", length: 255)]
     private string $role;
 
+
     #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Panier::class)]
     private Collection $paniers;
 
     #[ORM\OneToMany(mappedBy: "user", targetEntity: Feedback::class, orphanRemoval: true)]
     private Collection $feedbacks;
+
 
     public function getId()
     {
@@ -83,6 +85,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->password;
     }
+
     public function getUserIdentifier(): string
     {
         return $this->email; 
@@ -141,23 +144,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // Always add ROLE_USER as a default role
         return array_unique([$symfonyRole, 'ROLE_USER']);
     }
+
     public function getRole()
     {
         return $this->role;
     }
+
     public function eraseCredentials()
     {
         // If you store any temporary sensitive data, clear it here
     }
-    
 
     public function setRole($value)
     {
         $this->role = $value;
     }
-
-    #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Reservation::class)]
-    private Collection $reservations;
 
     public function getReservations(): Collection
     {
@@ -186,9 +187,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    #[ORM\OneToMany(mappedBy: "created_by", targetEntity: Survey::class)]
-    private Collection $surveys;
-
     public function getSurveys(): Collection
     {
         return $this->surveys;
@@ -216,6 +214,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+
       // 🛒 Paniers
       public function getPaniers(): Collection { return $this->paniers; }
 
@@ -242,3 +241,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
       }
 
 }
+
+    // Add the getAgencies method
+    public function getAgencies(): Collection
+    {
+        return $this->agencies;
+    }
+
+    // Add method to add an agency
+    public function addAgency(Agency $agency): self
+    {
+        if (!$this->agencies->contains($agency)) {
+            $this->agencies[] = $agency;
+            $agency->setUser($this);
+        }
+
+        return $this;
+    }
+
+    // Add method to remove an agency
+    public function removeAgency(Agency $agency): self
+    {
+        if ($this->agencies->removeElement($agency)) {
+            // set the owning side to null (unless already changed)
+            if ($agency->getUser() === $this) {
+                $agency->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+}
+

@@ -1,0 +1,335 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ hotel.name }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">
+                            <i class="fas fa-edit me-2"></i>Modifier {{ hotel.name }}
+                            {% if hotel.promotion %}
+                                <span class="badge bg-danger rounded-pill fs-5 ms-2 p-2 shadow">
+                                    <i class="fas fa-bolt me-1"></i>-{{ hotel.promotion.discountPercentage }}%
+                                    <span class="fw-light ms-1">PROMO</span>
+                                </span>
+                            {% endif %}
+                        </h2>
+                        <a href="{{ path('app_hotels_index') }}" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-left me-1"></i> Retour
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger alert-dismissible fade show alert-error">
+                            <i class="fas fa-exclamation-circle me-2"></i>{{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+
+                    {{ form_start(form, {
+                        'attr': {
+                            'class': 'needs-validation',
+                            'novalidate': 'novalidate',
+                            'enctype': 'multipart/form-data',
+                            'id': 'hotel-form'
+                        }
+                    }) }}
+                    
+                    {% if hotel.image %}
+                        <div class="text-center mb-4 position-relative">
+                            <img src="{{ asset('Uploads/hotels/' ~ hotel.image) }}" 
+                                 class="img-fluid rounded" 
+                                 style="max-height: 200px;" 
+                                 alt="Image actuelle">
+                            <p class="text-muted small mt-2">Image actuelle</p>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.name, 'Nom de l\'hôtel', {
+                                    'label_attr': {
+                                        'class': 'form-label'
+                                    }
+                                }) }}
+                                {{ form_widget(form.name, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'required': 'required',
+                                        'pattern': '.{3,}',
+                                        'title': 'Le nom doit contenir au moins 3 caractères'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    Veuillez fournir un nom valide (minimum 3 caractères).
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.rating, 'Note (1-5 étoiles)', {
+                                    'label_attr': {
+                                        'class': 'form-label'
+                                    }
+                                }) }}
+                                {{ form_widget(form.rating, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'min': 1,
+                                        'max': 5,
+                                        'required': 'required'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    La note doit être entre 1 et 5.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-group">
+                                {{ form_label(form.adresse, 'Adresse complète', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.adresse, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'required': 'required',
+                                        'pattern': '.{10,}',
+                                        'title': 'L\'adresse doit contenir au moins 10 caractères'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    Veuillez fournir une adresse valide.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form_label(form.city, 'Ville', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.city, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'required': 'required',
+                                        'pattern': '[A-Za-zÀ-ÿ -]{3,}',
+                                        'title': 'La ville doit contenir uniquement des lettres (minimum 3)'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    Veuillez fournir une ville valide.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form_label(form.price, 'Prix original par nuit (€)', {
+                                    'label_attr': {
+                                        'class': 'form-label'
+                                    }
+                                }) }}
+                                {{ form_widget(form.price, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'type': 'number',
+                                        'min': 0.01,
+                                        'step': 0.01,
+                                        'required': 'required',
+                                        'pattern': '[0-9]+(\.[0-9]{1,2})?',
+                                        'title': 'Veuillez entrer une valeur numérique (ex. 99.99)',
+                                        'id': 'price-input',
+                                        'value': original_price|number_format(2, '.', '')
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    Veuillez fournir un prix valide (ex: 99.99).
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form_label(form.num_room, 'Nombre de chambres', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.num_room, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'min': 1,
+                                        'required': 'required'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    Le nombre de chambres doit être au moins 1.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.type_room, 'Type de chambre', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.type_room, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'required': 'required',
+                                        'pattern': '.{3,}',
+                                        'title': 'Le type de chambre doit contenir au moins 3 caractères'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    Veuillez fournir un type de chambre valide.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.promotion, 'Promotion', {
+                                    'label_attr': {
+                                        'class': 'form-label'
+                                    }
+                                }) }}
+                                {{ form_widget(form.promotion, {
+                                    'attr': {
+                                        'class': 'form-select',
+                                        'id': 'promotion-select'
+                                    }
+                                }) }}
+                                <small class="text-muted">Sélectionnez une promotion pour appliquer une réduction automatique</small>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="alert alert-info p-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-info-circle me-3 fs-4"></i>
+                                    <div>
+                                        <div class="d-flex flex-wrap align-items-center">
+                                            <span class="me-3"><strong>Prix original:</strong> 
+                                            <span id="original-price-display" class="fs-5">{{ original_price|number_format(2, ',', ' ') }} €</span></span>
+                                            
+                                            <span class="me-3"><strong>Réduction:</strong> 
+                                            <span id="discount-display" class="fs-5 text-danger fw-bold">{% if hotel.promotion %}{{ hotel.promotion.discountPercentage }}{% else %}0{% endif %}%</span></span>
+                                            
+                                            <span><strong>Prix réduit:</strong> 
+                                            <span id="discounted-price-display" class="fs-5 fw-bold">{{ hotel.price|number_format(2, ',', ' ') }} €</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.image, 'Image de l\'hôtel', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.image, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'accept': 'image/*'
+                                    }
+                                }) }}
+                                <div class="form-text">Formats acceptés: JPG, PNG, max 2MB</div>
+                                <div class="invalid-feedback">
+                                    Veuillez fournir une image valide.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="form-group">
+                                {{ form_label(form.description, 'Description détaillée', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.description, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'rows': 5,
+                                        'required': 'required',
+                                        'minlength': 20,
+                                        'title': 'La description doit contenir au moins 20 caractères'
+                                    }
+                                }) }}
+                                <div class="invalid-feedback">
+                                    Veuillez fournir une description valide (minimum 20 caractères).
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Mettre à jour
+                        </button>
+                    </div>
+                    
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const promotionSelect = document.getElementById('promotion-select');
+    const priceInput = document.getElementById('price-input');
+    const originalPriceDisplay = document.getElementById('original-price-display');
+    const discountDisplay = document.getElementById('discount-display');
+    const discountedPriceDisplay = document.getElementById('discounted-price-display');
+    let originalPrice = parseFloat(priceInput.value) || 0;
+
+    function updatePriceDisplay(discountPercentage) {
+        if (discountPercentage && !isNaN(originalPrice) && originalPrice > 0) {
+            const discount = parseFloat(discountPercentage);
+            const discountedPrice = originalPrice * (1 - discount / 100);
+            originalPriceDisplay.textContent = originalPrice.toFixed(2).replace('.', ',') + ' €';
+            discountDisplay.textContent = discount + '%';
+            discountDisplay.classList.add('text-danger', 'fw-bold');
+            discountDisplay.style.fontSize = '1.5rem';
+            discountedPriceDisplay.textContent = discountedPrice.toFixed(2).replace('.', ',') + ' €';
+            discountedPriceDisplay.classList.add('text-success', 'fw-bold');
+        } else {
+            originalPriceDisplay.textContent = originalPrice.toFixed(2).replace('.', ',') + ' €';
+            discountDisplay.textContent = '0%';
+            discountDisplay.classList.remove('text-danger', 'fw-bold');
+            discountDisplay.style.fontSize = '';
+            discountedPriceDisplay.textContent = originalPrice.toFixed(2).replace('.', ',') + ' €';
+            discountedPriceDisplay.classList.remove('text-success', 'fw-bold');
+        }
+    }
+
+    priceInput.addEventListener('input', function() {
+        originalPrice = parseFloat(this.value) || 0;
+        const selectedOption = promotionSelect.options[promotionSelect.selectedIndex];
+        const discountPercentage = selectedOption ? selectedOption.getAttribute('data-discount') : null;
+        updatePriceDisplay(discountPercentage);
+    });
+
+    promotionSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const discountPercentage = selectedOption ? selectedOption.getAttribute('data-discount') : null;
+        updatePriceDisplay(discountPercentage);
+    });
+
+    // Initialize display
+    if (originalPrice > 0) {
+        const selectedOption = promotionSelect.options[promotionSelect.selectedIndex];
+        const discountPercentage = selectedOption ? selectedOption.getAttribute('data-discount') : null;
+        updatePriceDisplay(discountPercentage);
+    }
+});
+</script>
+
+<style>
+    .text-danger.fw-bold {
+        animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse {
+        from { transform: scale(1); }
+        to { transform: scale(1.1); }
+    }
+</style>
+{% endblock %}

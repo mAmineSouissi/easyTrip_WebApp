@@ -12,6 +12,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <div class="d-flex align-items-center w-100">
 
+
                 <!-- Centered navigation -->
                 <div class="d-flex justify-content-center flex-grow-1">
                     <ul class="navbar-nav">
@@ -25,12 +26,20 @@
                             <a class="nav-link dropdown-toggle" href="#" id="offersDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Our Offers
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="offersDropdown">
-                                <li><a class="dropdown-item" href="#">Travels</a></li>
-                                <li><a class="dropdown-item" href="#">Hotels</a></li>
-                                <li><a class="dropdown-item" href="#">Tickets</a></li>
-                                <li><a class="dropdown-item" href="#">Car Rentals</a></li>
-                            </ul>
+                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+							<li>
+								<a class="dropdown-item" href="{{ path('app_offer_travel_index') }}">Travels</a>
+							</li>
+							<li>
+								<a class="dropdown-item" href="/Chotels">Hotels</a>
+							</li>
+							<li>
+								<a class="dropdown-item" href="/voyages">Tickets</a>
+							</li>
+							<li>
+								<a class="dropdown-item" href="{{ path('app_client_tickets_statistics') }}">satistique</a>
+							</li>
+						</ul>
                         </li>
                         <li class="nav-item">
                             {% if app.user and is_granted('ROLE_CLIENT') %}
@@ -39,6 +48,9 @@
                                 <a class="nav-link" href="{{ path('app_login') }}">Contact Us</a>
                             {% endif %}
                         </li>
+                        	<li class="nav-item">
+							<a class="nav-link" href="{{ path('app_reservations') }}">Réservation</a>
+					</li>
                     </ul>
                 </div>
 

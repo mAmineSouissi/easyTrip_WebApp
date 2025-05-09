@@ -1,0 +1,123 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+{% set currentSort = app.request.get('sort') %}
+{% set currentDirection = app.request.get('direction') %}
+<br><br><br>
+
+<form id="search-form" method="get" action="{{ path('app_reservations') }}" data-turbo="false"  style="margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
+    <input type="text" name="nom" placeholder="Nom" value="{{ app.request.get('nom') }}" style="padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px;">
+    <input type="text" name="prenom" placeholder="Prénom" value="{{ app.request.get('prenom') }}" style="padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px;">
+   
+   <div style="text-align: end; margin-bottom: 20px; right;padding-left: 150px;">
+    <a href="{{ path('app_reservations', app.request.query.all | merge({
+        sort: 'r.nom',
+        direction: currentSort == 'r.nom' and currentDirection == 'asc' ? 'desc' : 'asc'
+    })) }}" style="padding: 8px 15px; background-color: #0d6efd; color: white; text-decoration: none; border-radius: 4px;">
+        Trier selon Nom 
+        {% if currentSort == 'r.nom' %}
+            {{ currentDirection == 'asc' ? '🔼' : '🔽' }}
+        {% endif %}
+    </a>
+</div>
+
+</form>
+
+
+<div style="text-align: end; margin-bottom: 20px;">
+    <a href="{{ path('app_servicereservation_add') }}" style="padding: 8px 15px; background-color: #28a745; color: white; border-radius: 4px; text-decoration: none;">
+        <i class="bi bi-plus-circle me-1"></i> Ajouter un service
+    </a>
+</div>
+
+{% if suggestedDate %}
+    <div class="alert alert-info">
+        📅 Date suggérée : <strong>{{ suggestedDate }}</strong>
+    </div>
+{% endif %}
+
+
+<table style="width: 90%; border-collapse: collapse; margin: 20px auto; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 8px; background-color: #fff;">
+    <thead>
+        <tr style="background-color: #e3d8c8; color: white; text-transform: uppercase;">
+            <th style="padding: 15px 20px; border: 1px solid #ddd;">Date</th>
+            <th style="padding: 15px 20px; border: 1px solid #ddd;">Nom</th>
+            <th style="padding: 15px 20px; border: 1px solid #ddd;">Prénom</th>
+            <th style="padding: 15px 20px; border: 1px solid #ddd;">Téléphone</th>
+            <th style="padding: 15px 20px; border: 1px solid #ddd;">Email</th>
+            <th style="padding: 15px 20px; border: 1px solid #ddd;">Prix</th>
+            <th style="padding: 15px 20px; border: 1px solid #ddd;">Places</th>
+            <th colspan="2" style="padding: 15px 20px; border: 1px solid #ddd;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for reservation in pagination.items %}
+        <tr style="background-color: {{ loop.index is odd ? '#f9f9f9' : '#ffffff' }};" onmouseover="this.style.backgroundColor='#f1f1f1';" onmouseout="this.style.backgroundColor='{{ loop.index is odd ? '#f9f9f9' : '#ffffff' }}';">
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.orderDate|date('Y-m-d') }}</td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.nom }}</td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.prenom }}</td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.phone }}</td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.email }}</td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">50.00</td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">{{ reservation.places }}</td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">
+                <form method="post" data-turbo="false" action="{{ path('app_reservation_delete', {id_reservation: reservation.id_reservation}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id_reservation) }}">
+                    <button style="padding: 5px 10px; background-color: #dc3545; color: white; border: none; border-radius: 4px;">🗑</button>
+                </form>
+            </td>
+            <td style="padding: 15px 20px; border: 1px solid #ddd;">
+                <a href="{{ path('app_reservation_edit', {id_reservation: reservation.id_reservation}) }}" style="padding: 5px 10px; background-color: #198754; color: white; border-radius: 4px; text-decoration: none;">✏️</a>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="8" style="text-align: center; padding: 15px 20px;">Aucune réservation trouvée.</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<div style="display: flex; justify-content: center; margin-top: 20px;">
+    {{ knp_pagination_render(pagination, 'pagination/bootstrap5.html.twig') }}
+</div>
+
+<div id="total-container" style="text-align: right; padding-right: 120px; margin-bottom: 10px; font-weight: bold; font-size: 18px;">
+    Total : {{ total|number_format(2, '.', ' ') }} dt
+</div>
+
+
+
+<div style="text-align: right;padding-right: 120px; margin-bottom: 20px;">
+    <a href="{{ path('stripe_checkout') }}" style="padding: 8px 15px; background-color: #28a745; color: white; border-radius: 4px; text-decoration: none;">
+        <i class="bi bi-plus-circle me-1"></i> Payer
+    </a>
+</div>
+<br><br>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("search-form");
+
+        // Déclenche la soumission du formulaire quand un champ change
+        ["nom", "prenom", "date"].forEach(id => {
+            const input = form.querySelector(`[name="${id}"]`);
+            if (input) {
+                input.addEventListener("input", () => {
+                    clearTimeout(input._timeout);
+                    input._timeout = setTimeout(() => {
+                        form.submit();
+                    }, 500); // délai pour éviter trop de requêtes
+                });
+            }
+        });
+
+        // Pour les dates (événement 'change' car 'input' ne fonctionne pas toujours sur les dates)
+        const dateInput = form.querySelector('[name="date"]');
+        if (dateInput) {
+            dateInput.addEventListener("change", () => {
+                form.submit();
+            });
+        }
+    });
+</script>
+{% endblock %}

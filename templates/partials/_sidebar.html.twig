@@ -36,13 +36,40 @@
               </a>
             </li>
             <li class="nav-item">
+
 						<a class="nav-link text-white" href="{{ path('feedback_home_admin') }}">
 							<i class="bi bi-chat-dots-fill me-2 text-white"></i>
 							Feedback Management
 						</a>
 						</li>
+
+              <a class="nav-link text-white underline-hover" href="{{ path('app_promotion_index') }}">
+                <i class="bi bi-envelope-exclamation-fill me-2 text-primary"></i> Promotion Management
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white underline-hover" href="{{ path('app_agency_index') }}">
+                <i class="bi bi-envelope-exclamation-fill me-2 text-primary"></i> Agency Management
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white underline-hover" href="{{ path('app_offer_travel_index') }}">
+                <i class="bi bi-envelope-exclamation-fill me-2 text-primary"></i> Offer Travels List
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="{{ path('app_adminreservations') }}">
+					      <i class="bi bi-calendar-check me-2 text-primary"></i>Reservations
+				      </a>
+            </li>
+
           </ul>
         </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white underline-hover" href="{{ path('app_offer_travel_statistics') }}">
+          <i class="bi bi-speedometer2 me-2 text-primary"></i> Dashboard Offer Travels
+        </a>
       </li>
 
       <!-- Settings -->
@@ -50,6 +77,7 @@
         <a class="nav-link text-white underline-hover" href="{{ path('admin_settings') }}">
           <i class="bi bi-sliders me-2 text-primary"></i> Settings
         </a>
+      
       </li>
     </ul>
   </div>

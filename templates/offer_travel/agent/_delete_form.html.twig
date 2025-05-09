@@ -1,0 +1,26 @@
+<form method="post" action="{{ path('app_offer_travel_action', {'action': 'delete', 'id': offer_travel.id}) }}" onsubmit="return confirmDelete(event, this)" class="delete-form">    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offer_travel.id) }}">
+    <button type="submit" class="btn btn-danger">
+        <i class="fas fa-trash"></i> Supprimer
+    </button>
+</form>
+
+<script>
+    function confirmDelete(event, form) {
+        event.preventDefault();
+        Swal.fire({
+            title: 'Êtes-vous sûr ?',
+            text: "Vous ne pourrez pas annuler cette action !",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Oui, supprimer !',
+            cancelButtonText: 'Annuler'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+        return false;
+    }
+</script>

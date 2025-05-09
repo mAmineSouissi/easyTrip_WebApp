@@ -1,0 +1,170 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Promotion - {{ promotion.title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        .promotion-detail-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-title {
+            color: #2c3e50;
+            font-weight: 700;
+            margin: 0;
+        }
+        .promotion-badge {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
+        .badge-active {
+            background-color: #28a745;
+            color: white;
+        }
+        .badge-expired {
+            background-color: #dc3545;
+            color: white;
+        }
+        .promotion-info {
+            margin-bottom: 2rem;
+        }
+        .info-item {
+            margin-bottom: 1.5rem;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        .info-value {
+            font-size: 1.1rem;
+        }
+        .discount-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2dce89;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .btn-back {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .btn-back:hover {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        .btn-edit {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .btn-edit:hover {
+            background-color: #2980b9;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="promotion-detail-container">
+    <div class="detail-header">
+        <h1 class="detail-title">
+            <i class="fas fa-percentage"></i> {{ promotion.title }}
+            <span class="promotion-badge {{ promotion.validUntil >= date() ? 'badge-active' : 'badge-expired' }}">
+                {{ promotion.validUntil >= date() ? 'Active' : 'Expirée' }}
+            </span>
+        </h1>
+    </div>
+
+    <div class="promotion-info">
+        <div class="info-item">
+            <span class="info-label">Description</span>
+            <div class="info-value">{{ promotion.description }}</div>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Réduction</span>
+            <div class="discount-value">-{{ promotion.discountPercentage }}%</div>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Valide jusqu'au</span>
+            <div class="info-value">
+                <i class="fas fa-calendar-alt"></i> {{ promotion.validUntil|date('d/m/Y') }}
+                ({{ promotion.validUntil|date('Y-m-d') >= date() ? 'Encore ' ~ promotion.validUntil.diff(date())|date('%a jours') : 'Expirée depuis ' ~ date().diff(promotion.validUntil)|date('%a jours') }})
+            </div>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <a href="{{ path('app_promotion_index') }}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+        
+        <a href="{{ path('app_promotion_edit', {'id': promotion.id}) }}" class="btn-edit">
+            <i class="fas fa-edit"></i> Modifier
+        </a>
+        
+        {{ include('promotion/admin/_delete_form.html.twig', {
+            'promotion': promotion,
+            'button_style': 'btn btn-danger',
+            'button_icon': 'fas fa-trash',
+            'button_label': 'Supprimer'
+        }) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation au chargement
+            const container = document.querySelector('.promotion-detail-container');
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px)';
+            container.style.transition = 'all 0.3s ease-out';
+            
+            setTimeout(() => {
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+{% endblock %}

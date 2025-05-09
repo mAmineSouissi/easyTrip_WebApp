@@ -1,0 +1,73 @@
+{{ form_start(form) }}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ form_label(form.departure) }}
+                {{ form_widget(form.departure, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(form.destination) }}
+                {{ form_widget(form.destination, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(form.departure_date) }}
+                {{ form_widget(form.departure_date, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(form.arrival_date) }}
+                {{ form_widget(form.arrival_date, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ form_label(form.hotel_name) }}
+                {{ form_widget(form.hotel_name, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(form.category) }}
+                {{ form_widget(form.category, {'attr': {'class': 'form-select'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(form.price) }}
+                {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(form.imageFile) }}
+                {{ form_widget(form.imageFile, {'attr': {'class': 'form-control-file'}}) }}
+                {% if offer_travel.image is defined and offer_travel.image %}
+                    <div class="mt-2">
+                        <img src="{{ offer_travel.image }}" class="current-image img-thumbnail" style="max-height: 200px;">
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form_label(form.flight_name) }}
+                {{ form_widget(form.flight_name, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ form_label(form.agency) }}
+                {{ form_widget(form.agency, {'attr': {'class': 'form-select'}}) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ form_label(form.promotion) }}
+                {{ form_widget(form.promotion, {'attr': {'class': 'form-select'}}) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.discription) }}
+        {{ form_widget(form.discription, {'attr': {'class': 'form-control', 'rows': 5}}) }}
+    </div>
+
+    <button type="submit" class="btn-submit">
+        <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
+    </button>
+{{ form_end(form) }}

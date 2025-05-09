@@ -1,11 +1,130 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello AgentController!{% endblock %}
+{% block title %}Agent Dashboard{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .dashboard-container {
+            max-width: 1000px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .dashboard-title {
+            text-align: center;
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+        .dashboard-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+        .dashboard-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border: none;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s forwards;
+        }
+        .dashboard-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .dashboard-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .btn-reclamation {
+            background-color: #3498db;
+        }
+        .btn-reclamation:hover {
+            background-color: #2980b9;
+        }
+        .btn-promotions {
+            background-color: #28a745;
+        }
+        .btn-promotions:hover {
+            background-color: #218838;
+        }
+        .btn-agency {
+            background-color: #f39c12;
+        }
+        .btn-agency:hover {
+            background-color: #e67e22;
+        }
+        .btn-offer-travel {
+            background-color: #8e44ad;
+        }
+        .btn-offer-travel:hover {
+            background-color: #7d3c98;
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* Délais d'animation pour chaque bouton */
+        .dashboard-btn:nth-child(1) { animation-delay: 0.1s; }
+        .dashboard-btn:nth-child(2) { animation-delay: 0.2s; }
+        .dashboard-btn:nth-child(3) { animation-delay: 0.3s; }
+        .dashboard-btn:nth-child(4) { animation-delay: 0.4s; }
+        @media (max-width: 768px) {
+            .dashboard-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            .dashboard-btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-	<div class="example-wrapper">
-		<a href="{{ path('reclamation_index') }}" class="btn btn-primary">
-			Go to Agent Reclamation Management
-		</a>
-	</div>
+<div class="dashboard-container">
+    <h1 class="dashboard-title">
+        <i class="fas fa-tachometer-alt me-2"></i> Agent Dashboard
+    </h1>
+    <div class="dashboard-buttons">
+        <a href="{{ path('reclamation_index') }}" class="dashboard-btn btn-reclamation">
+            <i class="fas fa-exclamation-circle"></i> Reclamation Management
+        </a>
+        <a href="{{ path('app_promotion_public') }}" class="dashboard-btn btn-promotions">
+            <i class="fas fa-percentage"></i> Promotions List
+        </a>
+        <a href="{{ path('app_agency_index') }}" class="dashboard-btn btn-agency">
+            <i class="fas fa-building"></i> Agency Management
+        </a>
+        <a href="{{ path('app_offer_travel_index') }}" class="dashboard-btn btn-offer-travel">
+            <i class="fas fa-plane"></i> Offer Travel Management
+        </a>
+           <a href="/hotels" class="dashboard-btn btn-offer-travel">
+            <i class="fas fa-plane"></i> Offer hotels Management
+        </a>
+           <a href="{{ path('app_offer_ticket_index') }}" class="dashboard-btn btn-offer-travel">
+            <i class="fas fa-ticket-alt"></i> Offer Tickets Management
+        </a>
+    </div>
+</div>
 {% endblock %}

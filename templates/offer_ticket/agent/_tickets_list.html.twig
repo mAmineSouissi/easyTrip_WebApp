@@ -1,0 +1,73 @@
+{% for ticket in tickets %}
+    <div class="col-md-4 mb-4">
+        <div class="card ticket-card shadow-sm">
+            {% if ticket.cityImage %}
+                <img src="{{ asset('Uploads/cities/' ~ ticket.cityImage) }}" 
+                     alt="{{ ticket.arrivalCity }}" 
+                     class="card-img-top ticket-image">
+            {% else %}
+                <div class="ticket-image bg-light d-flex align-items-center justify-content-center">
+                    <i class="fas fa-image fa-3x text-muted"></i>
+                </div>
+            {% endif %}
+            
+            <div class="card-body">
+                <span class="badge bg-{{ ticket.ticketClass == 'First' ? 'primary' : ticket.ticketClass == 'Business' ? 'success' : 'info' }} ticket-badge">
+                    {{ ticket.ticketClass }}
+                </span>
+                
+                <h5 class="card-title">
+                    {{ ticket.departureCity }} <i class="fas fa-arrow-right mx-2 text-muted"></i> {{ ticket.arrivalCity }}
+                </h5>
+                
+                <p class="card-text">
+                    <small class="text-muted">
+                        <i class="fas fa-plane"></i> {{ ticket.airline }} #{{ ticket.flightNumber }}
+                    </small>
+                </p>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1">
+                            <i class="far fa-calendar-alt text-primary me-1"></i> 
+                            {{ ticket.departureDate|date('d/m/Y') }}
+                        </p>
+                        <p class="mb-0">
+                            <i class="far fa-clock text-primary me-1"></i> 
+                            {{ ticket.departureTime }} - {{ ticket.arrivalTime }}
+                        </p>
+                    </div>
+                    <span class="ticket-price">{{ ticket.price }} €</span>
+                </div>
+                
+                <div class="action-buttons">
+                    <a href="{{ path('app_offer_ticket_action', {'action': 'show', 'id': ticket.idTicket}) }}" 
+                       class="btn-view">
+                        <i class="fas fa-eye"></i> Voir
+                    </a>
+                    <a href="{{ path('app_offer_ticket_action', {'action': 'edit', 'id': ticket.idTicket}) }}" 
+                       class="btn-edit">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <form method="post" 
+                          action="{{ path('app_offer_ticket_action', {'action': 'delete', 'id': ticket.idTicket}) }}" 
+                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce ticket ?');"
+                          class="d-inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ ticket.idTicket) }}">
+                        <button type="submit" class="btn-delete">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="col-12">
+        <div class="no-tickets">
+            <i class="fas fa-ticket-alt fa-3x mb-3 text-muted"></i>
+            <h4>Aucun ticket disponible</h4>
+            <p>Essayez de modifier vos critères de recherche</p>
+        </div>
+    </div>
+{% endfor %} 

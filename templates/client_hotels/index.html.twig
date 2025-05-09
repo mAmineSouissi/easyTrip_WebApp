@@ -1,0 +1,624 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nos Hôtels{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    /* Styles généraux */
+    .promo-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 1.2rem;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        animation: pulse 1.5s infinite;
+        background-color: #dc3545;
+        color: white;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    /* Styles pour le sélecteur de devise amélioré */
+    .currency-selector {
+        position: relative;
+        display: inline-block;
+        margin-left: 15px;
+    }
+    
+    .currency-selector-btn {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 8px 15px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        color: #2d3748;
+    }
+    
+    .currency-selector-btn:hover {
+        background: #f7fafc;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .currency-selector-btn i {
+        transition: transform 0.2s ease;
+    }
+    
+    .currency-selector.active .currency-selector-btn i.fa-caret-down {
+        transform: rotate(180deg);
+    }
+    
+    .currency-dropdown {
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background-color: white;
+        min-width: 160px;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        z-index: 1000;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        margin-top: 5px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.2s ease;
+    }
+    
+    .currency-selector.active .currency-dropdown {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    
+    .currency-option {
+        color: #4a5568;
+        padding: 10px 15px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #edf2f7;
+    }
+    
+    .currency-option:last-child {
+        border-bottom: none;
+    }
+    
+    .currency-option:hover {
+        background-color: #f8fafc;
+        color: #2b6cb0;
+    }
+    
+    .currency-option i {
+        width: 16px;
+        text-align: center;
+    }
+    
+    .currency-active {
+        background-color: #ebf8ff;
+        color: #2b6cb0;
+        font-weight: 600;
+    }
+
+    /* Styles pour la pagination */
+    .pagination-container {
+        margin: 2rem 0;
+        padding: 1rem 0;
+        border-top: 1px solid #eee;
+    }
+    
+    .pagination {
+        gap: 0.3rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .page-item .page-link {
+        min-width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+        color: #0d6efd;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+    
+    .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: white;
+        box-shadow: 0 2px 5px rgba(13, 110, 253, 0.3);
+    }
+    
+    .page-item:not(.active):not(.disabled) .page-link:hover {
+        background-color: #e9ecef;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .page-item.disabled .page-link {
+        color: #adb5bd;
+        background-color: #f8f9fa;
+    }
+    
+    .pagination-info {
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    /* Styles pour les cartes d'hôtel */
+    .card-hotel {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card-hotel:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">
+            <i class="fas fa-hotel me-2"></i>Nos Hôtels
+            <div class="currency-selector">
+                <button class="currency-selector-btn" id="currencyToggle">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span id="currentCurrency">EUR</span>
+                    <i class="fas fa-caret-down"></i>
+                </button>
+                <div class="currency-dropdown">
+                    <a href="#" class="currency-option" data-currency="EUR">
+                        <i class="fas fa-euro-sign"></i>
+                        <span>Euro (€)</span>
+                    </a>
+                    <a href="#" class="currency-option" data-currency="USD">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>Dollar ($)</span>
+                    </a>
+                    <a href="#" class="currency-option" data-currency="GBP">
+                        <i class="fas fa-pound-sign"></i>
+                        <span>Livre (£)</span>
+                    </a>
+                    <a href="#" class="currency-option" data-currency="TND">
+                        <i class="fas fa-dinar-sign"></i>
+                        <span>Dinar (د.ت)</span>
+                    </a>
+                    <a href="#" class="currency-option" data-currency="CAD">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>Dollar CA (C$)</span>
+                    </a>
+                </div>
+            </div>
+        </h1>
+        <p class="lead">Découvrez nos meilleures offres d'hébergement</p>
+    </div>
+
+    <div class="card shadow mb-5">
+        <div class="card-header bg-light">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="search-container">
+                        <input type="text" id="hotelSearch" class="form-control" placeholder="Rechercher un hôtel..." autocomplete="off">
+                        <div id="searchResults" class="search-results"></div>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-filter me-1"></i>Filtrer
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 300px;">
+                            <div class="mb-3">
+                                <label class="form-label">Note minimale</label>
+                                <select id="ratingFilter" class="form-select">
+                                    <option value="">Toutes les notes</option>
+                                    <option value="5">5 étoiles</option>
+                                    <option value="4">4 étoiles et plus</option>
+                                    <option value="3">3 étoiles et plus</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Prix maximum</label>
+                                <input type="number" id="priceFilter" class="form-control" placeholder="Prix max (€)" min="0">
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="promoFilter">
+                                <label class="form-check-label" for="promoFilter">
+                                    Uniquement les promotions
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="btn-group ms-2">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-sort me-1"></i>Trier
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="default">Par défaut</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="promo_desc">Promotion (décroissant)</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="promo_asc">Promotion (croissant)</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="price_desc">Prix (décroissant)</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="price_asc">Prix (croissant)</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="rating_desc">Note (décroissant)</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="rating_asc">Note (croissant)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div id="activeFilters" class="d-flex flex-wrap align-items-center mb-3">
+                <span class="me-3 fw-bold">Filtres actifs :</span>
+            </div>
+
+            <div id="hotelsContainer">
+                {% include 'client_hotels/_hotels_list.html.twig' with {'hotels': hotels} %}
+            </div>
+        </div>
+    </div>
+
+    {# Pagination améliorée #}
+    {% if hotels is defined and hotels is not empty %}
+        {{ knp_pagination_render(hotels) }}
+    {% endif %}
+</div>
+
+<div id="loadingSpinner" class="loading-spinner">
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Chargement...</span>
+    </div>
+</div>
+
+<input type="hidden" id="exchangeRates" value="{{ exchangeRates|json_encode }}">
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion du toggle de la dropdown devise
+    document.getElementById('currencyToggle').addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.querySelector('.currency-selector').classList.toggle('active');
+    });
+
+    // Fermer la dropdown quand on clique ailleurs
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.currency-selector')) {
+            document.querySelector('.currency-selector').classList.remove('active');
+        }
+    });
+
+    // Sélection d'une devise
+    document.querySelectorAll('.currency-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            const currency = this.dataset.currency;
+            document.getElementById('currentCurrency').textContent = currency;
+            document.querySelector('.currency-selector').classList.remove('active');
+            
+            // Mettre à jour l'affichage des prix
+            updateCurrencyDisplay(currency);
+            
+            // Enregistrer la préférence
+            localStorage.setItem('preferredCurrency', currency);
+            
+            // Recharger les hôtels avec la nouvelle devise
+            currentCurrency = currency;
+            loadHotels();
+        });
+    });
+
+    // Fonction pour mettre à jour l'affichage des prix
+    function updateCurrencyDisplay(currency) {
+        const exchangeRates = JSON.parse(document.getElementById('exchangeRates').value);
+        
+        document.querySelectorAll('[data-price-eur]').forEach(element => {
+            const priceEur = parseFloat(element.dataset.priceEur);
+            let convertedPrice, symbol;
+            
+            switch(currency) {
+                case 'USD':
+                    convertedPrice = priceEur * exchangeRates.USD;
+                    symbol = '$';
+                    break;
+                case 'GBP':
+                    convertedPrice = priceEur * exchangeRates.GBP;
+                    symbol = '£';
+                    break;
+                case 'TND':
+                    convertedPrice = priceEur * exchangeRates.TND;
+                    symbol = 'د.ت';
+                    break;
+                case 'CAD':
+                    convertedPrice = priceEur * exchangeRates.CAD;
+                    symbol = 'C$';
+                    break;
+                default:
+                    convertedPrice = priceEur;
+                    symbol = '€';
+            }
+            
+            const formattedPrice = convertedPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+            
+            if (element.classList.contains('original-price')) {
+                element.textContent = `${formattedPrice} ${symbol}`;
+            } else {
+                element.textContent = `${formattedPrice} ${symbol}/nuit`;
+            }
+        });
+        
+        // Mettre à jour les options actives
+        document.querySelectorAll('.currency-option').forEach(opt => {
+            opt.classList.toggle('currency-active', opt.dataset.currency === currency);
+        });
+    }
+
+    // Au chargement de la page, récupérer la devise préférée
+    const preferredCurrency = localStorage.getItem('preferredCurrency') || 'EUR';
+    document.getElementById('currentCurrency').textContent = preferredCurrency;
+    updateCurrencyDisplay(preferredCurrency);
+
+    // ... (le reste de votre code JavaScript existant pour les filtres, tri, etc.)
+    const searchInput = document.getElementById('hotelSearch');
+    const searchResults = document.getElementById('searchResults');
+    const ratingFilter = document.getElementById('ratingFilter');
+    const priceFilter = document.getElementById('priceFilter');
+    const promoFilter = document.getElementById('promoFilter');
+    const sortOptions = document.querySelectorAll('.sort-option');
+    const activeFiltersContainer = document.getElementById('activeFilters');
+    const hotelsContainer = document.getElementById('hotelsContainer');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const exchangeRates = JSON.parse(document.getElementById('exchangeRates').value);
+
+    let currentSort = 'default';
+    let currentCurrency = preferredCurrency;
+    let currentFilters = {};
+    let searchTimeout;
+    let currentPage = 1;
+
+    // Recherche dynamique
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const searchTerm = this.value.trim();
+            if (searchTerm.length > 2) {
+                fetchSearchResults(searchTerm);
+            } else {
+                searchResults.style.display = 'none';
+                currentFilters.search = '';
+                updateActiveFilters();
+                loadHotels();
+            }
+        }, 300);
+    });
+
+    // Filtres
+    [ratingFilter, priceFilter, promoFilter].forEach(filter => {
+        filter.addEventListener('change', function() {
+            updateFilters();
+        });
+    });
+
+    // Tri
+    sortOptions.forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentSort = this.dataset.sort;
+            updateSortUI();
+            loadHotels();
+        });
+    });
+
+    function fetchSearchResults(term) {
+        fetch(`/Chotels/search?q=${encodeURIComponent(term)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    searchResults.innerHTML = data.map(hotel => `
+                        <div class="p-2 border-bottom search-item" data-id="${hotel.id}" data-name="${hotel.name}">
+                            ${hotel.name} - ${hotel.city}
+                        </div>
+                    `).join('');
+                    searchResults.style.display = 'block';
+                    
+                    document.querySelectorAll('.search-item').forEach(item => {
+                        item.addEventListener('click', function() {
+                            searchInput.value = this.dataset.name;
+                            searchResults.style.display = 'none';
+                            currentFilters.search = this.dataset.name;
+                            updateActiveFilters();
+                            loadHotels();
+                        });
+                    });
+                } else {
+                    searchResults.innerHTML = '<div class="p-2 text-muted">Aucun résultat</div>';
+                    searchResults.style.display = 'block';
+                }
+            });
+    }
+
+    function updateFilters() {
+        currentFilters = {
+            rating: ratingFilter.value,
+            maxPrice: priceFilter.value,
+            hasPromo: promoFilter.checked
+        };
+        updateActiveFilters();
+        loadHotels();
+    }
+
+    function updateSortUI() {
+        sortOptions.forEach(option => {
+            if (option.dataset.sort === currentSort) {
+                option.classList.add('active');
+                option.innerHTML = `${option.textContent} <i class="fas fa-check ms-2"></i>`;
+            } else {
+                option.classList.remove('active');
+                option.innerHTML = option.textContent;
+            }
+        });
+    }
+
+    function updateActiveFilters() {
+        let filtersHtml = '<span class="me-3 fw-bold">Filtres actifs :</span>';
+        let hasFilters = false;
+
+        if (currentFilters.search) {
+            filtersHtml += `
+                <span class="badge bg-primary me-2 mb-2 filter-badge" data-filter="search">
+                    Recherche: ${currentFilters.search}
+                    <i class="fas fa-times ms-2"></i>
+                </span>`;
+            hasFilters = true;
+        }
+
+        if (currentFilters.rating) {
+            filtersHtml += `
+                <span class="badge bg-primary me-2 mb-2 filter-badge" data-filter="rating">
+                    Note min: ${currentFilters.rating}
+                    <i class="fas fa-times ms-2"></i>
+                </span>`;
+            hasFilters = true;
+        }
+
+        if (currentFilters.maxPrice) {
+            filtersHtml += `
+                <span class="badge bg-primary me-2 mb-2 filter-badge" data-filter="maxPrice">
+                    Prix max: ${currentFilters.maxPrice}€
+                    <i class="fas fa-times ms-2"></i>
+                </span>`;
+            hasFilters = true;
+        }
+
+        if (currentFilters.hasPromo) {
+            filtersHtml += `
+                <span class="badge bg-danger me-2 mb-2 filter-badge" data-filter="hasPromo">
+                    Promotions
+                    <i class="fas fa-times ms-2"></i>
+                </span>`;
+            hasFilters = true;
+        }
+
+        if (!hasFilters) {
+            filtersHtml = '<span class="text-muted">Aucun filtre actif</span>';
+        }
+
+        activeFiltersContainer.innerHTML = filtersHtml;
+
+        document.querySelectorAll('.filter-badge').forEach(badge => {
+            badge.addEventListener('click', function() {
+                const filter = this.dataset.filter;
+                if (filter === 'search') {
+                    searchInput.value = '';
+                    currentFilters.search = '';
+                } else if (filter === 'rating') {
+                    ratingFilter.value = '';
+                    currentFilters.rating = '';
+                } else if (filter === 'maxPrice') {
+                    priceFilter.value = '';
+                    currentFilters.maxPrice = '';
+                } else if (filter === 'hasPromo') {
+                    promoFilter.checked = false;
+                    currentFilters.hasPromo = false;
+                }
+                updateActiveFilters();
+                loadHotels();
+            });
+        });
+    }
+
+    function loadHotels() {
+        loadingSpinner.style.display = 'block';
+        
+        fetch('/Chotels/filter', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                search: currentFilters.search,
+                sort: currentSort,
+                currency: currentCurrency,
+                page: currentPage,
+                filters: {
+                    rating: currentFilters.rating,
+                    maxPrice: currentFilters.maxPrice,
+                    hasPromo: currentFilters.hasPromo
+                }
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hotelsContainer.innerHTML = data.html;
+            
+            // Gestion de la pagination AJAX
+            if (data.pagination) {
+                const oldPagination = hotelsContainer.querySelector('.pagination-container');
+                if (oldPagination) {
+                    oldPagination.remove();
+                }
+                
+                const paginationContainer = document.createElement('div');
+                paginationContainer.className = 'pagination-container';
+                paginationContainer.innerHTML = data.pagination;
+                hotelsContainer.appendChild(paginationContainer);
+                
+                // Interception des clics sur la pagination
+                paginationContainer.addEventListener('click', function(e) {
+                    const link = e.target.closest('a.page-link');
+                    if (link && !link.parentElement.classList.contains('disabled')) {
+                        e.preventDefault();
+                        const url = new URL(link.href);
+                        currentPage = url.searchParams.get('page') || 1;
+                        loadHotels();
+                        window.scrollTo({top: 0, behavior: 'smooth'});
+                    }
+                });
+            }
+            
+            loadingSpinner.style.display = 'none';
+            updateCurrencyDisplay(currentCurrency);
+        })
+        .catch(() => {
+            loadingSpinner.style.display = 'none';
+        });
+    }
+
+    // Initialisation
+    updateActiveFilters();
+    updateSortUI();
+});
+</script>
+{% endblock %}

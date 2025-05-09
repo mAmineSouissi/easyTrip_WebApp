@@ -1,0 +1,60 @@
+{% if hotels|length > 0 %}
+    {% for hotel in hotels %}
+        <div class="col-md-4 mb-4">
+            <div class="card hotel-card">
+                {% if hotel.image %}
+                    <img src="{{ asset('Uploads/hotels/' ~ hotel.image) }}" class="card-img-top hotel-image" alt="{{ hotel.name }}">
+                {% else %}
+                    <img src="{{ asset('img/hotels/default.jpg') }}" class="card-img-top hotel-image" alt="Image par défaut">
+                {% endif %}
+                
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="card-title">{{ hotel.name }}</h5>
+                        <span class="badge bg-warning text-dark hotel-stars">
+                            {% for i in 1..hotel.stars %}
+                                <i class="fas fa-star"></i>
+                            {% endfor %}
+                        </span>
+                    </div>
+                    
+                    <p class="card-text">
+                        <i class="fas fa-map-marker-alt"></i> {{ hotel.location }}
+                    </p>
+                    
+                    <div class="hotel-price">
+                        <span class="price-label">Prix par nuit:</span>
+                        <span class="price-value">{{ hotel.price }} €</span>
+                    </div>
+                    
+                    <div class="action-buttons mt-3">
+                        <a href="{{ path('app_hotel_action', {'action': 'show', 'id': hotel.id}) }}" 
+                           class="btn btn-view">
+                            <i class="fas fa-eye"></i> Voir
+                        </a>
+                        <a href="{{ path('app_hotel_action', {'action': 'edit', 'id': hotel.id}) }}" 
+                           class="btn btn-edit">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        <form method="post" action="{{ path('app_hotel_action', {'action': 'delete', 'id': hotel.id}) }}" 
+                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet hôtel ?');" 
+                              class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ hotel.id) }}">
+                            <button type="submit" class="btn btn-delete">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="col-12">
+        <div class="no-hotels text-center py-5">
+            <i class="fas fa-hotel fa-3x mb-3 text-muted"></i>
+            <h4>Aucun hôtel trouvé</h4>
+            <p class="text-muted">Modifiez vos critères de recherche pour voir plus de résultats.</p>
+        </div>
+    </div>
+{% endif %} 

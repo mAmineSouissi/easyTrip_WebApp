@@ -1,0 +1,300 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Agences{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .agency-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        .page-title {
+            color: #2c3e50;
+            font-weight: 700;
+            margin: 0;
+        }
+        .btn-create {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .btn-create:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            color: white;
+        }
+        .agency-card {
+            border: none;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        .agency-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .agency-image {
+            height: 160px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .card-body {
+            padding: 1.5rem;
+        }
+        .agency-name {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .agency-contact {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .agency-contact i {
+            width: 20px;
+            color: #3498db;
+        }
+        .action-buttons {
+            margin-top: 1rem;
+        }
+        .action-buttons .btn {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+            margin-right: 5px;
+            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 600;
+            border: 1px solid;
+        }
+        .btn-view {
+            background-color: #ffffff;
+            color: #3498db;
+            border-color: #3498db;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .btn-view:hover {
+            background-color: #3498db;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(52,152,219,0.3);
+        }
+        .btn-view:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        .btn-edit {
+            background-color: #ffffff;
+            color: #f39c12;
+            border-color: #f39c12;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .btn-edit:hover {
+            background-color: #f39c12;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(243,156,18,0.3);
+        }
+        .btn-edit:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        .btn-delete:hover {
+            background-color: #c82333;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(220,53,69,0.3);
+        }
+        .btn-delete:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        .no-agencies {
+            text-align: center;
+            padding: 2rem;
+            color: #7f8c8d;
+        }
+        .badge-count {
+            background-color: #3498db;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+        .truncate-text {
+            display: inline-block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        .btn-back {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        .btn-back:hover {
+            background-color: #e9ecef;
+            color: #495057;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .btn-back:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        @media (max-width: 768px) {
+            .agency-container {
+                padding: 1rem;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .btn-create {
+                margin-top: 1rem;
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="agency-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-building me-2"></i>Liste des Agences
+            <span class="badge-count">{{ agencies|length }}</span>
+        </h1>
+        <a href="{{ path('app_agency_new') }}" class="btn-create">
+            <i class="fas fa-plus me-2"></i>Nouvelle Agence
+        </a>
+    </div>
+
+    {% if agencies|length > 0 %}
+        <div class="row">
+            {% for agency in agencies %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card agency-card">
+                        <img src="{{ agency.image ?: 'https://via.placeholder.com/400x200?text=Agence' }}" 
+                             alt="{{ agency.name }}" 
+                             class="agency-image">
+                        <div class="card-body">
+                            <h5 class="agency-name">{{ agency.name }}</h5>
+                            
+                            <div class="agency-contact">
+                                <i class="fas fa-map-marker-alt"></i> 
+                                <span class="truncate-text" title="{{ agency.address }}">{{ agency.address|length > 30 ? agency.address|slice(0, 30) ~ '...' : agency.address }}</span>
+                            </div>
+                            
+                            <div class="agency-contact">
+                                <i class="fas fa-phone"></i> {{ agency.phone }}
+                            </div>
+                            
+                            <div class="agency-contact">
+                                <i class="fas fa-envelope"></i> 
+                                <span class="truncate-text" title="{{ agency.email }}">{{ agency.email|length > 25 ? agency.email|slice(0, 25) ~ '...' : agency.email }}</span>
+                            </div>
+                            
+                            <div class="action-buttons mt-3">
+                                <a href="{{ path('app_agency_show', {'id': agency.id}) }}" class="btn btn-view">
+                                    <i class="fas fa-eye"></i> Voir
+                                </a>
+                                <a href="{{ path('app_agency_edit', {'id': agency.id}) }}" class="btn btn-edit">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                                {{ include('agency/agent/_delete_form.html.twig', {
+                                    'agency': agency,
+                                    'button_style': 'btn-delete',
+                                    'button_icon': 'fas fa-trash',
+                                    'button_label': 'Supprimer'
+                                }) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="action-buttons">
+            <a href="{{ path('agent_dashboard') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+        </div>
+    {% else %}
+        <div class="no-agencies">
+            <i class="fas fa-building fa-3x mb-3" style="color: #ecf0f1;"></i>
+            <h3>Aucune agence enregistrée</h3>
+            <p>Commencez par créer une nouvelle agence</p>
+            <a href="{{ path('app_agency_new') }}" class="btn-create">
+                <i class="fas fa-plus me-2"></i>Créer une agence
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Animation au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.agency-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'all 0.3s ease-out';
+                
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 * index);
+            });
+        });
+    </script>
+{% endblock %}

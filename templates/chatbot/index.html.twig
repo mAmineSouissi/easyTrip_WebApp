@@ -1,0 +1,280 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chatbot - EasyTrip{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: 20%;
+        }
+        .bot-message {
+            background-color: #f5f5f5;
+            margin-right: 20%;
+        }
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .chat-input button {
+            padding: 10px 20px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .chat-input button:hover {
+            background-color: #1976d2;
+        }
+        .hotel-card, .ticket-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background-color: white;
+        }
+        .suggestions-section {
+            margin: 20px 0;
+        }
+        .suggestions-section h3 {
+            color: #2196f3;
+            margin-bottom: 10px;
+        }
+        .card-title {
+            color: #2196f3;
+            margin-bottom: 10px;
+        }
+        .card-price {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .error-message {
+            color: #f44336;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .loading {
+            text-align: center;
+            padding: 10px;
+            color: #666;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="chat-container">
+        <h1>Chatbot EasyTrip</h1>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                Bonjour ! Je suis votre assistant EasyTrip. Je peux vous aider à trouver :
+                <ul>
+                    <li>Des hôtels (par prix, destination, étoiles)</li>
+                    <li>Des tickets de voyage (par prix, destination, date)</li>
+                    <li>Des suggestions de voyages</li>
+                </ul>
+                Comment puis-je vous aider aujourd'hui ?
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Exemple: Je cherche un hôtel à Paris moins de 100€">
+            <button id="sendButton">Envoyer</button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            let isProcessing = false;
+
+            function formatDate(dateString) {
+                if (!dateString) return 'Date non spécifiée';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('fr-FR');
+            }
+
+            function addMessage(message, isUser = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+                
+                if (typeof message === 'string') {
+                    messageDiv.textContent = message;
+                } else if (message.type === 'hotels' || message.type === 'tickets') {
+                    messageDiv.innerHTML = `<p>${message.content}</p>`;
+                    if (message.data && message.data.length > 0) {
+                        message.data.forEach(item => {
+                            const card = document.createElement('div');
+                            card.className = `${message.type}-card`;
+                            let cardContent = `
+                                <h3 class="card-title">${item.name || item.title || 'Sans titre'}</h3>
+                                <p>${item.description || 'Pas de description disponible'}</p>
+                                <p class="card-price">Prix: ${item.price || 0}€</p>
+                            `;
+                            
+                            if (message.type === 'hotels') {
+                                cardContent += `
+                                    <p>Localisation: ${item.location || 'Localisation non spécifiée'}</p>
+                                    <p>${item.rating || 0} étoiles</p>
+                                `;
+                            } else if (message.type === 'tickets') {
+                                cardContent += `
+                                    <p>Destination: ${item.destination || 'Destination non spécifiée'}</p>
+                                    <p>Date de départ: ${formatDate(item.departureDate)}</p>
+                                `;
+                            }
+                            
+                            card.innerHTML = cardContent;
+                            messageDiv.appendChild(card);
+                        });
+                    } else {
+                        messageDiv.innerHTML += '<p>Aucun résultat trouvé</p>';
+                    }
+                } else if (message.type === 'suggestions') {
+                    messageDiv.innerHTML = `<p>${message.content}</p>`;
+                    
+                    if (message.data.hotels && message.data.hotels.length > 0) {
+                        const hotelsSection = document.createElement('div');
+                        hotelsSection.className = 'suggestions-section';
+                        hotelsSection.innerHTML = '<h3>Meilleurs hôtels</h3>';
+                        message.data.hotels.forEach(hotel => {
+                            const card = document.createElement('div');
+                            card.className = 'hotel-card';
+                            card.innerHTML = `
+                                <h3 class="card-title">${hotel.name || 'Hôtel sans nom'}</h3>
+                                <p>${hotel.description || 'Pas de description disponible'}</p>
+                                <p class="card-price">Prix: ${hotel.price || 0}€</p>
+                                <p>Localisation: ${hotel.location || 'Localisation non spécifiée'}</p>
+                                <p>${hotel.rating || 0} étoiles</p>
+                            `;
+                            hotelsSection.appendChild(card);
+                        });
+                        messageDiv.appendChild(hotelsSection);
+                    }
+                    
+                    if (message.data.tickets && message.data.tickets.length > 0) {
+                        const ticketsSection = document.createElement('div');
+                        ticketsSection.className = 'suggestions-section';
+                        ticketsSection.innerHTML = '<h3>Meilleurs offres de tickets</h3>';
+                        message.data.tickets.forEach(ticket => {
+                            const card = document.createElement('div');
+                            card.className = 'ticket-card';
+                            card.innerHTML = `
+                                <h3 class="card-title">${ticket.title || 'Ticket sans titre'}</h3>
+                                <p>${ticket.description || 'Pas de description disponible'}</p>
+                                <p class="card-price">Prix: ${ticket.price || 0}€</p>
+                                <p>Destination: ${ticket.destination || 'Destination non spécifiée'}</p>
+                                <p>Date de départ: ${formatDate(ticket.departureDate)}</p>
+                            `;
+                            ticketsSection.appendChild(card);
+                        });
+                        messageDiv.appendChild(ticketsSection);
+                    }
+                }
+                
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = message;
+                chatMessages.appendChild(errorDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function showLoading() {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'loading';
+                loadingDiv.textContent = 'Chargement...';
+                loadingDiv.id = 'loadingMessage';
+                chatMessages.appendChild(loadingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function hideLoading() {
+                const loadingDiv = document.getElementById('loadingMessage');
+                if (loadingDiv) {
+                    loadingDiv.remove();
+                }
+            }
+
+            function sendMessage() {
+                if (isProcessing) return;
+                
+                const message = messageInput.value.trim();
+                if (message) {
+                    isProcessing = true;
+                    addMessage(message, true);
+                    messageInput.value = '';
+                    showLoading();
+
+                    fetch('{{ path('chatbot_message') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ message: message })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw new Error(err.content || 'Une erreur est survenue');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        addMessage(data);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showError(error.message || 'Désolé, une erreur est survenue. Veuillez réessayer.');
+                    })
+                    .finally(() => {
+                        hideLoading();
+                        isProcessing = false;
+                    });
+                }
+            }
+
+            sendButton.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+{% endblock %} 

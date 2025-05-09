@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails du Ticket #{{ ticket.idTicket }}{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .card-header {
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        border-radius: 8px 8px 0 0;
+    }
+    .btn {
+        transition: all 0.2s ease;
+    }
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+    .badge {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+    }
+    .list-group-item {
+        border: none;
+        padding: 10px 0;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="h4 mb-0">
+                    <i class="fas fa-ticket-alt me-2"></i> Détails du Ticket #{{ ticket.idTicket }}
+                </h2>
+                <div>
+                    <a href="{{ path('app_tickets_index') }}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-left me-2"></i> Retour
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    {% if ticket.imageAirline %}
+                    <img src="{{ asset('Uploads/airlines/' ~ ticket.imageAirline) }}" 
+                         alt="{{ ticket.airline }}" 
+                         class="img-fluid rounded mb-3" 
+                         style="max-height: 150px;">
+                    {% endif %}
+                    <h3 class="h5">{{ ticket.airline }}</h3>
+                    <p class="text-muted">Vol #{{ ticket.flightNumber }}</p>
+                    {% if ticket.cityImage %}
+                    <img src="{{ asset('Uploads/cities/' ~ ticket.cityImage) }}" 
+                         alt="{{ ticket.arrivalCity }}" 
+                         class="img-fluid rounded mt-3" 
+                         style="max-height: 150px;">
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4 class="border-bottom pb-2 text-primary">Informations de vol</h4>
+                            <div class="mb-3">
+                                <h5>Départ</h5>
+                                <p>
+                                    <i class="fas fa-plane-departure text-primary me-2"></i> 
+                                    {{ ticket.departureCity }}<br>
+                                    <small class="text-muted">{{ ticket.departureDate|date('l d F Y') }}</small><br>
+                                    {{ ticket.departureTime }}
+                                </p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h5>Arrivée</h5>
+                                <p>
+                                    <i class="fas fa-plane-arrival text-success me-2"></i> 
+                                    {{ ticket.arrivalCity }}<br>
+                                    <small class="text-muted">{{ ticket.arrivalDate|date('l d F Y') }}</small><br>
+                                    {{ ticket.arrivalTime }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h4 class="border-bottom pb-2 text-primary">Détails du ticket</h4>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Classe:</span>
+                                    <span class="badge bg-{{ ticket.ticketClass == 'First' ? 'primary' : ticket.ticketClass == 'Business' ? 'success' : 'info' }}">
+                                        {{ ticket.ticketClass }}
+                                    </span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Type:</span>
+                                    <span>{{ ticket.ticketType }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Prix:</span>
+                                    <span class="fw-bold">{{ ticket.price|number_format(2, ',', ' ') }} €</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-footer bg-white">
+            <div class="d-flex justify-content-end gap-2">
+                <a href="{{ path('app_tickets_edit', {'idTicket': ticket.idTicket}) }}" 
+                   class="btn btn-primary">
+                    <i class="fas fa-edit me-2"></i> Modifier
+                </a>
+                {{ include('tickets/_delete_form.html.twig') }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

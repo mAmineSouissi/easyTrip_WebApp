@@ -1,0 +1,316 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Statistiques des offres de voyages{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+            height: 100%;
+        }
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        canvas {
+            width: 100% !important;
+            min-height: 300px;
+        }
+        .prediction-image {
+            width: 100%;
+            max-width: 800px; /* Limite la largeur maximale pour une meilleure lisibilité */
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .prediction-container {
+            display: flex;
+            justify-content: center; /* Centre l'image horizontalement */
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Statistiques des offres</h1>
+        <button id="exportPdfBtn" class="btn btn-primary">Exporter en PDF</button>
+    </div>
+
+    <div class="row">
+        <!-- Graphique 1: Nombre d'offres par agence (Bar) -->
+        <div class="col-md-6 col-lg-4">
+            <div class="chart-container">
+                <div class="chart-title">
+                    <i class="fas fa-chart-bar me-2"></i>Offres par agence
+                </div>
+                <canvas id="offersByAgencyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Graphique 2: CA par agence (Bar) -->
+        <div class="col-md-6 col-lg-4">
+            <div class="chart-container">
+                <div class="chart-title">
+                    <i class="fas fa-euro-sign me-2"></i>Chiffre d'affaires par agence
+                </div>
+                <canvas id="revenueByAgencyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Graphique 3: Offres par catégorie (Pie) -->
+        <div class="col-md-6 col-lg-4">
+            <div class="chart-container">
+                <div class="chart-title">
+                    <i class="fas fa-chart-pie me-2"></i>Offres par catégorie
+                </div>
+                <canvas id="offersByCategoryChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Nouvelle section pour l'image de prédiction -->
+        <div class="col-12">
+            <div class="chart-container">
+                <div class="chart-title">
+                    <i class="fas fa-chart-line me-2"></i>Revenus historiques (Jan-Mai 2025) et prédictions (Juin-Déc 2025)
+                </div>
+                <div class="prediction-container">
+                    <img src="{{ asset('images/revenue_prediction_2025.png') }}" alt="Revenus historiques et prédictions 2025" class="prediction-image">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Vérifier si jsPDF est chargé
+            if (!window.jspdf) {
+                console.error("jsPDF n'est pas chargé. Vérifiez le CDN.");
+                alert("Erreur : Impossible de charger la bibliothèque PDF.");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+
+            // Couleurs personnalisées
+            const colors = [
+                '#3B82F6', '#10B981', '#F59E0B', '#EF4444', 
+                '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'
+            ];
+
+            // 1. Graphique des offres par agence (Bar)
+            new Chart(
+                document.getElementById('offersByAgencyChart'),
+                {
+                    type: 'bar',
+                    data: {
+                        labels: {{ offersByAgency.labels|json_encode|raw }},
+                        datasets: [{
+                            label: "Nombre d'offres",
+                            data: {{ offersByAgency.data|json_encode|raw }},
+                            backgroundColor: colors,
+                            borderColor: colors.map(c => c.replace('0.6', '1')),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.parsed.y + " offres";
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+            // 2. Graphique du CA par agence (Bar)
+            new Chart(
+                document.getElementById('revenueByAgencyChart'),
+                {
+                    type: 'bar',
+                    data: {
+                        labels: {{ revenueByAgency.labels|json_encode|raw }},
+                        datasets: [{
+                            label: "Chiffre d'affaires",
+                            data: {{ revenueByAgency.data|json_encode|raw }},
+                            backgroundColor: colors,
+                            borderColor: colors.map(c => c.replace('0.6', '1')),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.parsed.y.toLocaleString('fr-FR') + " €";
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString('fr-FR') + " €";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+            // 3. Graphique des offres par catégorie (Pie)
+            new Chart(
+                document.getElementById('offersByCategoryChart'),
+                {
+                    type: 'pie',
+                    data: {
+                        labels: {{ offersByCategory.labels|json_encode|raw }},
+                        datasets: [{
+                            data: {{ offersByCategory.data|json_encode|raw }},
+                            backgroundColor: colors,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'right'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((context.raw / total) * 100);
+                                        return `${context.label}: ${context.raw} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+            // Exportation en PDF
+            const exportBtn = document.getElementById('exportPdfBtn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function() {
+                    try {
+                        const doc = new jsPDF();
+
+                        // Date d'aujourd'hui
+                        const today = new Date().toLocaleDateString('fr-FR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+
+                        // En-tête
+                        doc.setFontSize(16);
+                        doc.text('Statistiques des Offres de Voyage', 20, 20);
+                        doc.setFontSize(12);
+                        doc.text(`Date: ${today}`, 20, 30);
+                        doc.setLineWidth(0.5);
+                        doc.line(20, 35, 190, 35);
+
+                        let yPosition = 45;
+
+                        // Tableau 1: Offres par agence
+                        doc.setFontSize(14);
+                        doc.text('Nombre d\'offres par agence', 20, yPosition);
+                        yPosition += 10;
+
+                        doc.autoTable({
+                            startY: yPosition,
+                            head: [['Agence', 'Nombre d\'offres']],
+                            body: {{ offersByAgency.labels|json_encode|raw }}.map((label, index) => [
+                                label, {{ offersByAgency.data|json_encode|raw }}[index]
+                            ]),
+                            theme: 'grid',
+                            headStyles: { fillColor: [59, 130, 246] },
+                            styles: { fontSize: 10 }
+                        });
+                        yPosition = doc.lastAutoTable.finalY + 20;
+
+                        // Tableau 2: Chiffre d'affaires par agence
+                        doc.setFontSize(14);
+                        doc.text('Chiffre d\'affaires par agence', 20, yPosition);
+                        yPosition += 10;
+
+                        doc.autoTable({
+                            startY: yPosition,
+                            head: [['Agence', 'Chiffre d\'affaires (€)']],
+                            body: {{ revenueByAgency.labels|json_encode|raw }}.map((label, index) => [
+                                label, Number({{ revenueByAgency.data|json_encode|raw }}[index]).toLocaleString('fr-FR')
+                            ]),
+                            theme: 'grid',
+                            headStyles: { fillColor: [59, 130, 246] },
+                            styles: { fontSize: 10 }
+                        });
+                        yPosition = doc.lastAutoTable.finalY + 20;
+
+                        // Tableau 3: Offres par catégorie
+                        doc.setFontSize(14);
+                        doc.text('Nombre d\'offres par catégorie', 20, yPosition);
+                        yPosition += 10;
+
+                        doc.autoTable({
+                            startY: yPosition,
+                            head: [['Catégorie', 'Nombre d\'offres']],
+                            body: {{ offersByCategory.labels|json_encode|raw }}.map((label, index) => [
+                                label, {{ offersByCategory.data|json_encode|raw }}[index]
+                            ]),
+                            theme: 'grid',
+                            headStyles: { fillColor: [59, 130, 246] },
+                            styles: { fontSize: 10 }
+                        });
+
+                        // Téléchargement du PDF
+                        doc.save(`Statistiques_Offres_${new Date().toISOString().slice(0, 10)}.pdf`);
+                    } catch (error) {
+                        console.error('Erreur lors de la génération du PDF:', error);
+                        alert('Erreur lors de la génération du PDF. Vérifiez la console pour plus de détails.');
+                    }
+                });
+            } else {
+                console.error("Bouton d'exportation non trouvé.");
+            }
+        });
+    </script>
+{% endblock %}
