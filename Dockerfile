@@ -14,16 +14,11 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
-    nodejs \
-    npm \
  && docker-php-ext-configure gd --with-freetype --with-jpeg \
  && docker-php-ext-install -j$(nproc) intl pdo pdo_mysql zip opcache gd xml mbstring \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# ➕ Install Node.js + Yarn
-RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - \
- && apt-get install -y nodejs \
- && npm install --global yarn
+# No Node.js/Yarn needed with Asset Mapper
 
 # 🎼 Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -42,8 +37,9 @@ COPY . .
 # 📦 Install PHP dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# 🧱 Build assets
-RUN yarn install && yarn encore production
+# 🧱 Build assets with Asset Mapper
+RUN php bin/console importmap:install --no-interaction \
+ && php bin/console asset-map:compile
 
 # ⚙️ Cache warmup
 RUN php bin/console cache:clear --env=prod --no-interaction || true \
