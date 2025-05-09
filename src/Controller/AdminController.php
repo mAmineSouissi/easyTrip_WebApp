@@ -3,10 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Form\ProfileType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -63,6 +65,53 @@ final class AdminController extends AbstractController
     {
         return $this->render('admin/users.html.twig', [
             'users' => $userRepo->findAll(),
+        ]);
+    }
+
+    #[Route('/profile/{id}', name: 'profile_update')]
+    public function updateProfile(Request $request, EntityManagerInterface $em, $id)
+    {
+        /** @var User $user*/
+        $currentuser = $this->getUser();
+        $user = $em->getRepository(User::class)->find($id);
+
+        $form = $this->createForm(ProfileType::class, $currentuser);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $profilePhotoFile = $form->get('profilePhoto')->getData();
+            if ($profilePhotoFile) {
+                $newFilename = $profilePhotoFile->getClientOriginalName(); 
+
+                try {
+                    $profilePhotoFile->move(
+                        $this->getParameter('profiles_directory'), 
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    // handle exception
+                }
+
+                $baseUrl = $request->getSchemeAndHttpHost();
+                $photoUrl = $baseUrl . '/img/profile/' . $newFilename;
+                $user->setProfilePhoto($photoUrl);
+            }
+
+            $em->flush();
+
+            $this->addFlash('success', 'Profile updated successfully!');
+
+            if ($currentuser->getRoles()[0] === 'ROLE_ADMIN') {
+                return $this->redirectToRoute('admin_dashboard');
+            } else {
+                return $this->redirectToRoute('app_home');
+            }
+        }
+
+        return $this->render('admin/profile.html.twig', [
+            'form' => $form->createView(),
         ]);
     }
 

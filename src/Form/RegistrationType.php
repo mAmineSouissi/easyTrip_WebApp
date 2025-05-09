@@ -4,7 +4,6 @@ namespace App\Form;
 
 use App\Entity\User;
 use EWZ\Bundle\RecaptchaBundle\Form\Type\EWZRecaptchaType;
-use EWZ\Bundle\RecaptchaBundle\Validator\Constraints\IsTrue;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -18,6 +17,8 @@ use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use EWZ\Bundle\RecaptchaBundle\Validator\Constraints\IsTrue as RecaptchaTrue;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Validator\Constraints\File;
 
 
 class RegistrationType extends AbstractType
@@ -67,9 +68,21 @@ class RegistrationType extends AbstractType
                     new NotBlank(['message' => 'Please enter a password']),
                 ],
             ])
-            ->add('profilePhoto', TextType::class, [
-                'label' => 'Profile Photo',
+            ->add('profilePhoto', FileType::class, [
+                'label' => 'Profile Photo (Image file)',
+                'mapped' => false,
                 'required' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '2M',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                            'image/webp',
+                        ],
+                        'mimeTypesMessage' => 'Please upload a valid image (jpeg, png, webp)',
+                    ])
+                ],
             ])
             ->add('role', ChoiceType::class, [
                 'label' => 'Account Type',
@@ -85,7 +98,7 @@ class RegistrationType extends AbstractType
                 'mapped' => false,
                 'constraints' => [
                     new RecaptchaTrue([
-                        'message' => 'Please confirm that you are not a robot.', 
+                        'message' => 'Please confirm that you are not a robot.',
                     ]),
                 ],
             ])

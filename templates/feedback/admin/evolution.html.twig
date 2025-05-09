@@ -1,0 +1,155 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Évolution des Feedbacks{% endblock %}
+
+{% block body %}
+<div class="section bg-light py-5">
+  <div class="container">
+
+    <!-- 🔙 Retour -->
+    <div class="mb-4">
+      <a href="{{ path('feedback_home_admin') }}" class="btn btn-outline-dark rounded-pill">
+  ⬅ Retour
+</a>
+
+    </div>
+
+    <!-- 🧾 Titre -->
+    <h2 class="mb-4 fw-bold text-dark"><i class="fa fa-chart-line"></i> Évolution des Feedbacks</h2>
+
+    <!-- 🎛️ Filtres Graphiques -->
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Type de Graphique :</label>
+        <select id="chartType" class="form-select rounded-pill">
+          <option value="line">Courbe</option>
+          <option value="bar">Histogramme</option>
+          <option value="radar">Radar</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Vue par :</label>
+        <select id="timeRange" class="form-select rounded-pill">
+          <option value="day" selected>Jour</option>
+          <option value="week">Semaine</option>
+          <option value="month">Mois</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 📊 Graphique -->
+    <div class="bg-white border rounded shadow-sm p-4 mb-4">
+      <canvas id="feedbackChart" height="100"></canvas>
+    </div>
+
+    <!-- 📄 Bouton PDF -->
+    <div class="text-end">
+      <a href="{{ path('feedback_pdf_evolution') }}" class="btn btn-dark rounded-pill">
+        🧾 Télécharger le rapport PDF
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<!-- CDN Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  window.addEventListener('load', function () {
+    const rawData = {{ data|json_encode|raw }};
+
+    const ctx = document.getElementById('feedbackChart').getContext('2d');
+    let chart;
+
+    function groupData(data, range) {
+      const grouped = {};
+
+      data.forEach(item => {
+        let key;
+        const date = new Date(item.feedback_date);
+
+        if (range === 'week') {
+          const week = getWeekNumber(date);
+          key = `Semaine ${week} - ${date.getFullYear()}`;
+        } else if (range === 'month') {
+          key = `${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+        } else {
+          key = item.feedback_date;
+        }
+
+        grouped[key] = (grouped[key] || 0) + parseInt(item.total);
+      });
+
+      return {
+        labels: Object.keys(grouped),
+        counts: Object.values(grouped)
+      };
+    }
+
+    function getWeekNumber(date) {
+      const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+      const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+      return weekNo;
+    }
+
+    function createChart(chartType, timeRange) {
+      const grouped = groupData(rawData, timeRange);
+
+      if (chart) chart.destroy();
+
+      chart = new Chart(ctx, {
+        type: chartType,
+        data: {
+          labels: grouped.labels,
+          datasets: [{
+            label: 'Nombre de Feedbacks',
+            data: grouped.counts,
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#007bff'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true, position: 'top' },
+            tooltip: { mode: 'index', intersect: false }
+          },
+          interaction: {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Période' }
+            },
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Nombre de Feedbacks' },
+              ticks: { precision: 0 }
+            }
+          }
+        }
+      });
+    }
+
+    document.getElementById('chartType').addEventListener('change', () => {
+      createChart(document.getElementById('chartType').value, document.getElementById('timeRange').value);
+    });
+
+    document.getElementById('timeRange').addEventListener('change', () => {
+      createChart(document.getElementById('chartType').value, document.getElementById('timeRange').value);
+    });
+
+    // Initialisation
+    createChart('line', 'day');
+  });
+</script>
+{% endblock %}

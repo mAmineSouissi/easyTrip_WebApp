@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Statistiques PDF - Réclamations</title>
+    <style>
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            margin: 20px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #aaa;
+            text-align: center;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>📊 Statistiques des réclamations</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Statut</th>
+                <th>Nombre de réclamations</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>En attente</td>
+                <td>{{ counts['En attente'] }}</td>
+            </tr>
+            <tr>
+                <td>En cours</td>
+                <td>{{ counts['En cours'] }}</td>
+            </tr>
+            <tr>
+                <td>Fermée</td>
+                <td>{{ counts['Fermée'] }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>

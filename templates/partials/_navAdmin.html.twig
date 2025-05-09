@@ -21,7 +21,7 @@
                                 <div class="u-text">
                                     <h4>{{app.user.name}}</h4>
                                     <p class="text-muted">{{app.user.email}}</p>
-                                    <a href="profile.html" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
+                                    <a href="{{ path('profile_update', {'id': app.user.id}) }}" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
                                 </div>
                             </div>
                         </li>

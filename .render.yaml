@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: easytrip-php
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    buildCommand: ""
+    startCommand: ""
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_SECRET
+        value: YOUR_SECRET_HERE
+      - key: DATABASE_URL
+        value: mysql://root:yourpassword@yourhost:port/easytrip
+      - key: MAILER_DSN
+        value: smtp://aminesouissi681@gmail.com:aquevlonoxqflkkh@smtp.gmail.com:587
+

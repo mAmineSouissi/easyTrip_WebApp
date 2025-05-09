@@ -1,0 +1,138 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Feedbacks - Administration{% endblock %}
+
+{% block body %}
+<div class="section bg-light py-5">
+  <div class="container">
+
+    <!-- 🔙 Retour -->
+    <div class="mb-4">
+      <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-dark rounded-pill">
+        ⬅ Retour au Dashboard
+      </a>
+    </div>
+
+    <h2 class="mb-4 fw-bold text-dark"><i class="fa fa-comments"></i> Feedbacks - Administration</h2>
+
+    <!-- 🔍 Filtres dynamiques -->
+    <div class="row gy-2 gx-2 align-items-center mb-4">
+      <div class="col-md-3">
+        <input type="text" id="search" placeholder="🔍 Rechercher un message..." value="{{ app.request.get('search') }}" class="form-control rounded-pill">
+      </div>
+      <div class="col-md-2">
+        <select id="sort" class="form-select rounded-pill">
+          <option value="message" {% if app.request.get('sort') == 'message' %}selected{% endif %}>Trier par message</option>
+          <option value="rating" {% if app.request.get('sort') == 'rating' %}selected{% endif %}>Trier par note</option>
+          <option value="date" {% if app.request.get('sort') == 'date' %}selected{% endif %}>Trier par date</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select id="dir" class="form-select rounded-pill">
+          <option value="ASC" {% if app.request.get('dir') == 'ASC' %}selected{% endif %}>Croissant</option>
+          <option value="DESC" {% if app.request.get('dir') == 'DESC' %}selected{% endif %}>Décroissant</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select id="type" class="form-select rounded-pill">
+          <option value="">Tous types</option>
+          <option value="hotel" {% if app.request.get('type') == 'hotel' %}selected{% endif %}>Hôtel</option>
+          <option value="ticket" {% if app.request.get('type') == 'ticket' %}selected{% endif %}>Ticket</option>
+          <option value="travel" {% if app.request.get('type') == 'travel' %}selected{% endif %}>Voyage</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 📋 Tableau -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle text-center">
+        <thead class="table-dark">
+          <tr>
+            <th>Message</th>
+            <th>Note</th>
+            <th>Date</th>
+            <th>Utilisateur</th>
+            <th>Ticket</th>
+            <th>Hôtel</th>
+            <th>Voyage</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="admin-feedback-table">
+          {% include 'feedback/admin/_feedbacks_list.html.twig' with { feedbacks: feedbacks } %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 📄 Pagination -->
+    <div id="pagination" class="text-center mt-4"></div>
+
+  </div>
+</div>
+
+<!-- ✅ Script JS Dynamique -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const searchInput = document.getElementById('search');
+  const sortSelect = document.getElementById('sort');
+  const dirSelect = document.getElementById('dir');
+  const typeSelect = document.getElementById('type');
+  const tableBody = document.getElementById('admin-feedback-table');
+  const paginationContainer = document.getElementById('pagination');
+  const itemsPerPage = 6;
+  let currentPage = 1;
+
+  function fetchFeedbacks() {
+    const search = searchInput.value.trim();
+    const sort = sortSelect.value;
+    const dir = dirSelect.value;
+    const type = typeSelect.value;
+
+fetch(`/feedback/search?q=${encodeURIComponent(search)}&sort=${sort}&dir=${dir}&type=${type}`)
+      .then(response => response.text())
+      .then(html => {
+        tableBody.innerHTML = html;
+        setupPagination();
+      })
+      .catch(error => console.error('Erreur lors du fetch:', error));
+  }
+
+  function setupPagination() {
+    const rows = tableBody.querySelectorAll("tr");
+    const totalPages = Math.ceil(rows.length / itemsPerPage);
+    paginationContainer.innerHTML = "";
+
+    function showPage(page) {
+      rows.forEach((row, index) => {
+        row.style.display = (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) ? '' : 'none';
+      });
+      renderPagination(page);
+    }
+
+    function renderPagination(activePage) {
+      paginationContainer.innerHTML = "";
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.className = "btn btn-sm mx-1 " + (i === activePage ? "btn-primary text-white" : "btn-outline-dark");
+        btn.addEventListener("click", () => showPage(i));
+        paginationContainer.appendChild(btn);
+      }
+    }
+
+    if (rows.length > 0) {
+      currentPage = 1;
+      showPage(currentPage);
+    }
+  }
+
+  // 🛠️ Déclencher automatiquement la recherche dynamique
+  searchInput.addEventListener('input', fetchFeedbacks);
+  sortSelect.addEventListener('change', fetchFeedbacks);
+  dirSelect.addEventListener('change', fetchFeedbacks);
+  typeSelect.addEventListener('change', fetchFeedbacks);
+
+  setupPagination(); // Initialiser la pagination au premier chargement
+});
+</script>
+{% endblock %}

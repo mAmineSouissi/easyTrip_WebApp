@@ -25,16 +25,19 @@ class ReclamationType extends AbstractType
                     'Autre' => 'Autre',
                 ],
                 'placeholder' => 'Choisissez une catégorie',
-                'disabled' => $isEdit, // Make it uneditable in edit mode
+                'disabled' => $isEdit,
             ])
             ->add('issue', TextareaType::class, [
                 'label' => 'Description du problème',
                 'attr' => ['rows' => 5],
                 'required' => !$isEdit,
-                'disabled' => $isEdit, // Also disable in edit mode
-                'empty_data' => '', // Prevent null error
-            ])
-            ->add('status', ChoiceType::class, [
+                'disabled' => $isEdit,
+                'empty_data' => '',
+            ]);
+
+       
+        if ($isEdit) {
+            $builder->add('status', ChoiceType::class, [
                 'label' => 'Statut',
                 'choices' => [
                     'En cours' => 'En cours',
@@ -43,6 +46,7 @@ class ReclamationType extends AbstractType
                 ],
                 'placeholder' => 'Choisissez un statut',
             ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void

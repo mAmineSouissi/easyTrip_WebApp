@@ -5,6 +5,7 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     google_recaptcha_site_key: '%env(GOOGLE_RECAPTCHA_SITE_KEY)%'
+    profiles_directory: '%kernel.project_dir%/public/img/profile'
     agency_images_directory: '%kernel.project_dir%/public/img/agency'
     base_image_url: 'http://localhost/img/agency/' # À ajuster en production
     offers_images_directory: '%kernel.project_dir%/public/img/offers'
@@ -13,6 +14,7 @@ parameters:
     cities_directory: '%kernel.project_dir%/public/Uploads/cities'
     hotels_images_directory: '%uploads_directory%/hotels'
     openweathermap_api_key: '%env(OPENWEATHERMAP_API_KEY)%'
+
 
 services:
     # default configuration for services in *this* file
@@ -30,7 +32,11 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-
+    App\Service\SmsService:
+            arguments:
+                $twilioSid: '%env(TWILIO_SID)%'
+                $twilioToken: '%env(TWILIO_TOKEN)%'
+                $twilioFrom: '%env(TWILIO_FROM)%'
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 

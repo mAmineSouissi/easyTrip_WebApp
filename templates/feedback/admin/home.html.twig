@@ -1,0 +1,80 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Feedbacks - Accueil Admin{% endblock %}
+
+{% block body %}
+<div class="section bg-light py-5">
+  <div class="container">
+
+    <!-- 🔙 Bouton retour -->
+    <div class="mb-4">
+      <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-dark rounded-pill">
+        ⬅ Retour à l'accueil
+      </a>
+    </div>
+
+    <!-- 🧾 Titre -->
+    <h2 class="mb-4 fw-bold text-dark">Feedbacks - Administration</h2>
+
+    <!-- 🧩 Modules -->
+    <div class="row g-4" id="feedback-admin-options">
+
+      <!-- 📋 Liste des feedbacks -->
+      <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm h-100 border-start border-primary border-4">
+          <div class="card-body text-center">
+            <h5 class="card-title"><i class="fa fa-list"></i> Liste des Feedbacks</h5>
+            <p class="card-text text-muted">Afficher, filtrer, modifier ou supprimer les feedbacks utilisateurs.</p>
+            <a href="{{ path('feedback_index') }}" class="btn btn-outline-primary rounded-pill mt-2 w-100">
+              📋 Accéder à la liste
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 📈 Évolution -->
+      <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm h-100 border-start border-info border-4">
+          <div class="card-body text-center">
+            <h5 class="card-title"><i class="fa fa-chart-line"></i> Évolution</h5>
+            <p class="card-text text-muted">Voir le graphe d’évolution du nombre de feedbacks dans le temps.</p>
+            <a href="{{ path('feedback_evolution') }}" class="btn btn-outline-info rounded-pill mt-2 w-100">
+              📈 Voir le graphe
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 📊 Comparaison -->
+      <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm h-100 border-start border-warning border-4">
+          <div class="card-body text-center">
+            <h5 class="card-title"><i class="fa fa-balance-scale"></i> Comparaison</h5>
+            <p class="card-text text-muted">Comparer le nombre de feedbacks entre les mois.</p>
+            <a href="{{ path('feedback_month_comparison') }}" class="btn btn-outline-warning rounded-pill mt-2 w-100">
+              📊 Voir la comparaison
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 😡 Feedbacks Négatifs -->
+      <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm h-100 border-start border-danger border-4">
+          <div class="card-body text-center">
+            <h5 class="card-title"><i class="fa fa-brain"></i> Feedbacks Négatifs</h5>
+            <p class="card-text text-muted">Afficher les feedbacks contenant des mots négatifs.</p>
+            <a href="{{ path('feedback_negative') }}" class="btn btn-outline-danger rounded-pill mt-2 w-100">
+              🧠 Voir les feedbacks négatifs
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}

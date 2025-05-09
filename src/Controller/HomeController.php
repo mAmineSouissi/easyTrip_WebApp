@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Reclamation;
+use App\Entity\User;
 use App\Form\ReclamationType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,32 +35,54 @@ final class HomeController extends AbstractController
             'controller_name' => 'HomeController',
         ]);
     }
-    #[Route('/contact', name: 'app_contact')]
-    public function contact(
-        Request $request,
-        EntityManagerInterface $entityManager
-    ): Response {
-        // Make sure user is logged in
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
-        // Create new Reclamation object
+    #[Route('/contact', name: 'app_contact', methods: ['GET', 'POST'])]
+    public function contact(Request $request, EntityManagerInterface $em): Response
+    {
         $reclamation = new Reclamation();
-        $reclamation->setStatus('En attente');
+    
+        /** @var User $user */
+        $user = $this->getUser();
+        $role = $user->getRoles();
+    
         $reclamation->setDate(new \DateTime());
-        $reclamation->setUser($this->getUser()); // assuming User is related
-
-        $form = $this->createForm(ReclamationType::class, $reclamation);
+    
+        if ($role === 'agent') {
+            $reclamation->setStatus('En attente');
+        }
+    
+        // Création du formulaire (is_edit = false → création)
+        $form = $this->createForm(ReclamationType::class, $reclamation, [
+            'is_edit' => false
+        ]);
+    
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($reclamation);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Votre réclamation a été envoyée avec succès.');
-
+            // 🔒 Liste des mots interdits
+            $forbiddenWords = [
+                'fuck', 'pute', 'con', 'spam', 'arnaque', 'merde', 'salope', 'idiot', 'stupid'
+            ];
+    
+            // 🔍 Nettoyage du texte
+            $issueText = strtolower(trim($reclamation->getIssue()));
+            $issueText = preg_replace('/[^\p{L}\p{N}\s]/u', '', $issueText);
+    
+            foreach ($forbiddenWords as $word) {
+                $pattern = '/\b' . preg_quote($word, '/') . '\b/i';
+                if (preg_match($pattern, $issueText)) {
+                    $this->addFlash('error', '❌ Votre message contient des mots interdits.');
+                    return $this->redirectToRoute('app_contact');
+                }
+            }
+    
+            $reclamation->setUser($user);
+            $em->persist($reclamation);
+            $em->flush();
+    
+            $this->addFlash('success', '✅ Réclamation envoyée avec succès.');
             return $this->redirectToRoute('app_contact');
         }
-
+    
         return $this->render('home/contact.html.twig', [
             'form' => $form->createView(),
         ]);

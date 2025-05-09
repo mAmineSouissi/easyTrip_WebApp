@@ -43,26 +43,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: "string", length: 255)]
     private string $role;
 
-    #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Reservation::class)]
-    private Collection $reservations;
-
-    #[ORM\OneToMany(mappedBy: "created_by", targetEntity: Survey::class)]
-    private Collection $surveys;
 
     #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Panier::class)]
     private Collection $paniers;
 
-    // Add OneToMany relationship with Agency
-    #[ORM\OneToMany(mappedBy: "user", targetEntity: Agency::class)]
-    private Collection $agencies;
+    #[ORM\OneToMany(mappedBy: "user", targetEntity: Feedback::class, orphanRemoval: true)]
+    private Collection $feedbacks;
 
-    public function __construct()
-    {
-        $this->reservations = new ArrayCollection();
-        $this->surveys = new ArrayCollection();
-        $this->paniers = new ArrayCollection();
-        $this->agencies = new ArrayCollection(); // Initialize the agencies collection
-    }
 
     public function getId()
     {
@@ -227,6 +214,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+
+      // 🛒 Paniers
+      public function getPaniers(): Collection { return $this->paniers; }
+
+      // 💬 Feedbacks
+      public function getFeedbacks(): Collection { return $this->feedbacks; }
+  
+      public function addFeedback(Feedback $feedback): self
+      {
+          if (!$this->feedbacks->contains($feedback)) {
+              $this->feedbacks[] = $feedback;
+              $feedback->setUser($this);
+          }
+          return $this;
+      }
+  
+      public function removeFeedback(Feedback $feedback): self
+      {
+          if ($this->feedbacks->removeElement($feedback)) {
+              if ($feedback->getUser() === $this) {
+                  $feedback->setUser(null);
+              }
+          }
+          return $this;
+      }
+
+}
+
     // Add the getAgencies method
     public function getAgencies(): Collection
     {
@@ -257,3 +272,4 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 }
+
