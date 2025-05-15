@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Panier;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -48,6 +49,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\OneToMany(mappedBy: "user", targetEntity: Feedback::class, orphanRemoval: true)]
     private Collection $feedbacks;
+    
+    #[ORM\OneToMany(mappedBy: "user", targetEntity: Agency::class)]
+    private Collection $agencies;
 
     public function getId()
     {
@@ -163,7 +167,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->reservations;
     }
-
+    public function __construct()
+    {
+        $this->reservations = new ArrayCollection();
+        $this->surveys = new ArrayCollection();
+        $this->paniers = new ArrayCollection();
+        $this->agencies = new ArrayCollection(); // Initialize the agencies collection
+    }
     public function addReservation(Reservation $reservation): self
     {
         if (!$this->reservations->contains($reservation)) {
@@ -238,6 +248,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                   $feedback->setUser(null);
               }
           }
+          return $this;
+      }
+      public function getAgencies(): Collection
+      {
+          return $this->agencies;
+      }
+  
+      // Add method to add an agency
+      public function addAgency(Agency $agency): self
+      {
+          if (!$this->agencies->contains($agency)) {
+              $this->agencies[] = $agency;
+              $agency->setUser($this);
+          }
+  
+          return $this;
+      }
+  
+      // Add method to remove an agency
+      public function removeAgency(Agency $agency): self
+      {
+          if ($this->agencies->removeElement($agency)) {
+              // set the owning side to null (unless already changed)
+              if ($agency->getUser() === $this) {
+                  $agency->setUser(null);
+              }
+          }
+  
           return $this;
       }
 
