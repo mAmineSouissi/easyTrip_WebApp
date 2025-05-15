@@ -1,7 +1,7 @@
-# 🐘 Base PHP image with FPM
+# Base PHP image with FPM
 FROM php:8.2-fpm
 
-# 🧰 Install PHP system dependencies
+# Install PHP system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -20,38 +20,38 @@ RUN apt-get update && apt-get install -y \
 
 # No Node.js/Yarn needed with Asset Mapper
 
-# 🎼 Install Composer
+# Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# 📁 Set working directory
+# Set working directory
 WORKDIR /var/www
 
-# ✅ Symfony environment variables
+# Symfony environment variables
 ENV APP_ENV=prod
 ENV APP_DEBUG=0
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# 📁 Copy project files
+# Copy project files
 COPY . .
 
-# 📦 Install PHP dependencies
+# Install PHP dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# 🧱 Build assets with Asset Mapper
+# Build assets with Asset Mapper
 RUN php bin/console importmap:install --no-interaction \
  && php bin/console asset-map:compile
 
-# ⚙️ Cache warmup
+# Cache warmup
 RUN php bin/console cache:clear --env=prod --no-interaction || true \
  && php bin/console cache:warmup --env=prod --no-interaction || true
 
-# 🔐 Permissions
+# Permissions
 RUN mkdir -p /var/www/var \
  && chown -R www-data:www-data /var/www/var \
  && chmod -R 755 /var/www/var
 
-# 🌐 Port
+# Port
 EXPOSE 8081
 
-# 🚀 Start app
+# Start app
 CMD ["php", "-S", "0.0.0.0:8081", "-t", "public"]
